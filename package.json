@@ -1,0 +1,121 @@
+{
+  "name": "scenerystack",
+  "version": "0.0.1",
+  "description": "Bundle of PhET Interactive Simulations common code libraries",
+  "keywords": [
+    "phet",
+    "phetsims"
+  ],
+  "type": "module",
+  "homepage": "https://phet.colorado.edu",
+  "bugs": {
+    "url": "https://github.com/scenerystack/community/issues",
+    "email": "phethelp@colorado.edu"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scenerystack/scenerystack.git"
+  },
+  "files": [
+    "dist",
+    "src",
+    "third-party-licenses",
+    "dependencies.json"
+  ],
+  "exports": {
+    ".": {
+      "module": "./dist/index.js",
+      "import": "./dist/index.js"
+    },
+
+    "./alpenglow": {
+      "module": "./dist/alpenglow.js",
+      "import": "./dist/alpenglow.js"
+    },
+    "./assert": {
+      "module": "./dist/assert.js",
+      "import": "./dist/assert.js"
+    },
+    "./axon": {
+      "module": "./dist/axon.js",
+      "import": "./dist/axon.js"
+    },
+    "./chipper": {
+      "module": "./dist/chipper.js",
+      "import": "./dist/chipper.js"
+    },
+    "./dot": {
+      "module": "./dist/dot.js",
+      "import": "./dist/dot.js"
+    },
+    "./joist": {
+      "module": "./dist/joist.js",
+      "import": "./dist/joist.js"
+    },
+    "./kite": {
+      "module": "./dist/kite.js",
+      "import": "./dist/kite.js"
+    },
+    "./mobius": {
+      "module": "./dist/mobius.js",
+      "import": "./dist/mobius.js"
+    },
+    "./phet-core": {
+      "module": "./dist/phet-core.js",
+      "import": "./dist/phet-core.js"
+    },
+    "./phetcommon": {
+      "module": "./dist/phetcommon.js",
+      "import": "./dist/phetcommon.js"
+    },
+    "./scenery": {
+      "module": "./dist/scenery.js",
+      "import": "./dist/scenery.js"
+    },
+    "./scenery-phet": {
+      "module": "./dist/scenery-phet.js",
+      "import": "./dist/scenery-phet.js"
+    },
+    "./sun": {
+      "module": "./dist/sun.js",
+      "import": "./dist/sun.js"
+    },
+    "./tandem": {
+      "module": "./dist/tandem.js",
+      "import": "./dist/tandem.js"
+    },
+    "./tappi": {
+      "module": "./dist/tappi.js",
+      "import": "./dist/tappi.js"
+    },
+    "./twixt": {
+      "module": "./dist/twixt.js",
+      "import": "./dist/twixt.js"
+    },
+    "./vegas": {
+      "module": "./dist/vegas.js",
+      "import": "./dist/vegas.js"
+    }
+  },
+  "dependencies": {
+    "lodash": "~4.17.12",
+    "he": "~1.1.0",
+    "linebreak-ts": "~1.0.2",
+    "flatqueue": "^2.0.3",
+    "base64-js": "^1.5.1",
+    "text-encoder-lite": "~2.0.0",
+    "jquery": "~2.1.0",
+    "paper": "~0.12.17"
+  },
+  "devDependencies": {
+    "@types/lodash": "~4.17.12",
+    "@types/he": "~1.1.0",
+    "@types/jquery": "~3.5.13",
+    "@types/paper": "~0.12.3",
+    "@types/three": "~0.137.0",
+
+    "typescript": "~5.3.3",
+    "grunt": "~1.5.3"
+  }
+}

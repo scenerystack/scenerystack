@@ -1,0 +1,289 @@
+/**
+ * This file is the primary tsconfig entry point for typical PhET simulations or libraries.
+ *
+ * @author Sam Reid (PhET Interactive Simulations)
+ * @author Michael Kauzmann (PhET Interactive Simulations)
+ */
+{
+  "extends": "../perennial-alias/tsconfig/tsconfig-core.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    /* Allow accessing UMD globals from modules. */
+    "allowUmdGlobalAccess": true,
+
+    "emitDeclarationOnly": false,
+  },
+  "include": [
+    /* actual entry points (barrel files mostly) */
+    "src/index.ts",
+    "src/alpenglow.ts",
+    "src/assert.ts",
+    "src/axon.ts",
+    "src/chipper.ts",
+    "src/dot.ts",
+    "src/joist.ts",
+    "src/kite.ts",
+    "src/mobius.ts",
+    "src/phet-core.ts",
+    "src/phetcommon.ts",
+    "src/scenery.ts",
+    "src/scenery-phet.ts",
+    "src/sun.ts",
+    "src/tandem.ts",
+    "src/tappi.ts",
+    "src/twixt.ts",
+    "src/vegas.ts",
+
+    /* types */
+    "src/types/**/*",
+
+    "src/minimal-preload.ts",
+    "src/preload.ts",
+
+    "src/phet-core/js/**/*",
+    "src/axon/js/**/*",
+    "src/dot/js/**/*",
+    "src/kite/js/**/*",
+    "src/utterance-queue/js/**/*",
+    "src/scenery/js/**/*",
+    "src/alpenglow/js/**/*",
+    "src/tambo/js/**/*",
+    "src/sun/js/**/*",
+    "src/twixt/js/**/*",
+    "src/bamboo/js/**/*",
+    "src/nitroglycerin/js/**/*",
+    "src/mobius/js/**/*",
+
+    /* preloads */
+    "src/assert/js/assert.*",
+    "src/joist/js/splash.*",
+    "src/query-string-machine/js/QueryStringMachine.*",
+    "src/chipper/js/initialize-globals.*",
+    "src/tandem/js/PhetioIDUtils.*",
+    "src/chipper/js/initialize-globals.*",
+
+    /* Tandem allowlist */
+    "src/tandem/js/types/**/*",
+    "src/tandem/js/tandemNamespace.ts",
+    "src/tandem/js/PhetioAction.ts",
+    "src/tandem/js/Tandem.ts",
+    "src/tandem/js/PhetioObject.ts",
+    "src/tandem/js/TandemConstants.*",
+    "src/tandem/js/DescriptionRegistry.ts",
+    "src/tandem/js/EventType.ts",
+    "src/tandem/js/LinkedElementIO.ts",
+    "src/tandem/js/phetioAPIValidation.ts",
+    "src/tandem/js/IOTypeCache.ts",
+    "src/tandem/js/PhetioDataHandler.ts",
+    "src/tandem/js/TPhetioStateEngine.ts",
+    "src/tandem/js/isPhetioStateEngineManagingPropertyValuesProperty.ts",
+    "src/tandem/js/phetioElementSelectionProperty.*",
+    "src/tandem/js/DynamicTandem.*",
+    "src/tandem/js/isClearingPhetioDynamicElementsProperty.*",
+    "src/tandem/js/isSettingPhetioStateProperty.*",
+    "src/tandem/js/PhetioConstants.*",
+    "src/tandem/js/PhetioDynamicElementContainer.*",
+    "src/tandem/js/CouldNotYetDeserializeError.*",
+
+    /* Joist allowlist */
+    "src/joist/js/joist.ts", // namespace
+    "src/joist/js/packageJSON.ts",
+    "src/joist/js/i18n/**/*",
+
+    /* Chipper allowlist */
+    "src/chipper/js/chipper.*",
+    "src/chipper/js/LocalizedString.ts",
+    "src/chipper/js/LocalizedStringProperty.ts",
+    "src/chipper/js/getStringModule.ts",
+
+    /* Phetcommon allowlist */
+    "src/phetcommon/js/phetcommon.*", // namespace
+    "src/phetcommon/js/util/StringUtils.*",
+    "src/phetcommon/js/view/ModelViewTransform2.ts",
+    "src/phetcommon/js/model/Bucket.ts",
+    "src/phetcommon/js/model/Fraction.ts",
+    "src/phetcommon/js/model/SphereBucket.ts",
+
+    /* scenery-phet allowlist */
+    "src/scenery-phet/js/sceneryPhet.*",
+    "src/scenery-phet/js/buttons/**/*",
+    "src/scenery-phet/js/keyboard/KeyNode.*",
+    "src/scenery-phet/js/keyboard/TextKeyNode.*",
+    "src/scenery-phet/js/ArrowNode.*",
+    "src/scenery-phet/js/ArrowShape.*",
+    "src/scenery-phet/js/BeakerNode.*",
+    "src/scenery-phet/js/CurvedArrowShape.*",
+    "src/scenery-phet/js/Drawer.*",
+    "src/scenery-phet/js/FaceNode.*",
+    "src/scenery-phet/js/GradientBackgroundNode.*",
+    "src/scenery-phet/js/GradientRectangle.*",
+    "src/scenery-phet/js/GridNode.*",
+    "src/scenery-phet/js/MagnifyingGlassNode.*",
+    "src/scenery-phet/js/MathSymbolFont.*",
+    "src/scenery-phet/js/MathSymbols.*",
+    "src/scenery-phet/js/MinusNode.*",
+    "src/scenery-phet/js/NumberControl.*",
+    "src/scenery-phet/js/NumberDisplay.*",
+    "src/scenery-phet/js/PauseIconShape.*",
+    "src/scenery-phet/js/PhetColorScheme.*",
+    "src/scenery-phet/js/PhetFont.*",
+    "src/scenery-phet/js/PlayIconShape.*",
+    "src/scenery-phet/js/PlusNode.*",
+    "src/scenery-phet/js/PlusShape.*",
+    "src/scenery-phet/js/ResetShape.*",
+    "src/scenery-phet/js/ReturnIcon.*",
+    "src/scenery-phet/js/SceneryPhetColors.*",
+    "src/scenery-phet/js/SceneryPhetConstants.*",
+    "src/scenery-phet/js/sceneryPhetQueryParameters.*",
+    "src/scenery-phet/js/SceneryPhetStrings.*",
+    "src/scenery-phet/js/ShadedRectangle.*",
+    "src/scenery-phet/js/ShadedSphereNode.*",
+    "src/scenery-phet/js/SimpleClockIcon.*",
+    "src/scenery-phet/js/SpinningIndicatorNode.*",
+    "src/scenery-phet/js/StarNode.*",
+    "src/scenery-phet/js/StarShape.*",
+    "src/scenery-phet/js/StatusBar.*",
+    "src/scenery-phet/js/StopIconShape.*",
+
+    /* vegas allowlist */
+    "src/vegas/js/vegas.*",
+    "src/vegas/js/AllLevelsCompletedNode.*",
+    "src/vegas/js/ElapsedTimeNode.*",
+    "src/vegas/js/FiniteStatusBar.*",
+    "src/vegas/js/GameAudioPlayer.*",
+    "src/vegas/js/GameTimer.*",
+    "src/vegas/js/InfiniteStatusBar.*",
+    "src/vegas/js/LevelCompletedNode.*",
+    "src/vegas/js/LevelSelectionButton.*",
+    "src/vegas/js/LevelSelectionButtonGroup.*",
+    "src/vegas/js/ScoreDisplayLabeledNumber.*",
+    "src/vegas/js/ScoreDisplayLabeledStars.*",
+    "src/vegas/js/ScoreDisplayNumberAndStar.*",
+    "src/vegas/js/ScoreDisplayStars.*",
+    "src/vegas/js/VegasStrings.*",
+    "src/vegas/js/getGameLevelsSchema.*",
+    "src/vegas/js/vegasQueryParameters.*",
+
+    /* tappi allowlist */
+    "src/tappi/js/tappi.*",
+    "src/tappi/js/tracking/VibrationTestEvent.*",
+    "src/tappi/js/tracking/VibrationTestEventRecorder.*",
+    "src/tappi/js/tracking/VibrationTestInputListener.*",
+    "src/tappi/js/view/VibrationChart.*",
+    "src/tappi/js/view/VibrationIndicator.*",
+    "src/tappi/js/ContinuousPatternVibrationController.*",
+    "src/tappi/js/VibrationManageriOS.*",
+    "src/tappi/js/VibrationPatterns.*",
+    "src/tappi/js/vibrationManager.*",
+
+    /* Sherpa allowlist */
+    "src/sherpa/lib/himalaya-1.1.0.js",
+    "src/sherpa/js/fontawesome-4/checkEmptySolidShape.*",
+    "src/sherpa/js/fontawesome-4/checkSquareOSolidShape.*",
+    "src/sherpa/js/fontawesome-4/warningSignShape.*",
+
+    /* Sounds */
+    "src/scenery-phet/sounds/**/*",
+    "src/tambo/sounds/**/*",
+    "src/vegas/sounds/**/*",
+
+    /* Images */
+    "src/scenery-phet/images/**/*",
+  ],
+  "exclude": [
+    /* Tests */
+    "src/phet-core/js/**/*Tests.ts",
+    "src/axon/js/**/*-tests.ts",
+    "src/dot/js/**/*Tests.ts",
+    "src/kite/js/**/*Tests.ts",
+    "src/kite/js/kite-tests.*",
+    "src/utterance-queue/js/utterance-queue-tests.*",
+    "src/scenery/js/**/*Tests.ts",
+    "src/scenery/js/scenery-tests.*",
+    "src/scenery/js/tests/**/*",
+    "src/alpenglow/js/**/*Tests.ts",
+    "src/alpenglow/js/alpenglow-tests.*",
+    "src/sun/js/sun-tests.*",
+    "src/twixt/js/twixt-tests.*",
+    "src/twixt/js/**/*Tests.ts",
+    "src/bamboo/js/**/*Tests.ts",
+    "src/bamboo/js/bamboo-tests.*",
+
+    /* Mains */
+    "src/dot/js/dot-main.*",
+    "src/dot/js/main.*",
+    "src/kite/js/kite-main.*",
+    "src/kite/js/main.*",
+    "src/utterance-queue/js/main.*",
+    "src/utterance-queue/js/utterance-queue-main.*",
+    "src/scenery/js/scenery-main.*",
+    "src/scenery/js/main.*",
+    "src/alpenglow/js/alpenglow-main.*",
+    "src/alpenglow/js/main.*",
+    "src/tambo/js/tambo-main.*",
+    "src/tambo/js/main.*",
+    "src/sun/js/sun-main.*",
+    "src/sun/js/main.*",
+    "src/twixt/js/twixt-main.*",
+    "src/twixt/js/main.*",
+    "src/bamboo/js/bamboo-main.*",
+    "src/bamboo/js/main.*",
+    "src/nitroglycerin/js/nitroglycerin-main.*",
+    "src/nitroglycerin/js/main.*",
+    "src/mobius/js/mobius-main.*",
+    "src/mobius/js/main.*",
+
+    /* Demos */
+    "src/sun/js/demo/**/*",
+    "src/tambo/js/demo/**/*",
+    "src/twixt/js/demo/**/*",
+    "src/bamboo/js/demo/**/*",
+    "src/nitroglycerin/js/demo/**/*",
+    "src/mobius/js/demo/**/*",
+
+    /* Incompatible */
+    "src/sun/js/Dialog.*",
+    "src/sun/js/Popupable.*",
+    "src/mobius/js/getAngledIcon.*",
+    "src/mobius/js/MobiusScreenView.*",
+
+    /* Bad license */
+    "src/sun/js/MenuItem.*",
+    "src/scenery-phet/js/buttons/CameraButton.*",
+    "src/scenery-phet/js/buttons/CanvasWarningNode.*",
+    "src/scenery-phet/js/buttons/ClapperboardButton.*",
+    "src/scenery-phet/js/buttons/ContextLossFailureDialog.*",
+    "src/scenery-phet/js/buttons/EyeToggleButton.*",
+    "src/scenery-phet/js/buttons/InfoButton.*",
+    "src/scenery-phet/js/buttons/MoveToTrashButton.*",
+    "src/scenery-phet/js/buttons/MoveToTrashLegendButton.*",
+    "src/scenery-phet/js/buttons/RefreshButton.*",
+    "src/scenery-phet/js/buttons/SoundToggleButton.*",
+    "src/scenery-phet/js/buttons/TrashButton.*",
+
+    /* Grunt / Node */
+    "src/dot/js/grunt/**/*",
+    "src/kite/js/grunt/**/*",
+  ],
+
+  "files": [
+    "../perennial-alias/js/phet-types.d.ts",
+    "../perennial-alias/js/phet-types-module.d.ts",
+    "../perennial-alias/node_modules/@types/jquery/index.d.ts",
+    "../perennial-alias/node_modules/@types/lodash/index.d.ts",
+    "../perennial-alias/node_modules/@types/p2/index.d.ts",
+    "../perennial-alias/node_modules/@types/pako/index.d.ts",
+    "../perennial-alias/node_modules/@types/qunit/index.d.ts",
+    "../perennial-alias/node_modules/@types/react/index.d.ts",
+    "../perennial-alias/node_modules/@types/react-dom/index.d.ts",
+    "../perennial-alias/node_modules/@types/three/index.d.ts",
+    "../perennial-alias/node_modules/@webgpu/types/dist/index.d.ts"
+  ]
+}
