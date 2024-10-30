@@ -1,6 +1,6 @@
 {
   "name": "scenerystack",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Bundle of PhET Interactive Simulations common code libraries",
   "keywords": [
     "phet",
@@ -28,7 +28,6 @@
       "module": "./dist/index.js",
       "import": "./dist/index.js"
     },
-
     "./alpenglow": {
       "module": "./dist/alpenglow.js",
       "import": "./dist/alpenglow.js"
@@ -114,7 +113,6 @@
     "@types/jquery": "~3.5.13",
     "@types/paper": "~0.12.3",
     "@types/three": "~0.137.0",
-
     "typescript": "~5.3.3",
     "grunt": "~1.5.3"
   }
