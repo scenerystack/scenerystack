@@ -180,7 +180,7 @@ import _ from 'lodash';
 
             if ( repo !== 'sherpa' ) {
               modifiedContent = `import '${getImportPath( 'src/globals.js' )}';\n${modifiedContent}`;
-              if ( !destPath.includes( 'QueryStringMachine' ) && modifiedContent.includes( 'QueryStringMachine' ) ) {
+              if ( !destPath.includes( 'QueryStringMachine' ) && !destPath.includes( 'assert/js/assert' ) && modifiedContent.includes( 'QueryStringMachine' ) ) {
                 modifiedContent = `import '${getImportPath( 'src/query-string-machine/js/QueryStringMachine.js' )}';\n${modifiedContent}`;
               }
               if ( !destPath.includes( 'PhetioIDUtils' ) && modifiedContent.includes( 'phetio' ) ) {
