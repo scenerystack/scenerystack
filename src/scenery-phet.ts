@@ -56,10 +56,22 @@ export type { KeyNodeOptions } from './scenery-phet/js/keyboard/KeyNode.js';
 export { default as TextKeyNode } from './scenery-phet/js/keyboard/TextKeyNode.js';
 export type { TextKeyNodeOptions } from './scenery-phet/js/keyboard/TextKeyNode.js';
 
+export { default as AbstractKeyAccumulator } from './scenery-phet/js/keypad/AbstractKeyAccumulator.js';
+export { default as Key } from './scenery-phet/js/keypad/Key.js';
+export type { KeyOptions } from './scenery-phet/js/keypad/Key.js';
+export { default as KeyID } from './scenery-phet/js/keypad/KeyID.js';
+export type { KeyIDValue } from './scenery-phet/js/keypad/KeyID.js';
+export { default as Keypad } from './scenery-phet/js/keypad/Keypad.js';
+export type { KeypadOptions, KeypadLayout } from './scenery-phet/js/keypad/Keypad.js';
+export { default as NumberAccumulator } from './scenery-phet/js/keypad/NumberAccumulator.js';
+export type { NumberAccumulatorOptions } from './scenery-phet/js/keypad/NumberAccumulator.js';
+
 export { default as ArrowNode } from './scenery-phet/js/ArrowNode.js';
 export type { ArrowNodeOptions } from './scenery-phet/js/ArrowNode.js';
 export { default as ArrowShape } from './scenery-phet/js/ArrowShape.js';
 export type { ArrowShapeOptions } from './scenery-phet/js/ArrowShape.js';
+export { default as BackspaceIcon } from './scenery-phet/js/BackspaceIcon.js';
+export type { BackspaceIconOptions } from './scenery-phet/js/BackspaceIcon.js';
 export { default as BeakerNode } from './scenery-phet/js/BeakerNode.js';
 export type { BeakerNodeOptions } from './scenery-phet/js/BeakerNode.js';
 export { default as CurvedArrowShape } from './scenery-phet/js/CurvedArrowShape.js';

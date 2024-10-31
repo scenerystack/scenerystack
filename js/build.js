@@ -232,6 +232,14 @@ import _ from 'lodash';
               if ( modifiedContent.includes( 'he.decode' ) ) {
                 modifiedContent = `import he from 'he';\n${modifiedContent}`;
               }
+              if ( modifiedContent.includes( 'THREE' ) ) {
+                modifiedContent = `import * as THREE from 'three';\n${modifiedContent}`;
+
+                if ( modifiedContent.includes( '.needsUpdate = true;' ) ) {
+                  modifiedContent = modifiedContent.replaceAll( 'this.attributes.position.needsUpdate = true;', '// @ts-expect-error\nthis.attributes.position.needsUpdate = true;' );
+                  modifiedContent = modifiedContent.replaceAll( 'this.attributes.normal.needsUpdate = true;', '// @ts-expect-error\nthis.attributes.normal.needsUpdate = true;' );
+                }
+              }
               if ( modifiedContent.includes( 'LineBreaker' ) ) {
                 modifiedContent = `import { LineBreaker } from 'linebreak-ts';\n${modifiedContent}`;
 

@@ -113,10 +113,12 @@
     /* scenery-phet allowlist */
     "src/scenery-phet/js/sceneryPhet.*",
     "src/scenery-phet/js/buttons/**/*",
+    "src/scenery-phet/js/keypad/**/*",
     "src/scenery-phet/js/keyboard/KeyNode.*",
     "src/scenery-phet/js/keyboard/TextKeyNode.*",
     "src/scenery-phet/js/ArrowNode.*",
     "src/scenery-phet/js/ArrowShape.*",
+    "src/scenery-phet/js/BackspaceIcon.*",
     "src/scenery-phet/js/BeakerNode.*",
     "src/scenery-phet/js/CurvedArrowShape.*",
     "src/scenery-phet/js/Drawer.*",
@@ -252,6 +254,7 @@
     "src/sun/js/Popupable.*",
     "src/mobius/js/getAngledIcon.*",
     "src/mobius/js/MobiusScreenView.*",
+    "src/scenery-phet/js/keypad/KeypadDialog.*",
 
     /* Bad license */
     "src/sun/js/MenuItem.*",
