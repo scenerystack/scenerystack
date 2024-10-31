@@ -43,8 +43,7 @@ export type { PatternStringPropertyOptions } from './axon/js/PatternStringProper
 export type { default as PhetioProperty } from './axon/js/PhetioProperty.js';
 export { default as Property } from './axon/js/Property.js';
 export type { PropertyOptions } from './axon/js/Property.js';
-export { default as PropertyStateHandler } from './axon/js/PropertyStateHandler.js';
-export { default as propertyStateHandlerSingleton } from './axon/js/propertyStateHandlerSingleton.js';
+export { default as PropertyStateHandler, propertyStateHandlerSingleton } from './axon/js/PropertyStateHandler.js';
 export { default as PropertyStatePhase } from './axon/js/PropertyStatePhase.js';
 export { default as ReadOnlyProperty } from './axon/js/ReadOnlyProperty.js';
 export type { PropertyOptions as ReadOnlyPropertyOptions, ReadOnlyPropertyState, LinkOptions } from './axon/js/ReadOnlyProperty.js';
