@@ -24,78 +24,24 @@
     "dependencies.json"
   ],
   "exports": {
-    ".": {
-      "module": "./dist/index.js",
-      "import": "./dist/index.js"
-    },
-    "./alpenglow": {
-      "module": "./dist/alpenglow.js",
-      "import": "./dist/alpenglow.js"
-    },
-    "./assert": {
-      "module": "./dist/assert.js",
-      "import": "./dist/assert.js"
-    },
-    "./axon": {
-      "module": "./dist/axon.js",
-      "import": "./dist/axon.js"
-    },
-    "./chipper": {
-      "module": "./dist/chipper.js",
-      "import": "./dist/chipper.js"
-    },
-    "./dot": {
-      "module": "./dist/dot.js",
-      "import": "./dist/dot.js"
-    },
-    "./joist": {
-      "module": "./dist/joist.js",
-      "import": "./dist/joist.js"
-    },
-    "./kite": {
-      "module": "./dist/kite.js",
-      "import": "./dist/kite.js"
-    },
-    "./mobius": {
-      "module": "./dist/mobius.js",
-      "import": "./dist/mobius.js"
-    },
-    "./phet-core": {
-      "module": "./dist/phet-core.js",
-      "import": "./dist/phet-core.js"
-    },
-    "./phetcommon": {
-      "module": "./dist/phetcommon.js",
-      "import": "./dist/phetcommon.js"
-    },
-    "./scenery": {
-      "module": "./dist/scenery.js",
-      "import": "./dist/scenery.js"
-    },
-    "./scenery-phet": {
-      "module": "./dist/scenery-phet.js",
-      "import": "./dist/scenery-phet.js"
-    },
-    "./sun": {
-      "module": "./dist/sun.js",
-      "import": "./dist/sun.js"
-    },
-    "./tandem": {
-      "module": "./dist/tandem.js",
-      "import": "./dist/tandem.js"
-    },
-    "./tappi": {
-      "module": "./dist/tappi.js",
-      "import": "./dist/tappi.js"
-    },
-    "./twixt": {
-      "module": "./dist/twixt.js",
-      "import": "./dist/twixt.js"
-    },
-    "./vegas": {
-      "module": "./dist/vegas.js",
-      "import": "./dist/vegas.js"
-    }
+    ".": "./dist/index.js",
+    "./alpenglow": "./dist/alpenglow.js",
+    "./assert": "./dist/assert.js",
+    "./axon": "./dist/axon.js",
+    "./chipper": "./dist/chipper.js",
+    "./dot": "./dist/dot.js",
+    "./joist": "./dist/joist.js",
+    "./kite": "./dist/kite.js",
+    "./mobius": "./dist/mobius.js",
+    "./phet-core": "./dist/phet-core.js",
+    "./phetcommon": "./dist/phetcommon.js",
+    "./scenery": "./dist/scenery.js",
+    "./scenery-phet": "./dist/scenery-phet.js",
+    "./sun": "./dist/sun.js",
+    "./tandem": "./dist/tandem.js",
+    "./tappi": "./dist/tappi.js",
+    "./twixt": "./dist/twixt.js",
+    "./vegas": "./dist/vegas.js"
   },
   "dependencies": {
     "lodash": "~4.17.12",
