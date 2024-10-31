@@ -6,8 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import './preload.js';
-
 export { default as vegas } from './vegas/js/vegas.js';
 export { default as AllLevelsCompletedNode } from './vegas/js/AllLevelsCompletedNode.js';
 export type { AllLevelsCompletedNodeOptions } from './vegas/js/AllLevelsCompletedNode.js';

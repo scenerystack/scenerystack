@@ -6,8 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import './preload.js';
-
 export { default as Animation } from './twixt/js/Animation.js';
 export type { AnimationOptions } from './twixt/js/Animation.js';
 export { default as DampedAnimation } from './twixt/js/DampedAnimation.js';

@@ -6,8 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import './minimal-preload.js';
-
 export { default as BinPacker, Bin } from './dot/js/BinPacker.js';
 export { default as Bounds2 } from './dot/js/Bounds2.js';
 export type { Bounds2StateObject } from './dot/js/Bounds2.js';

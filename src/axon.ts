@@ -6,8 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import './minimal-preload.js';
-
 export { default as animationFrameTimer } from './axon/js/animationFrameTimer.js';
 export { default as axon } from './axon/js/axon.js';
 export { default as BooleanProperty } from './axon/js/BooleanProperty.js';

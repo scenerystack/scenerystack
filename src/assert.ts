@@ -7,8 +7,6 @@
 
 // @ts-nocheck
 
-import './minimal-preload.js';
-
 const assert: ( condition: any, message?: string ) => void = window.assert;
 export default assert;
 

@@ -5,7 +5,5 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import './preload.js';
-
 export * from './scenery/js/imports.js';
 export { default } from './scenery/js/scenery.js';

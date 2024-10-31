@@ -123,50 +123,140 @@ import _ from 'lodash';
 
   // TODO: how do we ... remove assertions and such? maybe we build a separate dev package?
   repos.forEach( repo => {
-    fs.cpSync( `../${repo}`, `./src/${repo}`, {
-      filter: ( src, dest ) => {
-        const stats = fs.statSync( src );
-        const name = path.basename( src );
+    const copyAndModify = ( srcDir, destDir ) => {
+      fs.mkdirSync( destDir, { recursive: true } );
+
+      const entries = fs.readdirSync( srcDir, { withFileTypes: true } );
+
+      for ( const entry of entries ) {
+        const srcPath = path.join( srcDir, entry.name );
+        const destPath = path.join( destDir, entry.name );
+
+        const name = path.basename( srcPath );
 
         // We have to handle LICENSE setup somewhat differently here!
         if ( repo === 'sherpa' ) {
-          if ( stats.isDirectory() ) {
+
+          if ( entry.isDirectory() ) {
             if ( !name.includes( 'sherpa' ) && name !== 'lib' && name !== 'licenses' && name !== 'js' && name !== 'fontawesome-4' && name !== 'brands' ) {
-              return false;
+              continue;
             }
           }
           else {
-            if ( src.includes( 'lib/' ) ) {
+            if ( srcPath.includes( 'lib/' ) ) {
               if ( !requiredLibs.includes( name ) ) {
-                return false;
+                continue;
               }
 
               console.log( `including ${name}` );
             }
 
-            if ( src.includes( 'licenses/' ) ) {
+            if ( srcPath.includes( 'licenses/' ) ) {
               if ( requiredLibs.includes( name.slice( 0, -( '.txt'.length ) ) ) ) {
-                licensePaths.push( src );
-                return true;
+                licensePaths.push( srcPath );
               }
             }
           }
         }
 
-        if ( stats.isDirectory() ) {
-          return !name.includes( '.' ) && !badDirectoryNames.includes( name );
+        if ( entry.isDirectory() ) {
+          if ( !name.includes( '.' ) && !badDirectoryNames.includes( name ) ) {
+            copyAndModify( srcPath, destPath );
+          }
         }
-        else {
-          for ( const suffix of suffixes ) {
-            if ( name.endsWith( suffix ) ) {
-              return true;
+        else if ( suffixes.some( suffix => name.endsWith( suffix ) ) ) {
+          // Read, modify, and write the file if it matches the filter
+          const content = fs.readFileSync( srcPath, 'utf8' );
+
+          let modifiedContent = content;
+
+          // Modify content (mostly adding correct imports)
+          {
+            const getImportPath = fileToImport => {
+              const result = path.relative( path.dirname( destPath ), fileToImport );
+
+              return result.startsWith( '.' ) ? result : `./${result}`;
+            };
+
+            if ( repo !== 'sherpa' ) {
+              modifiedContent = `import '${getImportPath( 'src/globals.js' )}';\n${modifiedContent}`;
+              if ( !destPath.includes( 'QueryStringMachine' ) && modifiedContent.includes( 'QueryStringMachine' ) ) {
+                modifiedContent = `import '${getImportPath( 'src/query-string-machine/js/QueryStringMachine.js' )}';\n${modifiedContent}`;
+              }
+              if ( !destPath.includes( 'PhetioIDUtils' ) && modifiedContent.includes( 'phetio' ) ) {
+                modifiedContent = `import '${getImportPath( 'src/tandem/js/PhetioIDUtils.js' )}';\n${modifiedContent}`;
+              }
+              if ( !destPath.includes( 'src/assert' ) && modifiedContent.includes( 'assert' ) ) {
+                modifiedContent = `import '${getImportPath( 'src/assert/js/assert.js' )}';\n${modifiedContent}`;
+              }
+              if ( !destPath.includes( 'initialize-globals' ) && [
+                'chipper.queryParameters',
+                'chipper?.queryParameters',
+                'chipper.isProduction',
+                'chipper?.isProduction',
+                'chipper.isApp',
+                'chipper?.isApp',
+                'chipper.colorProfiles',
+                'chipper?.colorProfiles',
+                'chipper.brand',
+                'chipper?.brand',
+                'chipper.mapString',
+                'chipper?.mapString',
+                'chipper.remapLocale',
+                'chipper?.remapLocale',
+                'chipper.getValidRuntimeLocale',
+                'chipper?.getValidRuntimeLocale',
+                'chipper.checkAndRemapLocale',
+                'chipper?.checkAndRemapLocale',
+                'chipper.makeEverythingSlow',
+                'chipper?.makeEverythingSlow',
+                'chipper.makeRandomSlowness',
+                'chipper?.makeRandomSlowness',
+                'chipper.reportContinuousTestResult',
+                'chipper?.reportContinuousTestResult',
+                'phet.log',
+                'phet?.log',
+
+              ].some( str => modifiedContent.includes( str ) ) ) {
+                modifiedContent = `import '${getImportPath( 'src/chipper/js/initialize-globals.js' )}';\n${modifiedContent}`;
+              }
+              if ( modifiedContent.includes( '_.' ) ) {
+                modifiedContent = `import _ from 'lodash';\n${modifiedContent}`;
+              }
+              if ( modifiedContent.includes( '$(' ) ) {
+                modifiedContent = `import $ from 'jquery';\n${modifiedContent}`;
+              }
+              if ( modifiedContent.includes( 'paper.' ) ) {
+                modifiedContent = `import paper from 'paper';\n${modifiedContent}`;
+              }
+              if ( modifiedContent.includes( 'he.decode' ) ) {
+                modifiedContent = `import he from 'he';\n${modifiedContent}`;
+              }
+              if ( modifiedContent.includes( 'LineBreaker' ) ) {
+                modifiedContent = `import { LineBreaker } from 'linebreak-ts';\n${modifiedContent}`;
+
+                modifiedContent = modifiedContent.replace( 'lineBreaker[ Symbol.iterator ]', '// @ts-expect-error\nlineBreaker[ Symbol.iterator ]' );
+                modifiedContent = modifiedContent.replace( 'for ( const brk of lineBreaker ) {', '// @ts-expect-error\nfor ( const brk of lineBreaker ) {' );
+              }
+              if ( modifiedContent.includes( 'FlatQueue' ) ) {
+                modifiedContent = `import FlatQueue from 'flatqueue';\n${modifiedContent}`;
+              }
+              if ( modifiedContent.includes( 'fromByteArray(' ) ) {
+                modifiedContent = `import base64js from 'base64-js';const fromByteArray = base64js.fromByteArray;\n${modifiedContent}`;
+              }
+              if ( modifiedContent.includes( 'TextEncoderLite' ) ) {
+                modifiedContent = `import TextEncoder from 'text-encoder-lite';const TextEncoderLite = TextEncoder.TextEncoderLite;\n${modifiedContent}`;
+
+                modifiedContent = modifiedContent.replace( '// @ts-expect-error - fromByteArray Exterior lib', '' );
+              }
             }
           }
-          return false;
+
+          fs.writeFileSync( destPath, modifiedContent, 'utf8' );
         }
-      },
-      recursive: true
-    } );
+      }
+    };
+    copyAndModify( `../${repo}`, `./src/${repo}` );
   } );
 
   licensePaths.forEach( src => {

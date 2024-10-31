@@ -6,9 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import './preload.js';
-import './chipper/js/initialize-globals.js';
-
 export { default as ABSwitch } from './sun/js/ABSwitch.js';
 export type { ABSwitchOptions } from './sun/js/ABSwitch.js';
 export { default as AccordionBox } from './sun/js/AccordionBox.js';

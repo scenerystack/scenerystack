@@ -6,8 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import './minimal-preload.js';
-
 export { default as arrayDifference } from './phet-core/js/arrayDifference.js';
 export { default as arrayRemove } from './phet-core/js/arrayRemove.js';
 export { default as assertHasProperties } from './phet-core/js/assertHasProperties.js';

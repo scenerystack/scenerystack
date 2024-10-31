@@ -1,19 +1,10 @@
-import './minimal-preload';
-
-import $ from 'jquery';
-import paper from 'paper';
-
-// @ts-ignore
-self.$ = $;
-
-// @ts-ignore
-self.paper = paper;
-
-import './query-string-machine/js/QueryStringMachine.js';
+self.phet = self.phet || {};
+self.phet.chipper = self.phet.chipper || {};
 
 self.phet.chipper.packageObject = {
   'name': 'scenerystack'
 };
+
 self.phet.chipper.stringRepos = [
   {
     'repo': 'joist',
@@ -36,6 +27,7 @@ self.phet.chipper.stringRepos = [
     'requirejsNamespace': 'VEGAS'
   }
 ];
+
 self.phet.chipper.strings = {
   en: {
     "SCENERY_PHET/scenery-phet.title": "scenery-phet demo",
@@ -207,4 +199,3 @@ self.phet.chipper.localeData = {
     'direction': 'ltr'
   }
 };
-

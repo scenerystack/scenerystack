@@ -6,8 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import './preload.js';
-
 export { default as chipper } from './chipper/js/chipper.js';
 
 export { default as LocalizedString } from './chipper/js/LocalizedString.js';

@@ -6,8 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import './minimal-preload.js';
-
 export { default as Bucket } from './phetcommon/js/model/Bucket.js';
 export type { BucketOptions } from './phetcommon/js/model/Bucket.js';
 export { default as Fraction } from './phetcommon/js/model/Fraction.js';

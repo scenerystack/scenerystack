@@ -5,7 +5,5 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import './preload.js';
-
 const phet = self.phet;
 export default phet;

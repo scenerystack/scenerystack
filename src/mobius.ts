@@ -6,8 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import './preload.js';
-
 export { default as MobiusQueryParameters } from './mobius/js/MobiusQueryParameters.js';
 export { default as MobiusStrings } from './mobius/js/MobiusStrings.js';
 export { default as NodeTexture } from './mobius/js/NodeTexture.js';

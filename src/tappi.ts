@@ -6,8 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import './preload.js';
-
 export { default as tappi } from './tappi/js/tappi.js';
 export { default as VibrationTestEvent } from './tappi/js/tracking/VibrationTestEvent.js';
 export { default as VibrationTestEventRecorder } from './tappi/js/tracking/VibrationTestEventRecorder.js';

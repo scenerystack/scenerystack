@@ -6,9 +6,6 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import './preload.js';
-import './chipper/js/initialize-globals.js';
-
 export { default as BackButton } from './scenery-phet/js/buttons/BackButton.js';
 export type { BackButtonOptions } from './scenery-phet/js/buttons/BackButton.js';
 // export { default as CameraButton } from './scenery-phet/js/buttons/CameraButton.js'; // license issues

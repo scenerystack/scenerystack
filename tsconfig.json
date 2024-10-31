@@ -44,8 +44,7 @@
     /* types */
     "src/types/**/*",
 
-    "src/minimal-preload.ts",
-    "src/preload.ts",
+    "src/globals.ts",
 
     "src/phet-core/js/**/*",
     "src/axon/js/**/*",
