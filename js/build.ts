@@ -6,7 +6,7 @@
  *
  * Run as the following at the root of scenerystack:
  *
- * `tsx js/build.ts`
+ * `sage run js/build.ts`
  *
  * Use local references for testing.
  *
@@ -26,7 +26,7 @@ import execute from '../../perennial-alias/js/common/execute.js';
 import _ from 'lodash';
 
 ( async () => {
-  const wipeDir = ( dirname ) => {
+  const wipeDir = ( dirname: string ) => {
     if ( fs.existsSync( `./${dirname}` ) ) {
       fs.rmSync( `./${dirname}`, {
         recursive: true
@@ -113,13 +113,13 @@ import _ from 'lodash';
   const licenseJSON = JSON.parse( fs.readFileSync( '../sherpa/lib/license.json', 'utf8' ) );
 
   const requiredLibs = _.uniq( [
-    ...Object.values( webpackGlobalLibraries.default ),
+    ...Object.values( webpackGlobalLibraries ),
     ...buildJSON.common.preload,
     'sherpa/lib/big-6.2.1.js', // hah, dot Utils...
     'sherpa/lib/font-awesome-4.5.0' // manual inclusion of fontawesome-4 license
   ].filter( str => str.includes( 'sherpa' ) ).map( str => path.basename ( str ) ) );
 
-  const licensePaths = [];
+  const licensePaths: string[] = [];
 
   // TODO: how do we ... remove assertions and such? maybe we build a separate dev package?
   repos.forEach( repo => {

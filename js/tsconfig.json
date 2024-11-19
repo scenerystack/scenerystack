@@ -1,0 +1,13 @@
+/**
+ * Node for module interop
+ *
+ * @author Sam Reid (PhET Interactive Simulations)
+ * @author Michael Kauzmann (PhET Interactive Simulations)
+ */{
+  "extends": "../../perennial-alias/tsconfig/tsconfig-node.json",
+  "references": [
+    {
+      "path": "../../chipper/tsconfig/buildtools/tsconfig.json"
+    }
+  ]
+}

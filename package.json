@@ -6,7 +6,6 @@
     "phet",
     "phetsims"
   ],
-  "type": "module",
   "homepage": "https://phet.colorado.edu",
   "bugs": {
     "url": "https://github.com/scenerystack/community/issues",
