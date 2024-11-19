@@ -19,6 +19,9 @@
     "allowUmdGlobalAccess": true,
 
     "emitDeclarationOnly": false,
+
+    "jsx": "react",
+    "esModuleInterop": true
   },
   "include": [
     /* actual entry points (barrel files mostly) */
@@ -33,6 +36,7 @@
     "src/mobius.ts",
     "src/phet-core.ts",
     "src/phetcommon.ts",
+    "src/react.tsx",
     "src/scenery.ts",
     "src/scenery-phet.ts",
     "src/sun.ts",

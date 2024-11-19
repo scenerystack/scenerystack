@@ -6,7 +6,7 @@
  *
  * Run as the following at the root of scenerystack:
  *
- * `tsx js/build.js`
+ * `tsx js/build.ts`
  *
  * Use local references for testing.
  *
@@ -21,7 +21,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { default as webpackGlobalLibraries } from '../../chipper/js/common/webpackGlobalLibraries.js';
+import webpackGlobalLibraries from '../../chipper/js/common/webpackGlobalLibraries.js';
 import execute from '../../perennial-alias/js/common/execute.js';
 import _ from 'lodash';
 
@@ -113,7 +113,7 @@ import _ from 'lodash';
   const licenseJSON = JSON.parse( fs.readFileSync( '../sherpa/lib/license.json', 'utf8' ) );
 
   const requiredLibs = _.uniq( [
-    ...Object.values( webpackGlobalLibraries ),
+    ...Object.values( webpackGlobalLibraries.default ),
     ...buildJSON.common.preload,
     'sherpa/lib/big-6.2.1.js', // hah, dot Utils...
     'sherpa/lib/font-awesome-4.5.0' // manual inclusion of fontawesome-4 license

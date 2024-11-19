@@ -7,6 +7,8 @@
 
 // @ts-nocheck
 
+import './assert/js/assert.js';
+
 const assert: ( condition: any, message?: string ) => void = window.assert;
 export default assert;
 

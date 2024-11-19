@@ -25,7 +25,7 @@ export type { CheckboxOptions } from './sun/js/Checkbox.js';
 export { default as ClosestDragForwardingListener } from './sun/js/ClosestDragForwardingListener.js';
 export { default as ColorConstants } from './sun/js/ColorConstants.js';
 export { default as ComboBox } from './sun/js/ComboBox.js';
-export type { ComboBoxOptions, ComboBoxItem, ComboBoxItemNoNode, ComboBoxListPosition, ComboBoxAlign, ComboBoxAccessibleNamePropertyMap } from './sun/js/ComboBox.js';
+export type { ComboBoxOptions, ComboBoxItem, ComboBoxItemNoNode, ComboBoxListPosition, ComboBoxAlign } from './sun/js/ComboBox.js';
 export { default as ComboBoxButton } from './sun/js/ComboBoxButton.js';
 export type { ComboBoxButtonOptions, ComboBoxButtonAlign, ComboBoxButtonArrowDirection } from './sun/js/ComboBoxButton.js';
 export { default as ComboBoxListBox } from './sun/js/ComboBoxListBox.js';
