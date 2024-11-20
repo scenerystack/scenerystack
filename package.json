@@ -16,6 +16,12 @@
     "type": "git",
     "url": "https://github.com/scenerystack/scenerystack.git"
   },
+  "bin": {
+    "scenerystack": "./bin/scenerystack.js"
+  },
+  "scripts": {
+    "start": "node ./bin/scenerystack.js"
+  },
   "files": [
     "dist",
     "src",
