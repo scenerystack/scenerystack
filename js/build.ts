@@ -33,12 +33,13 @@ import _ from 'lodash';
       } );
     }
 
-    fs.mkdirSync( `./${dirname}` );
+    fs.mkdirSync( `./${dirname}`, { recursive: true } );
   };
 
   wipeDir( 'third-party-licenses' );
 
   const repos = [
+    // NOTE: repos also used for cloned checkout
     'alpenglow',
     'assert',
     'axon',
@@ -351,4 +352,33 @@ import _ from 'lodash';
 
   console.log( 'running tsc' );
   await execute( '../perennial-alias/node_modules/typescript/bin/tsc', [ '-b' ], '.' );
+
+  {
+    wipeDir( 'dist/repos' );
+
+    const cloneRepos = [
+      ...repos,
+      'babel',
+      'brand',
+      'perennial', // TODO: can we ditch this?
+      'perennial-alias',
+      'phetmarks',
+      'simula-rasa'
+    ].sort();
+
+    for ( const repo of cloneRepos ) {
+      console.log( `cloning ${repo}` );
+
+      if ( repo === 'perennial-alias' ) {
+        await execute( 'git', [ 'clone', '--depth', '1', 'https://github.com/phetsims/perennial.git', 'perennial-alias' ], './dist/repos' );
+      }
+      else {
+        await execute( 'git', [ 'clone', '--depth', '1', `https://github.com/phetsims/${repo}.git` ], './dist/repos' );
+      }
+
+      // Wipe extra git files
+      wipeDir( `dist/repos/${repo}/.git` );
+      fs.rmdirSync( `dist/repos/${repo}/.git` );
+    }
+  }
 } )();
