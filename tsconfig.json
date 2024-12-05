@@ -74,6 +74,7 @@
 
     /* Tandem allowlist */
     "src/tandem/js/types/**/*",
+    "src/tandem/js/phet-io-types.ts",
     "src/tandem/js/tandemNamespace.ts",
     "src/tandem/js/PhetioAction.ts",
     "src/tandem/js/Tandem.ts",
@@ -101,10 +102,10 @@
     "src/joist/js/i18n/**/*",
 
     /* Chipper allowlist */
-    "src/chipper/js/chipper.*",
-    "src/chipper/js/LocalizedString.ts",
-    "src/chipper/js/LocalizedStringProperty.ts",
-    "src/chipper/js/getStringModule.ts",
+    "src/chipper/js/browser/chipper.*",
+    "src/chipper/js/browser/LocalizedString.ts",
+    "src/chipper/js/browser/LocalizedStringProperty.ts",
+    "src/chipper/js/browser/getStringModule.ts",
 
     /* Phetcommon allowlist */
     "src/phetcommon/js/phetcommon.*", // namespace
