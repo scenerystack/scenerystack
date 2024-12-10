@@ -37,6 +37,7 @@
     "src/brand.ts",
     "src/chipper.ts",
     "src/dot.ts",
+    "src/init.ts",
     "src/joist.ts",
     "src/kite.ts",
     "src/mobius.ts",
@@ -320,8 +321,8 @@
   ],
 
   "files": [
-    "../perennial-alias/js/phet-types.d.ts",
-    "../perennial-alias/js/phet-types-module.d.ts",
+    "../perennial-alias/js/browser-and-node/phet-types.d.ts",
+    "../perennial-alias/js/browser-and-node/phet-types-module.d.ts",
     "../perennial-alias/node_modules/@types/jquery/index.d.ts",
     "../perennial-alias/node_modules/@types/lodash/index.d.ts",
     "../perennial-alias/node_modules/@types/p2/index.d.ts",

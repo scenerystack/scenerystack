@@ -37,6 +37,7 @@
     "./brand": "./dist/brand.js",
     "./chipper": "./dist/chipper.js",
     "./dot": "./dist/dot.js",
+    "./init": "./dist/init.js",
     "./joist": "./dist/joist.js",
     "./kite": "./dist/kite.js",
     "./mobius": "./dist/mobius.js",
