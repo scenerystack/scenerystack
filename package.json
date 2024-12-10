@@ -30,6 +30,7 @@
   ],
   "exports": {
     ".": "./dist/index.js",
+    "./adapted-from-phet": "./dist/adapted-from-phet.js",
     "./alpenglow": "./dist/alpenglow.js",
     "./assert": "./dist/assert.js",
     "./axon": "./dist/axon.js",

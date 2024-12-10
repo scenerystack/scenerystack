@@ -8,5 +8,3 @@
 
 export { default as brand } from './brand/js/brand.js';
 export type { default as TBrand } from './brand/js/TBrand.js';
-export { default as adapted_from_phet_logo_png } from './brand/adapted-from-phet/images/logo_png.js';
-export { default as adapted_from_phet_logoOnWhite_png } from './brand/adapted-from-phet/images/logoOnWhite_png.js';

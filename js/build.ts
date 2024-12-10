@@ -114,6 +114,7 @@ import _ from 'lodash';
       en: {}
     };
     const stringMetadata: Record<string, unknown> = {};
+    const stringReposInfo: { repo: string, requirejsNamespace: string }[] = [];
 
     // Scan for all locales, so we can patch things in
     const locales = [ 'en' ];
@@ -121,6 +122,8 @@ import _ from 'lodash';
     for ( const repo of stringRepos ) {
 
       const requireJSNamespace = JSON.parse( fs.readFileSync( `../${repo}/package.json`, 'utf8' ) ).phet.requirejsNamespace;
+
+      stringReposInfo.push( { repo, requirejsNamespace: requireJSNamespace } );
 
       // English data
       {
@@ -205,6 +208,7 @@ import _ from 'lodash';
     const precursor = 'window.phet = window.phet || {};window.phet.chipper = window.phet.chipper || {};';
     fs.writeFileSync( './src/babel/babel-strings.js', `${precursor}const strings = ${stringEncoding.encodeStringMapToJS( stringMap )};phet.chipper.strings = strings;export default strings;` );
     fs.writeFileSync( './src/babel/babel-metadata.js', `${precursor}const metadata = ${JSON.stringify( stringMetadata )};phet.chipper.stringMetadata = metadata;export default metadata;` );
+    fs.writeFileSync( './src/babel/babel-stringRepos.js', `${precursor}const stringRepos = ${JSON.stringify( stringReposInfo )};phet.chipper.stringRepos = stringRepos;export default stringRepos;` );
     fs.writeFileSync( './src/babel/localeData.js', `${precursor}const localeData = ${JSON.stringify( localeData )};phet.chipper.localeData = localeData;export default localeData;` );
 
     // const stringsFilename = path.normalize( `../${locale === ChipperConstants.FALLBACK_LOCALE ? '' : 'babel/'}${repo}/${repo}-strings_${locale}.json` );
@@ -333,13 +337,16 @@ import _ from 'lodash';
                 'phet?.log',
 
               ].some( str => modifiedContent.includes( str ) ) ) {
-                modifiedContent = `import '${getImportPath( 'src/chipper/js/initialize-globals.js' )}';\n${modifiedContent}`;
+                modifiedContent = `import '${getImportPath( 'src/chipper/js/browser/initialize-globals.js' )}';\n${modifiedContent}`;
               }
               if ( modifiedContent.includes( 'phet.chipper.strings' ) ) {
                 modifiedContent = `import '${getImportPath( 'src/babel/babel-strings.js' )}';\n${modifiedContent}`;
               }
               if ( modifiedContent.includes( 'phet.chipper.stringMetadata' ) ) {
                 modifiedContent = `import '${getImportPath( 'src/babel/babel-metadata.js' )}';\n${modifiedContent}`;
+              }
+              if ( modifiedContent.includes( 'phet.chipper.stringRepos' ) ) {
+                modifiedContent = `import '${getImportPath( 'src/babel/babel-stringRepos.js' )}';\n${modifiedContent}`;
               }
               if ( modifiedContent.includes( 'phet.chipper.localeData' ) ) {
                 modifiedContent = `import '${getImportPath( 'src/babel/localeData.js' )}';\n${modifiedContent}`;

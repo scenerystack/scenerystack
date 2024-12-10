@@ -30,6 +30,7 @@
   "include": [
     /* actual entry points (barrel files mostly) */
     "src/index.ts",
+    "src/adapted-from-phet.ts",
     "src/alpenglow.ts",
     "src/assert.ts",
     "src/axon.ts",
@@ -75,13 +76,13 @@
     "src/assert/js/assert.*",
     "src/joist/js/splash.*",
     "src/query-string-machine/js/QueryStringMachine.*",
-    "src/chipper/js/initialize-globals.*",
     "src/tandem/js/PhetioIDUtils.*",
-    "src/chipper/js/initialize-globals.*",
+    "src/chipper/js/browser/initialize-globals.*",
 
     /* string data */
     "src/babel/babel-strings.js",
     "src/babel/babel-metadata.js",
+    "src/babel/babel-stringRepos.js",
     "src/babel/localeData.js",
 
     /* Tandem allowlist */
@@ -119,6 +120,7 @@
     "src/brand/js/getLinks.ts",
     "src/brand/adapted-from-phet/images/logo_png.*",
     "src/brand/adapted-from-phet/images/logoOnWhite_png.*",
+    "src/brand/adapted-from-phet/images/splash_svg.*",
 
     /* Chipper allowlist */
     "src/chipper/js/browser/chipper.*",
