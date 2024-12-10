@@ -22,6 +22,7 @@
 import fs from 'fs';
 import path from 'path';
 import webpackGlobalLibraries from '../../chipper/js/common/webpackGlobalLibraries.js';
+import stringEncoding from '../../chipper/js/common/stringEncoding.js';
 import execute from '../../perennial-alias/js/common/execute.js';
 import _ from 'lodash';
 
@@ -44,12 +45,14 @@ import _ from 'lodash';
     'assert',
     'axon',
     'bamboo',
+    'brand',
     'chipper',
     'dot',
     'joist',
     'kite',
     'mobius',
     'nitroglycerin',
+    'perennial-alias',
     'phet-core',
     'phetcommon',
     'query-string-machine',
@@ -98,6 +101,115 @@ import _ from 'lodash';
     fs.writeFileSync( './dependencies.json', JSON.stringify( dependenciesJSON, null, 2 ) );
   }
 
+  // babel-strings.js
+  {
+    const stringRepos = [
+      'joist',
+      'scenery-phet',
+      'sun',
+      'vegas'
+    ];
+
+    const stringMap: Record<string, Record<string, string>> = {
+      en: {}
+    };
+    const stringMetadata: Record<string, unknown> = {};
+
+    // Scan for all locales, so we can patch things in
+    const locales = [ 'en' ];
+
+    for ( const repo of stringRepos ) {
+
+      const requireJSNamespace = JSON.parse( fs.readFileSync( `../${repo}/package.json`, 'utf8' ) ).phet.requirejsNamespace;
+
+      // English data
+      {
+        const englishFile = path.normalize( `../${repo}/${repo}-strings_en.json` );
+
+        const englishStringData = JSON.parse( fs.readFileSync( englishFile, 'utf8' ) );
+
+        const recur = ( obj: any, stringKeyPrefix: string ) => {
+          if ( obj.value && typeof obj.value === 'string' ) {
+            stringMap.en[ stringKeyPrefix ] = obj.value;
+            if ( obj.metadata ) {
+              stringMetadata[ stringKeyPrefix ] = obj.metadata;
+            }
+          }
+          for ( const key of Object.keys( obj ) ) {
+            if ( typeof obj[ key ] === 'object' ) {
+              recur( obj[ key ], `${stringKeyPrefix}${stringKeyPrefix.endsWith( '/' ) ? '' : '.'}${key}` );
+            }
+          }
+        };
+        recur( englishStringData, `${requireJSNamespace}/` );
+      }
+
+      // Translated data (if it has any ... note sun has no translation directories)
+      if ( fs.existsSync( `../babel/${repo}` ) ) {
+        const potentialFiles = fs.readdirSync( `../babel/${repo}` ).filter( file => file.startsWith( `${repo}-strings_` ) && file.endsWith( '.json' ) );
+
+        for ( const file of potentialFiles ) {
+          const locale = file.slice( `${repo}-strings_`.length, -'.json'.length );
+          if ( !locales.includes( locale ) ) {
+            locales.push( locale );
+          }
+
+          const stringData = JSON.parse( fs.readFileSync( `../babel/${repo}/${file}`, 'utf8' ) );
+
+          stringMap[ locale ] = stringMap[ locale ] || {};
+          for ( const key of Object.keys( stringData ) ) {
+            const fullKey = `${requireJSNamespace}/${key}`;
+
+            // Only translate things with English values
+            if ( typeof stringData[ key ].value === 'string' && stringMap.en[ fullKey ] ) {
+              stringMap[ locale ][ fullKey ] = stringData[ key ].value;
+            }
+          }
+        }
+      }
+    }
+
+    const localeData = JSON.parse( fs.readFileSync( '../babel/localeData.json', 'utf8' ) );
+
+    // Stub in translations as required (for the stringMap compression)
+    {
+
+      const localeFallbacks = ( locale: string ): string[] => {
+        return [
+          ...( locale !== 'en' ? [ locale ] : [] ),
+          ...( localeData[ locale ].fallbackLocales || [] ),
+          'en'
+        ];
+      };
+
+      // Handle all of our English keys
+      for ( const key of Object.keys( stringMap.en ) ) {
+        for ( const locale of locales ) {
+          if ( !stringMap[ locale ][ key ] ) {
+            for ( const fallback of localeFallbacks( locale ) ) {
+              if ( stringMap[ fallback ][ key ] ) {
+                stringMap[ locale ][ key ] = stringMap[ fallback ][ key ];
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // console.log( stringMap );
+    // console.log( stringMetadata );
+
+    fs.mkdirSync( './src/babel', { recursive: true } );
+
+    const precursor = 'window.phet = window.phet || {};window.phet.chipper = window.phet.chipper || {};';
+    fs.writeFileSync( './src/babel/babel-strings.js', `${precursor}const strings = ${stringEncoding.encodeStringMapToJS( stringMap )};phet.chipper.strings = strings;export default strings;` );
+    fs.writeFileSync( './src/babel/babel-metadata.js', `${precursor}const metadata = ${JSON.stringify( stringMetadata )};phet.chipper.stringMetadata = metadata;export default metadata;` );
+    fs.writeFileSync( './src/babel/localeData.js', `${precursor}const localeData = ${JSON.stringify( localeData )};phet.chipper.localeData = localeData;export default localeData;` );
+
+    // const stringsFilename = path.normalize( `../${locale === ChipperConstants.FALLBACK_LOCALE ? '' : 'babel/'}${repo}/${repo}-strings_${locale}.json` );
+  }
+
   const badDirectoryNames = [
     'build',
     'dist',
@@ -117,7 +229,8 @@ import _ from 'lodash';
     ...Object.values( webpackGlobalLibraries ),
     ...buildJSON.common.preload,
     'sherpa/lib/big-6.2.1.js', // hah, dot Utils...
-    'sherpa/lib/font-awesome-4.5.0' // manual inclusion of fontawesome-4 license
+    'sherpa/lib/font-awesome-4.5.0', // manual inclusion of fontawesome-4 license
+    'sherpa/lib/game-up-camera-1.0.0.js'
   ].filter( str => str.includes( 'sherpa' ) ).map( str => path.basename ( str ) ) );
 
   const licensePaths: string[] = [];
@@ -139,7 +252,8 @@ import _ from 'lodash';
         if ( repo === 'sherpa' ) {
 
           if ( entry.isDirectory() ) {
-            if ( !name.includes( 'sherpa' ) && name !== 'lib' && name !== 'licenses' && name !== 'js' && name !== 'fontawesome-4' && name !== 'brands' ) {
+            // TODO: BAD LICENSE fontawesome-5
+            if ( !name.includes( 'sherpa' ) && name !== 'lib' && name !== 'licenses' && name !== 'js' && name !== 'fontawesome-4' && name !== 'fontawesome-5' && name !== 'brands' ) {
               continue;
             }
           }
@@ -221,6 +335,15 @@ import _ from 'lodash';
               ].some( str => modifiedContent.includes( str ) ) ) {
                 modifiedContent = `import '${getImportPath( 'src/chipper/js/initialize-globals.js' )}';\n${modifiedContent}`;
               }
+              if ( modifiedContent.includes( 'phet.chipper.strings' ) ) {
+                modifiedContent = `import '${getImportPath( 'src/babel/babel-strings.js' )}';\n${modifiedContent}`;
+              }
+              if ( modifiedContent.includes( 'phet.chipper.stringMetadata' ) ) {
+                modifiedContent = `import '${getImportPath( 'src/babel/babel-metadata.js' )}';\n${modifiedContent}`;
+              }
+              if ( modifiedContent.includes( 'phet.chipper.localeData' ) ) {
+                modifiedContent = `import '${getImportPath( 'src/babel/localeData.js' )}';\n${modifiedContent}`;
+              }
               if ( modifiedContent.includes( '_.' ) ) {
                 modifiedContent = `import _ from 'lodash';\n${modifiedContent}`;
               }
@@ -232,6 +355,21 @@ import _ from 'lodash';
               }
               if ( modifiedContent.includes( 'he.decode' ) ) {
                 modifiedContent = `import he from 'he';\n${modifiedContent}`;
+              }
+              if ( modifiedContent.includes( 'Math.seedrandom' ) ) {
+                modifiedContent = `import 'seedrandom';\n${modifiedContent}`;
+
+                modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error\s+assert && assert\( Math\.seedrandom/g, 'assert && assert( Math.seedrandom' );
+                modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error\s+this\.seedrandom = Math\.seedrandom/g, 'this.seedrandom = Math.seedrandom' );
+              }
+              if ( modifiedContent.includes( 'window.saveAs( blob, filename )' ) ) {
+                modifiedContent = `import saveAs from 'file-saver';\n${modifiedContent}`;
+
+                modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error when typescript knows anything about window\. \. \.\.\s+window\.saveAs\( blob, filename \);/g, 'saveAs( blob, filename );' );
+
+                // // @ts-expect-error when typescript knows anything about window. . ..
+                // window.saveAs( blob, filename );
+
               }
               if ( modifiedContent.includes( 'THREE' ) ) {
                 modifiedContent = `import * as THREE from 'three';\n${modifiedContent}`;
@@ -249,6 +387,8 @@ import _ from 'lodash';
               }
               if ( modifiedContent.includes( 'FlatQueue' ) ) {
                 modifiedContent = `import FlatQueue from 'flatqueue';\n${modifiedContent}`;
+
+                modifiedContent = modifiedContent.replaceAll( 'new window.FlatQueue()', 'new FlatQueue()' );
               }
               if ( modifiedContent.includes( 'fromByteArray(' ) ) {
                 modifiedContent = `import base64js from 'base64-js';const fromByteArray = base64js.fromByteArray;\n${modifiedContent}`;
@@ -359,9 +499,7 @@ import _ from 'lodash';
     const cloneRepos = [
       ...repos,
       'babel',
-      'brand',
       'perennial', // TODO: can we ditch this?
-      'perennial-alias',
       'phetmarks',
       'simula-rasa'
     ].sort();

@@ -2,7 +2,9 @@ dist/
 src/alpenglow/
 src/assert/
 src/axon/
+src/babel/
 src/bamboo/
+src/brand/
 src/chipper/
 src/dot/
 src/griddle/
@@ -10,6 +12,7 @@ src/joist/
 src/kite/
 src/mobius/
 src/nitroglycerin/
+src/perennial-alias/
 src/phet-core/
 src/phetcommon/
 src/query-string-machine/

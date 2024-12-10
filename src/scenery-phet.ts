@@ -32,6 +32,10 @@ export { default as RecordStopButton } from './scenery-phet/js/buttons/RecordSto
 export type { RecordStopButtonOptions } from './scenery-phet/js/buttons/RecordStopButton.js';
 // export { default as RefreshButton } from './scenery-phet/js/buttons/RefreshButton.js'; // license issues
 // export type { RefreshButtonOptions } from './scenery-phet/js/buttons/RefreshButton.js';
+export { default as ResetAllButton } from './scenery-phet/js/buttons/ResetAllButton.js';
+export type { ResetAllButtonOptions } from './scenery-phet/js/buttons/ResetAllButton.js';
+export { default as ResetButton } from './scenery-phet/js/buttons/ResetButton.js';
+export type { ResetButtonOptions } from './scenery-phet/js/buttons/ResetButton.js';
 export { default as ReturnButton } from './scenery-phet/js/buttons/ReturnButton.js';
 export type { ReturnButtonOptions } from './scenery-phet/js/buttons/ReturnButton.js';
 // export { default as SoundToggleButton } from './scenery-phet/js/buttons/SoundToggleButton.js'; // license issues
