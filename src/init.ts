@@ -18,6 +18,8 @@ export type InitOptions = {
 };
 
 const init = ( options: InitOptions ) => {
+  self.phet = self.phet || {};
+  self.phet.chipper = self.phet.chipper || {};
   self.phet.chipper.project = options.name;
   self.phet.chipper.version = options.version;
   self.phet.chipper.brand = options.brand ?? 'adapted-from-phet';
@@ -31,6 +33,12 @@ const init = ( options: InitOptions ) => {
 
   // @ts-expect-error
   self.PHET_SPLASH_DATA_URI = options.splashDataURI;
+
+  // NOTE: Do not collapse these, since we don't want an auto import added
+  const chipperTest = phet.chipper;
+  if ( chipperTest.queryParameters ) {
+    console.log( 'init() ran after other modules, e.g. initialize-globals' );
+  }
 };
 
 export { init };
