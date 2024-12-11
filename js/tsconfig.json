@@ -9,5 +9,11 @@
     {
       "path": "../../chipper/tsconfig/buildtools/tsconfig.json"
     }
-  ]
+  ],
+  "compilerOptions": {
+    "lib": [
+      "es2023",
+      "dom"
+    ],
+  },
 }

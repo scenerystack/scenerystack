@@ -25,6 +25,7 @@ import webpackGlobalLibraries from '../../chipper/js/common/webpackGlobalLibrari
 import stringEncoding from '../../chipper/js/common/stringEncoding.js';
 import execute from '../../perennial-alias/js/common/execute.js';
 import _ from 'lodash';
+import { StringFileMap } from '../../chipper/js/common/ChipperStringUtils.js';
 
 ( async () => {
   const wipeDir = ( dirname: string ) => {
@@ -74,7 +75,7 @@ import _ from 'lodash';
 
   // dependencies.json
   {
-    const dependenciesJSON = {
+    const dependenciesJSON: Record<string, string | { sha: string | null, branch: string | null }> = {
       comment: `# ${new Date().toString()}`
     };
 
@@ -206,7 +207,7 @@ import _ from 'lodash';
     fs.mkdirSync( './src/babel', { recursive: true } );
 
     const precursor = 'window.phet = window.phet || {};window.phet.chipper = window.phet.chipper || {};';
-    fs.writeFileSync( './src/babel/babel-strings.js', `${precursor}const strings = ${stringEncoding.encodeStringMapToJS( stringMap )};phet.chipper.strings = strings;export default strings;` );
+    fs.writeFileSync( './src/babel/babel-strings.js', `${precursor}const strings = ${stringEncoding.encodeStringMapToJS( stringMap as StringFileMap )};phet.chipper.strings = strings;export default strings;` );
     fs.writeFileSync( './src/babel/babel-metadata.js', `${precursor}const metadata = ${JSON.stringify( stringMetadata )};phet.chipper.stringMetadata = metadata;export default metadata;` );
     fs.writeFileSync( './src/babel/babel-stringRepos.js', `${precursor}const stringRepos = ${JSON.stringify( stringReposInfo )};phet.chipper.stringRepos = stringRepos;export default stringRepos;` );
     fs.writeFileSync( './src/babel/localeData.js', `${precursor}const localeData = ${JSON.stringify( localeData )};phet.chipper.localeData = localeData;export default localeData;` );
@@ -235,13 +236,31 @@ import _ from 'lodash';
     'sherpa/lib/big-6.2.1.js', // hah, dot Utils...
     'sherpa/lib/font-awesome-4.5.0', // manual inclusion of fontawesome-4 license
     'sherpa/lib/game-up-camera-1.0.0.js'
-  ].filter( str => str.includes( 'sherpa' ) ).map( str => path.basename ( str ) ) );
+  ].filter( str => str.includes( 'sherpa' ) ).map( str => path.basename ( str ) ) ).filter( file => {
+    // package.json dependencies
+    if ( [
+      'paper-js',
+      'lodash',
+      'jquery',
+      'he-',
+      'flatqueue',
+      'linebreak',
+      'base64',
+      'FileSaver',
+      'seedrandom',
+      'TextEncoderLite'
+    ].some( search => file.includes( search ) ) ) {
+      return false;
+    }
+
+    return true;
+  } );
 
   const licensePaths: string[] = [];
 
   // TODO: how do we ... remove assertions and such? maybe we build a separate dev package?
   repos.forEach( repo => {
-    const copyAndModify = ( srcDir, destDir ) => {
+    const copyAndModify = ( srcDir: string, destDir: string ) => {
       fs.mkdirSync( destDir, { recursive: true } );
 
       const entries = fs.readdirSync( srcDir, { withFileTypes: true } );
@@ -291,7 +310,7 @@ import _ from 'lodash';
 
           // Modify content (mostly adding correct imports)
           {
-            const getImportPath = fileToImport => {
+            const getImportPath = ( fileToImport: string ) => {
               const result = path.relative( path.dirname( destPath ), fileToImport );
 
               return result.startsWith( '.' ) ? result : `./${result}`;
@@ -422,7 +441,7 @@ import _ from 'lodash';
 
   // type=module compatibility ... lots of very hacky things for vite build to work, since the detection code in each
   // library seems to go absolutely haywire.
-  const patch = ( file, before, after ) => {
+  const patch = ( file: string, before: string, after: string ) => {
     const qsm = fs.readFileSync( file, 'utf-8' );
     fs.writeFileSync( file, qsm.replace( before, after ) );
   };
@@ -437,54 +456,9 @@ import _ from 'lodash';
     `window.QueryStringMachine = factory();`
   );
   patch(
-    './src/sherpa/lib/he-1.1.1.js',
-    `}(this));`,
-    `}(window));`
-  );
-  patch(
-    './src/sherpa/lib/he-1.1.1.js',
-    `typeof define == 'function'`,
-    `false`
-  );
-  patch(
-    './src/sherpa/lib/he-1.1.1.js',
-    `freeExports && !freeExports.nodeType`,
-    `false`
-  );
-  patch(
-    './src/sherpa/lib/lodash-4.17.4.js',
-    `}.call(this));`,
-    `root._ = _;}.call(window));`
-  );
-  patch(
     './src/sherpa/lib/himalaya-1.1.0.js',
     `module.exports=f()`,
     `window.himalaya=f()`
-  );
-  patch(
-    './src/sherpa/lib/jquery-2.1.0.js',
-    `module.exports = `,
-    `window.$ = `
-  );
-  patch(
-    './src/sherpa/lib/paper-js-0.12.17.js',
-    `}.call(this`,
-    `}.call(window`
-  );
-  patch(
-    './src/sherpa/lib/paper-js-0.12.17.js',
-    `require('./node/extend.js')(paper);`,
-    ``
-  );
-  patch(
-    './src/sherpa/lib/paper-js-0.12.17.js',
-    `module.exports = `,
-    `window.paper = `
-  );
-  patch(
-    './src/sherpa/lib/paper-js-0.12.17.js',
-    `require('./node/self.js')`,
-    `window.self`
   );
   patch(
     './src/sherpa/lib/big-6.2.1.js',
@@ -497,33 +471,7 @@ import _ from 'lodash';
     ``
   );
 
+  // Use tsc to generate the files we need.
   console.log( 'running tsc' );
   await execute( '../perennial-alias/node_modules/typescript/bin/tsc', [ '-b' ], '.' );
-
-  {
-    wipeDir( 'dist/repos' );
-
-    const cloneRepos = [
-      ...repos,
-      'babel',
-      'perennial', // TODO: can we ditch this?
-      'phetmarks',
-      'simula-rasa'
-    ].sort();
-
-    for ( const repo of cloneRepos ) {
-      console.log( `cloning ${repo}` );
-
-      if ( repo === 'perennial-alias' ) {
-        await execute( 'git', [ 'clone', '--depth', '1', 'https://github.com/phetsims/perennial.git', 'perennial-alias' ], './dist/repos' );
-      }
-      else {
-        await execute( 'git', [ 'clone', '--depth', '1', `https://github.com/phetsims/${repo}.git` ], './dist/repos' );
-      }
-
-      // Wipe extra git files
-      wipeDir( `dist/repos/${repo}/.git` );
-      fs.rmdirSync( `dist/repos/${repo}/.git` );
-    }
-  }
 } )();
