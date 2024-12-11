@@ -11,7 +11,7 @@
     "url": "https://github.com/scenerystack/community/issues",
     "email": "phethelp@colorado.edu"
   },
-  "license": "MIT",
+  "license": "(MIT AND ISC AND OFL-1.1 AND CC-BY-4.0 AND Apache-2.0)",
   "repository": {
     "type": "git",
     "url": "https://github.com/scenerystack/scenerystack.git"
