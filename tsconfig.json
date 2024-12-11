@@ -303,17 +303,18 @@
 
     /* Bad license */
 //    "src/sun/js/MenuItem.*", // TODO: BAD LICENSING
-//    "src/scenery-phet/js/buttons/CameraButton.*", // TODO: BAD LICENSING
+    "src/scenery-phet/js/buttons/CameraButton.*", // TODO: BAD LICENSING
 //    "src/scenery-phet/js/buttons/CanvasWarningNode.*", // TODO: BAD LICENSING
-//    "src/scenery-phet/js/buttons/ClapperboardButton.*", // TODO: BAD LICENSING
+    "src/scenery-phet/js/buttons/ClapperboardButton.*", // TODO: BAD LICENSING
 //    "src/scenery-phet/js/buttons/ContextLossFailureDialog.*", // TODO: BAD LICENSING
-//    "src/scenery-phet/js/buttons/EyeToggleButton.*", // TODO: BAD LICENSING
-//    "src/scenery-phet/js/buttons/InfoButton.*", // TODO: BAD LICENSING
-//    "src/scenery-phet/js/buttons/MoveToTrashButton.*", // TODO: BAD LICENSING
-//    "src/scenery-phet/js/buttons/MoveToTrashLegendButton.*", // TODO: BAD LICENSING
-//    "src/scenery-phet/js/buttons/RefreshButton.*", // TODO: BAD LICENSING
-//    "src/scenery-phet/js/buttons/SoundToggleButton.*", // TODO: BAD LICENSING
-//    "src/scenery-phet/js/buttons/TrashButton.*", // TODO: BAD LICENSING
+    "src/scenery-phet/js/buttons/EyeToggleButton.*", // TODO: BAD LICENSING
+//    "src/joist/js/buttons/HomeButton.*", // TODO: BAD LICENSING
+    "src/scenery-phet/js/buttons/InfoButton.*", // TODO: BAD LICENSING
+    "src/scenery-phet/js/buttons/MoveToTrashButton.*", // TODO: BAD LICENSING
+    "src/scenery-phet/js/buttons/MoveToTrashLegendButton.*", // TODO: BAD LICENSING
+    "src/scenery-phet/js/buttons/RefreshButton.*", // TODO: BAD LICENSING
+    "src/scenery-phet/js/buttons/SoundToggleButton.*", // TODO: BAD LICENSING
+    "src/scenery-phet/js/buttons/TrashButton.*", // TODO: BAD LICENSING
 
     /* Grunt / Node */
     "src/dot/js/grunt/**/*",
