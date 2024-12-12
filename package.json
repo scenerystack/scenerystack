@@ -1,15 +1,18 @@
 {
   "name": "scenerystack",
   "version": "0.0.9",
-  "description": "Bundle of PhET Interactive Simulations common code libraries",
+  "description": "Bundle of SceneryStack libraries, a Typescript development framework for creating multimodal, accessible HTML5 web interactives.",
   "keywords": [
-    "phet",
-    "phetsims"
+    "JavaScript",
+    "framework",
+    "TypeScript",
+    "accessibility",
+    "phet"
   ],
-  "homepage": "https://phet.colorado.edu",
+  "homepage": "https://scenerystack.org/",
   "bugs": {
     "url": "https://github.com/scenerystack/community/issues",
-    "email": "phethelp@colorado.edu"
+    "email": "scenerstackjs@colorado.edu"
   },
   "license": "(MIT AND ISC AND OFL-1.1 AND CC-BY-4.0 AND Apache-2.0)",
   "repository": {
