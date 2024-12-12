@@ -1,6 +1,6 @@
 {
   "name": "scenerystack",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "Bundle of PhET Interactive Simulations common code libraries",
   "keywords": [
     "phet",
@@ -63,7 +63,6 @@
     "linebreak-ts": "~1.0.2",
     "lodash": "~4.17.12",
     "paper": "~0.12.17",
-    "react": "^18.3.1",
     "seedrandom": "~2.4.2",
     "text-encoder-lite": "~2.0.0",
     "three": "^0.104.0"
@@ -79,5 +78,13 @@
     "@types/three": "~0.137.0",
     "typescript": "~5.3.3",
     "grunt": "~1.5.3"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1"
+  },
+"peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
   }
 }
