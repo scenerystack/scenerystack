@@ -321,9 +321,6 @@ import { StringFileMap } from '../../chipper/js/common/ChipperStringUtils.js';
               if ( !destPath.includes( 'QueryStringMachine' ) && !destPath.includes( 'assert/js/assert' ) && modifiedContent.includes( 'QueryStringMachine' ) ) {
                 modifiedContent = `import '${getImportPath( 'src/query-string-machine/js/QueryStringMachine.js' )}';\n${modifiedContent}`;
               }
-              if ( !destPath.includes( 'PhetioIDUtils' ) && modifiedContent.includes( 'phetio' ) ) {
-                modifiedContent = `import '${getImportPath( 'src/tandem/js/PhetioIDUtils.js' )}';\n${modifiedContent}`;
-              }
               if ( !destPath.includes( 'src/assert' ) && modifiedContent.includes( 'assert' ) ) {
                 modifiedContent = `import '${getImportPath( 'src/assert/js/assert.js' )}';\n${modifiedContent}`;
               }
