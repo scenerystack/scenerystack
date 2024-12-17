@@ -46,7 +46,6 @@
     "./mobius": "./dist/mobius.js",
     "./phet-core": "./dist/phet-core.js",
     "./phetcommon": "./dist/phetcommon.js",
-    "./react": "./dist/react.js",
     "./scenery": "./dist/scenery.js",
     "./scenery-phet": "./dist/scenery-phet.js",
     "./sim": "./dist/sim.js",
@@ -76,18 +75,8 @@
     "@types/he": "~1.1.0",
     "@types/jquery": "~3.5.13",
     "@types/paper": "~0.12.3",
-    "@types/react": "^18.3.12",
     "@types/seedrandom": "~2.4.2",
     "@types/three": "~0.137.0",
-    "typescript": "~5.3.3",
-    "grunt": "~1.5.3"
-  },
-  "peerDependencies": {
-    "react": "^18.3.1"
-  },
-"peerDependenciesMeta": {
-    "react": {
-      "optional": true
-    }
+    "typescript": "~5.3.3"
   }
 }
