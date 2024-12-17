@@ -126,6 +126,7 @@
     "src/chipper/js/browser/LocalizedString.ts",
     "src/chipper/js/browser/LocalizedStringProperty.ts",
     "src/chipper/js/browser/getStringModule.ts",
+    "src/chipper/js/browser/MipmapElement.*",
 
     /* Phetcommon allowlist */
     "src/phetcommon/js/phetcommon.*", // namespace
