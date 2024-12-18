@@ -187,6 +187,7 @@
     "src/scenery-phet/js/StatusBar.*",
     "src/scenery-phet/js/StopIconShape.*",
     "src/scenery-phet/js/TriangleNode.*",
+    "src/scenery-phet/js/isResettingAllProperty.*",
 
     /* perennial-alias allowlist */
     "src/perennial-alias/js/browser-and-node/affirm.ts",
