@@ -297,6 +297,26 @@ import { StringFileMap } from '../../chipper/js/common/ChipperStringUtils.js';
           }
         }
 
+        if ( srcPath.includes( 'alpenglow/doc/' ) ) {
+          continue;
+        }
+        if ( [
+          // includes griddle!!!
+          'tappi/js/demo/patterns/PatternsScreen',
+          'tappi/js/demo/patterns/view/PatternsScreenView',
+          'tappi/js/view/VibrationChart',
+          'tappi/js/main',
+
+          // includes icons that don't exist
+          'sherpa/js/fontawesome-5/iconList.js',
+
+          // has phetioEngine
+          'joist/js/simLauncher.ts',
+          'chipper/js/browser/sim-tests/qunitStart.js'
+        ].some( path => srcPath.includes( path ) ) ) {
+          continue;
+        }
+
         if ( entry.isDirectory() ) {
           if ( !name.includes( '.' ) && !badDirectoryNames.includes( name ) ) {
             copyAndModify( srcPath, destPath );

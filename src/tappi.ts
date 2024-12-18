@@ -10,7 +10,7 @@ export { default as tappi } from './tappi/js/tappi.js';
 export { default as VibrationTestEvent } from './tappi/js/tracking/VibrationTestEvent.js';
 export { default as VibrationTestEventRecorder } from './tappi/js/tracking/VibrationTestEventRecorder.js';
 export { default as VibrationTestInputListener } from './tappi/js/tracking/VibrationTestInputListener.js';
-export { default as VibrationChart } from './tappi/js/view/VibrationChart.js';
+// export { default as VibrationChart } from './tappi/js/view/VibrationChart.js'; // includes griddle? not included
 export { default as VibrationIndicator } from './tappi/js/view/VibrationIndicator.js';
 export { default as ContinuousPatternVibrationController } from './tappi/js/ContinuousPatternVibrationController.js';
 export type { ContinuousPatternVibrationControllerOptions } from './tappi/js/ContinuousPatternVibrationController.js';
