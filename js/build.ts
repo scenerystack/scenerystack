@@ -207,10 +207,29 @@ import { StringFileMap } from '../../chipper/js/common/ChipperStringUtils.js';
     fs.mkdirSync( './src/babel', { recursive: true } );
 
     const precursor = 'window.phet = window.phet || {};window.phet.chipper = window.phet.chipper || {};';
-    fs.writeFileSync( './src/babel/babel-strings.js', `${precursor}const strings = ${stringEncoding.encodeStringMapToJS( stringMap as StringFileMap )};phet.chipper.strings = strings;export default strings;` );
-    fs.writeFileSync( './src/babel/babel-metadata.js', `${precursor}const metadata = ${JSON.stringify( stringMetadata )};phet.chipper.stringMetadata = metadata;export default metadata;` );
-    fs.writeFileSync( './src/babel/babel-stringRepos.js', `${precursor}const stringRepos = ${JSON.stringify( stringReposInfo )};phet.chipper.stringRepos = stringRepos;export default stringRepos;` );
-    fs.writeFileSync( './src/babel/localeData.js', `${precursor}const localeData = ${JSON.stringify( localeData )};phet.chipper.localeData = localeData;export default localeData;` );
+    fs.writeFileSync( './src/babel/babel-strings.js', `${precursor}
+const strings = ${stringEncoding.encodeStringMapToJS( stringMap as StringFileMap )};
+phet.chipper.strings = strings;
+export default strings;
+if ( phet.chipper.availableLocales ) { 
+  Object.keys( strings ).forEach( locale => {
+    if ( !phet.chipper.availableLocales.includes( locale ) ) {
+      delete strings[ locale ];
+    }
+  } );
+}` );
+    fs.writeFileSync( './src/babel/babel-metadata.js', `${precursor}
+const metadata = ${JSON.stringify( stringMetadata )};
+phet.chipper.stringMetadata = metadata;
+export default metadata;` );
+    fs.writeFileSync( './src/babel/babel-stringRepos.js', `${precursor}
+const stringRepos = ${JSON.stringify( stringReposInfo )};
+phet.chipper.stringRepos = stringRepos;
+export default stringRepos;` );
+    fs.writeFileSync( './src/babel/localeData.js', `${precursor}
+const localeData = ${JSON.stringify( localeData )};
+phet.chipper.localeData = localeData;
+export default localeData;` );
 
     // const stringsFilename = path.normalize( `../${locale === ChipperConstants.FALLBACK_LOCALE ? '' : 'babel/'}${repo}/${repo}-strings_${locale}.json` );
   }

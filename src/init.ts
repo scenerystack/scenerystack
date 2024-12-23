@@ -13,6 +13,7 @@ export type InitOptions = {
 
   brand?: string;
   locale?: string;
+  availableLocales?: string[];
   isDebugBuild?: boolean;
   allowLocaleSwitching?: boolean;
 };
@@ -26,6 +27,7 @@ const init = ( options: InitOptions ) => {
   self.phet.chipper.locale = options.locale ?? 'en';
   self.phet.chipper.isDebugBuild = options.isDebugBuild ?? false;
   self.phet.chipper.allowLocaleSwitching = options.allowLocaleSwitching ?? true;
+  self.phet.chipper.availableLocales = options.availableLocales;
   self.phet.chipper.packageObject = {
     name: options.name,
     version: options.version

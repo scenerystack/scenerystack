@@ -12,6 +12,8 @@ export { default as Dialog } from './sun/js/Dialog.js';
 export type { DialogOptions } from './sun/js/Dialog.js';
 export { default as Screen } from './joist/js/Screen.js';
 export type { ScreenOptions } from './joist/js/Screen.js';
+export { default as ScreenIcon } from './joist/js/ScreenIcon.js';
+export type { ScreenIconOptions } from './joist/js/ScreenIcon.js';
 export { default as ScreenView } from './joist/js/ScreenView.js';
 export type { ScreenViewOptions } from './joist/js/ScreenView.js';
 export { default as Sim } from './joist/js/Sim.js';

@@ -129,5 +129,10 @@ export type { StarShapeOptions } from './scenery-phet/js/StarShape.js';
 export { default as StatusBar } from './scenery-phet/js/StatusBar.js';
 export type { StatusBarOptions } from './scenery-phet/js/StatusBar.js';
 export { default as StopIconShape } from './scenery-phet/js/StopIconShape.js';
+export { default as TimeControlNode } from './scenery-phet/js/TimeControlNode.js';
+export type { TimeControlNodeOptions } from './scenery-phet/js/TimeControlNode.js';
+export { default as TimeSpeed } from './scenery-phet/js/TimeSpeed.js';
+export { default as TimeSpeedRadioButtonGroup } from './scenery-phet/js/TimeSpeedRadioButtonGroup.js';
+export type { TimeSpeedRadioButtonGroupOptions } from './scenery-phet/js/TimeSpeedRadioButtonGroup.js';
 
 export { default as sceneryPhet } from './scenery-phet/js/sceneryPhet.js';
