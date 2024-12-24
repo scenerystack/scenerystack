@@ -406,7 +406,7 @@ export default localeData;` );
               if ( modifiedContent.includes( 'phet.chipper.localeData' ) ) {
                 modifiedContent = `import '${getImportPath( 'src/babel/localeData.js' )}';\n${modifiedContent}`;
               }
-              if ( modifiedContent.includes( '_.' ) ) {
+              if ( modifiedContent.includes( '_.' ) && !modifiedContent.includes( 'import _ ' ) ) {
                 modifiedContent = `import _ from 'lodash';\n${modifiedContent}`;
               }
               if ( modifiedContent.includes( '$(' ) ) {
