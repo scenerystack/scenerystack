@@ -19,7 +19,7 @@ export type { ScreenViewOptions } from './joist/js/ScreenView.js';
 export { default as Sim } from './joist/js/Sim.js';
 export type { SimOptions } from './joist/js/Sim.js';
 
-export const onReadyToLaunch = ( callback: () => void ) => {
+export const onReadyToLaunch = ( callback: () => void ): void => {
   const unlockLaunch = asyncLoader.createLock( { name: 'launch' } );
 
   // Add listener before unlocking the launch lock

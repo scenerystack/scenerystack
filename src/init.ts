@@ -18,7 +18,7 @@ export type InitOptions = {
   allowLocaleSwitching?: boolean;
 };
 
-const init = ( options: InitOptions ) => {
+const init = ( options: InitOptions ): void => {
   self.phet = self.phet || {};
   self.phet.chipper = self.phet.chipper || {};
   self.phet.chipper.project = options.name;

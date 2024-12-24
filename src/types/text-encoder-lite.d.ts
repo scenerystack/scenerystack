@@ -1,8 +1,16 @@
-declare module "text-encoder-lite" {
+// Copyright 2024, University of Colorado Boulder
+
+/**
+ * Declared globals for text-encoder-lite
+ *
+ * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ */
+
+declare module 'text-encoder-lite' {
   export class TextEncoderLite {
-    encode( s: string ): Uint8Array;
+    public encode( s: string ): Uint8Array;
   }
   export class TextDecoderLite {
-    decode( buffer: Uint8Array ): string;
+    public decode( buffer: Uint8Array ): string;
   }
 }
