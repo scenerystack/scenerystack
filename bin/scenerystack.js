@@ -1,27 +1,39 @@
 #!/usr/bin/env node
 
-// Hooks for `npx scenerystack <command>`.
-
-// NOTE: if testing locally, do something like `npx --prefix ../git/scenerystack scenerystack checkout`
+/**
+ * Hooks for `npx scenerystack <command>`.
+ *
+ * NOTE: if testing locally, do something like `npx --prefix ../git/scenerystack scenerystack checkout`
+ *
+ * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ */
 
 const https = require( 'https' );
 const fs = require( 'fs' );
 const assert = require( 'assert' );
 const child_process = require( 'child_process' );
 
+/*
+ * NOTE: A good chunk of the below is ported "transpiled" execute, but without the dependencies.
+ */
+
 function _extends() {
-    _extends = Object.assign || function(target) {
-        for(var i = 1; i < arguments.length; i++){
-            var source = arguments[i];
-            for(var key in source){
-                if (Object.prototype.hasOwnProperty.call(source, key)) {
-                    target[key] = source[key];
-                }
-            }
+  // eslint-disable-next-line no-func-assign
+  _extends = Object.assign || function( target ) {
+    for ( let i = 1; i < arguments.length; i++ ) {
+      // eslint-disable-next-line prefer-rest-params
+      const source = arguments[ i ];
+      for ( const key in source ) {
+        // eslint-disable-next-line prefer-object-has-own
+        if ( Object.prototype.hasOwnProperty.call( source, key ) ) {
+          target[ key ] = source[ key ];
         }
-        return target;
-    };
-    return _extends.apply(this, arguments);
+      }
+    }
+    return target;
+  };
+  // eslint-disable-next-line prefer-rest-params
+  return _extends.apply( this, arguments );
 }
 
 /**
@@ -56,7 +68,7 @@ function execute( cmd, args, cwd, providedOptions = {} ) {
       env: childProcessEnvOption,
       shell: childProcessShellOption
     } );
-    childProcess.on( 'error', ( error ) => {
+    childProcess.on( 'error', error => {
       rejectedByError = true;
       if ( errorsOption === 'resolve' ) {
         resolve( {
@@ -72,19 +84,19 @@ function execute( cmd, args, cwd, providedOptions = {} ) {
         reject( new ExecuteError( cmd, args, cwd, stdout, stderr, -1, Date.now() - startTime ) );
       }
     } );
-    childProcess.stderr && childProcess.stderr.on( 'data', ( data ) => {
+    childProcess.stderr && childProcess.stderr.on( 'data', data => {
       stderr += data;
       if ( logOutput ) {
         process.stdout.write( '' + data );
       }
     } );
-    childProcess.stdout && childProcess.stdout.on( 'data', ( data ) => {
+    childProcess.stdout && childProcess.stdout.on( 'data', data => {
       stdout += data;
       if ( logOutput ) {
         process.stdout.write( '' + data );
       }
     } );
-    childProcess.on( 'close', ( code ) => {
+    childProcess.on( 'close', code => {
       if ( !rejectedByError ) {
         if ( errorsOption === 'resolve' ) {
           resolve( {
@@ -107,10 +119,17 @@ function execute( cmd, args, cwd, providedOptions = {} ) {
     } );
   } );
 }
-let ExecuteError = class ExecuteError extends Error {
+const ExecuteError = class ExecuteError extends Error {
   constructor( cmd, args, cwd, stdout, stderr, code, time// ms
   ) {
-    super( `${cmd} ${args.join( ' ' )} in ${cwd} failed with exit code ${code}${stdout ? `\nstdout:\n${stdout}` : ''}${stderr ? `\nstderr:\n${stderr}` : ''}` ), this.cmd = cmd, this.args = args, this.cwd = cwd, this.stdout = stdout, this.stderr = stderr, this.code = code, this.time = time;
+    super( `${cmd} ${args.join( ' ' )} in ${cwd} failed with exit code ${code}${stdout ? `\nstdout:\n${stdout}` : ''}${stderr ? `\nstderr:\n${stderr}` : ''}` );
+    this.cmd = cmd;
+    this.args = args;
+    this.cwd = cwd;
+    this.stdout = stdout;
+    this.stderr = stderr;
+    this.code = code;
+    this.time = time;
   }
 };
 
@@ -152,7 +171,8 @@ let ExecuteError = class ExecuteError extends Error {
 
   // Do a bunch without requiring any other dependencies
   const fetchJson = url => {
-    return new Promise(( resolve, reject ) => {
+    return new Promise( ( resolve, reject ) => {
+      // eslint-disable-next-line consistent-return
       https.get( url, res => {
         if ( res.statusCode !== 200 ) {
           if ( res.statusCode === 302 ) {
@@ -163,7 +183,7 @@ let ExecuteError = class ExecuteError extends Error {
               try {
                 resolve( await fetchJson( newURL.toString() ) );
               }
-              catch ( e ) {
+              catch( e ) {
                 reject( e );
               }
             } )();
@@ -172,6 +192,7 @@ let ExecuteError = class ExecuteError extends Error {
             return reject( new Error( `Failed to fetch JSON: ${res.statusCode}` ) );
           }
 
+          // eslint-disable-next-line consistent-return
           return;
         }
 
@@ -182,11 +203,11 @@ let ExecuteError = class ExecuteError extends Error {
 
         res.on( 'end', () => resolve( JSON.parse( data ) ) );
       } ).on( 'error', reject );
-    });
-  }
+    } );
+  };
 
   const getSceneryStackDependencies = async ( version = 'latest' ) => {
-    return await fetchJson( `https://unpkg.com/scenerystack@${version}/dependencies.json` );
+    return fetchJson( `https://unpkg.com/scenerystack@${version}/dependencies.json` );
   };
 
   const clone = async repo => {
@@ -220,7 +241,7 @@ let ExecuteError = class ExecuteError extends Error {
       await execute( 'git', [ 'checkout', 'main' ], `./${repo}` );
 
       console.log( `pulling ${repo}` );
-      await execute( 'git', [ 'pull', '--rebase' ], `./${repo}` )
+      await execute( 'git', [ 'pull', '--rebase' ], `./${repo}` );
     }
     else {
       console.log( `${repo} has changes, skipping pull` );
@@ -295,10 +316,12 @@ let ExecuteError = class ExecuteError extends Error {
     console.log( 'build complete, can use `"scenerystack": "file:../scenerystack"` or equivalent in package.json dependencies to use local package' );
   };
 
-  switch ( command ) {
+  switch( command ) {
     case 'checkout':
-      const version = args[ 1 ] ?? 'latest';
-      await checkout( version );
+      {
+        const version = args[ 1 ] ?? 'latest';
+        await checkout( version );
+      }
       break;
     case 'build':
       await build();
