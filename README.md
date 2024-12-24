@@ -37,3 +37,9 @@ Alternatively if you want to make modifications to a specific version of the sce
 npx scenerystack checkout 0.0.14
 npx scenerystack build
 ```
+
+## Modifying SceneryStack
+
+SceneryStack code is split across multiple repositories. All of these repositories will be cloned into the current directory when you run `npx scenerystack checkout`. You can make modifications to any of these repositories, and then run `npx scenerystack build` to build the entire stack.
+
+[scenerystack.org](https://scenerystack.org) has more information about each repository. All of the repositories are hosted at https://github.com/phetsims/, e.g. https://github.com/phetsims/scenery.
