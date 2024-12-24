@@ -254,6 +254,7 @@
     "src/phet-core/js/**/*Tests.ts",
     "src/axon/js/**/*-tests.ts",
     "src/dot/js/**/*Tests.ts",
+    "src/dot/js/dot-tests.*",
     "src/kite/js/**/*Tests.ts",
     "src/kite/js/kite-tests.*",
     "src/utterance-queue/js/utterance-queue-tests.*",
