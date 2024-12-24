@@ -23,7 +23,10 @@ function _extends() {
     };
     return _extends.apply(this, arguments);
 }
+
 /**
+ * NOTE: Transpiled/adapted version of execute() to run without dependencies.
+ *
  * Executes a command, with specific arguments and in a specific directory (cwd).
  *
  * Resolves with the stdout: {string}
@@ -34,96 +37,81 @@ function _extends() {
  * @param cwd - The working directory where the process should be run from
  * @param providedOptions
  * @rejects {ExecuteError}
- */ function execute(cmd, args, cwd, providedOptions = {}) {
-    const startTime = Date.now();
+ */
+function execute( cmd, args, cwd, providedOptions = {} ) {
+  const startTime = Date.now();
 
-    const errorsOption = providedOptions.errors ?? 'reject';
-    const childProcessEnvOption = providedOptions.childProcessOptions?.env ?? _extends({}, process.env);
-    const childProcessShellOption = providedOptions.childProcessOptions?.shell ?? ( cmd !== 'node' && cmd !== 'git' && process.platform.startsWith('win') );
-    const logOutput = providedOptions.logOutput ?? false;
+  const errorsOption = providedOptions.errors ?? 'reject';
+  const childProcessEnvOption = providedOptions.childProcessOptions?.env ?? _extends( {}, process.env );
+  const childProcessShellOption = providedOptions.childProcessOptions?.shell ?? ( cmd !== 'node' && cmd !== 'git' && process.platform.startsWith( 'win' ) );
+  const logOutput = providedOptions.logOutput ?? false;
 
-    // const options = _.merge({
-    //     errors: 'reject',
-    //     childProcessOptions: {
-    //         // Provide additional env variables, and they will be merged with the existing defaults.
-    //         // eslint-disable-next-line phet/no-object-spread-on-non-literals
-    //         env: _extends({}, process.env),
-    //         // options.shell value to the child_process.spawn. shell:true is required for a NodeJS security update, see https://github.com/phetsims/perennial/issues/359
-    //         // In this case, only bash scripts fail with an EINVAL error, so we don't need to worry about node/git (and in
-    //         // fact don't want the overhead of a new shell).
-    //         shell: cmd !== 'node' && cmd !== 'git' && process.platform.startsWith('win')
-    //     }
-    // }, providedOptions);
-    assert(errorsOption === 'reject' || errorsOption === 'resolve', 'Errors must reject or resolve');
-    return new Promise((resolve, reject)=>{
-        let rejectedByError = false;
-        let stdout = ''; // to be appended to
-        let stderr = '';
-        // console.log( cmd, args, cwd, childProcessEnvOption, childProcessShellOption );
-        const childProcess = child_process.spawn(cmd, args, {
+  assert( errorsOption === 'reject' || errorsOption === 'resolve', 'Errors must reject or resolve' );
+  return new Promise( ( resolve, reject ) => {
+    let rejectedByError = false;
+    let stdout = ''; // to be appended to
+    let stderr = '';
+    const childProcess = child_process.spawn( cmd, args, {
+      cwd: cwd,
+      env: childProcessEnvOption,
+      shell: childProcessShellOption
+    } );
+    childProcess.on( 'error', ( error ) => {
+      rejectedByError = true;
+      if ( errorsOption === 'resolve' ) {
+        resolve( {
+          code: 1,
+          stdout: stdout,
+          stderr: stderr,
           cwd: cwd,
-          env: childProcessEnvOption,
-          shell: childProcessShellOption
-        });
-        childProcess.on('error', (error)=>{
-            rejectedByError = true;
-            if (errorsOption === 'resolve') {
-                resolve({
-                    code: 1,
-                    stdout: stdout,
-                    stderr: stderr,
-                    cwd: cwd,
-                    error: error,
-                    time: Date.now() - startTime
-                });
-            } else {
-                reject(new ExecuteError(cmd, args, cwd, stdout, stderr, -1, Date.now() - startTime));
-            }
-        });
-        // winston.debug(`Running ${cmd} ${args.join(' ')} from ${cwd}`);
-        childProcess.stderr && childProcess.stderr.on('data', (data)=>{
-            stderr += data;
-            if ( logOutput ) {
-              process.stdout.write( '' + data );
-            }
-            // winston.debug(`stderr: ${data}`);
-        });
-        childProcess.stdout && childProcess.stdout.on('data', (data)=>{
-            stdout += data;
-            if ( logOutput ) {
-              process.stdout.write( '' + data );
-            }
-            // winston.debug(`stdout: ${data}`);
-        });
-        childProcess.on('close', (code)=>{
-            // winston.debug(`Command ${cmd} finished. Output is below.`);
-            // winston.debug(stderr && `stderr: ${stderr}` || 'stderr is empty.');
-            // winston.debug(stdout && `stdout: ${stdout}` || 'stdout is empty.');
-            if (!rejectedByError) {
-                if (errorsOption === 'resolve') {
-                    resolve({
-                        code: code,
-                        stdout: stdout,
-                        stderr: stderr,
-                        cwd: cwd,
-                        time: Date.now() - startTime
-                    });
-                } else {
-                    if (code !== 0) {
-                        reject(new ExecuteError(cmd, args, cwd, stdout, stderr, code, Date.now() - startTime));
-                    } else {
-                        resolve(stdout);
-                    }
-                }
-            }
-        });
-    });
+          error: error,
+          time: Date.now() - startTime
+        } );
+      }
+      else {
+        reject( new ExecuteError( cmd, args, cwd, stdout, stderr, -1, Date.now() - startTime ) );
+      }
+    } );
+    childProcess.stderr && childProcess.stderr.on( 'data', ( data ) => {
+      stderr += data;
+      if ( logOutput ) {
+        process.stdout.write( '' + data );
+      }
+    } );
+    childProcess.stdout && childProcess.stdout.on( 'data', ( data ) => {
+      stdout += data;
+      if ( logOutput ) {
+        process.stdout.write( '' + data );
+      }
+    } );
+    childProcess.on( 'close', ( code ) => {
+      if ( !rejectedByError ) {
+        if ( errorsOption === 'resolve' ) {
+          resolve( {
+            code: code,
+            stdout: stdout,
+            stderr: stderr,
+            cwd: cwd,
+            time: Date.now() - startTime
+          } );
+        }
+        else {
+          if ( code !== 0 ) {
+            reject( new ExecuteError( cmd, args, cwd, stdout, stderr, code, Date.now() - startTime ) );
+          }
+          else {
+            resolve( stdout );
+          }
+        }
+      }
+    } );
+  } );
 }
 let ExecuteError = class ExecuteError extends Error {
-    constructor(cmd, args, cwd, stdout, stderr, code, time// ms
-    ){
-        super(`${cmd} ${args.join(' ')} in ${cwd} failed with exit code ${code}${stdout ? `\nstdout:\n${stdout}` : ''}${stderr ? `\nstderr:\n${stderr}` : ''}`), this.cmd = cmd, this.args = args, this.cwd = cwd, this.stdout = stdout, this.stderr = stderr, this.code = code, this.time = time;
-    }
+  constructor( cmd, args, cwd, stdout, stderr, code, time// ms
+  ) {
+    super( `${cmd} ${args.join( ' ' )} in ${cwd} failed with exit code ${code}${stdout ? `\nstdout:\n${stdout}` : ''}${stderr ? `\nstderr:\n${stderr}` : ''}` ), this.cmd = cmd, this.args = args, this.cwd = cwd, this.stdout = stdout, this.stderr = stderr, this.code = code, this.time = time;
+  }
 };
 
 ( async () => {
@@ -131,7 +119,7 @@ let ExecuteError = class ExecuteError extends Error {
   const args = process.argv.slice( 2 );
   const command = args[ 0 ];
 
-  console.log( `running command: ${command} ${args.slice( 1 ).join( ' ' )}` );
+  console.log( `[scenerystack]: ${command} ${args.slice( 1 ).join( ' ' )}` );
 
   const repos = [
     'alpenglow',
@@ -264,7 +252,7 @@ let ExecuteError = class ExecuteError extends Error {
   };
 
   const checkout = async version => {
-    console.log( `checking out version ${version}` );
+    console.log( `checking out version: ${version}` );
 
     await refreshRepo( 'scenerystack' );
 
