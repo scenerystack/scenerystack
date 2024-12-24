@@ -251,8 +251,11 @@
   ],
   "exclude": [
     /* Tests */
+    "src/chipper/js/browser/chipper-tests.*",
     "src/phet-core/js/**/*Tests.ts",
+    "src/phet-core/js/phet-core-tests.*",
     "src/axon/js/**/*-tests.ts",
+    "src/axon-core/js/axon-core-tests.*",
     "src/dot/js/**/*Tests.ts",
     "src/dot/js/dot-tests.*",
     "src/kite/js/**/*Tests.ts",
