@@ -19,7 +19,7 @@ In an empty directory, run:
 npx scenerystack checkout
 ```
 
-This will clone all of the needed SceneryStack repositories into the current directory.
+This will clone all of the needed SceneryStack repositories into the current directory. If run multiple times, it will update the checkout with newer sources.
 
 To build, then run:
 
