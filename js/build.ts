@@ -331,7 +331,10 @@ export default localeData;` );
 
           // has phetioEngine
           'joist/js/simLauncher.ts',
-          'chipper/js/browser/sim-tests/qunitStart.js'
+          'chipper/js/browser/sim-tests/qunitStart.js',
+
+          // references lodash from perennial-alias node_modules, don't want it!
+          'sherpa/js/lodash.ts'
         ].some( path => srcPath.includes( path ) ) ) {
           continue;
         }
@@ -406,9 +409,18 @@ export default localeData;` );
               if ( modifiedContent.includes( 'phet.chipper.localeData' ) ) {
                 modifiedContent = `import '${getImportPath( 'src/babel/localeData.js' )}';\n${modifiedContent}`;
               }
+
+              // Add lodash import if it is not imported
               if ( modifiedContent.includes( '_.' ) && !modifiedContent.includes( 'import _ ' ) ) {
                 modifiedContent = `import _ from 'lodash';\n${modifiedContent}`;
               }
+
+              // Replace lodash sherpa import
+              const lodashImportRegex = /import _ from '[^'\n]*sherpa\/js\/lodash\.js';/g;
+              if ( modifiedContent.match( lodashImportRegex ) ) {
+                modifiedContent = modifiedContent.replace( lodashImportRegex, `import _ from 'lodash';` );
+              }
+
               if ( modifiedContent.includes( '$(' ) ) {
                 modifiedContent = `import $ from 'jquery';\n${modifiedContent}`;
               }
