@@ -350,7 +350,7 @@ export default localeData;` );
           // Modify content (mostly adding correct imports)
           {
             const getImportPath = ( fileToImport: string ) => {
-              const result = path.relative( path.dirname( destPath ), fileToImport );
+              const result = path.relative( path.dirname( destPath ), fileToImport ).replace( /\\/g, '/' );
 
               return result.startsWith( '.' ) ? result : `./${result}`;
             };
@@ -509,5 +509,5 @@ export default localeData;` );
 
   // Use tsc to generate the files we need.
   console.log( 'running tsc' );
-  await execute( '../perennial-alias/node_modules/typescript/bin/tsc', [ '-b' ], '.' );
+  await execute( 'node', [ '../perennial-alias/node_modules/typescript/bin/tsc', '-b' ], '.' );
 } )();
