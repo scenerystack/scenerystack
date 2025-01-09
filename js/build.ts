@@ -300,7 +300,7 @@ export default localeData;` );
             }
           }
           else {
-            if ( srcPath.includes( 'lib/' ) ) {
+            if ( srcPath.includes( `lib${path.sep}` ) ) {
               if ( !requiredLibs.includes( name ) ) {
                 continue;
               }
@@ -308,7 +308,7 @@ export default localeData;` );
               console.log( `including ${name}` );
             }
 
-            if ( srcPath.includes( 'licenses/' ) ) {
+            if ( srcPath.includes( `licenses${path.sep}` ) ) {
               if ( requiredLibs.includes( name.slice( 0, -( '.txt'.length ) ) ) ) {
                 licensePaths.push( srcPath );
               }
@@ -316,7 +316,7 @@ export default localeData;` );
           }
         }
 
-        if ( srcPath.includes( 'alpenglow/doc/' ) ) {
+        if ( srcPath.includes( `alpenglow${path.sep}doc` ) ) {
           continue;
         }
         if ( [
@@ -335,7 +335,7 @@ export default localeData;` );
 
           // references lodash from perennial-alias node_modules, don't want it!
           'sherpa/js/lodash.ts'
-        ].some( path => srcPath.includes( path ) ) ) {
+        ].some( path => srcPath.includes( path.replaceAll( '/', path.sep ) ) ) ) {
           continue;
         }
 
@@ -353,7 +353,7 @@ export default localeData;` );
           // Modify content (mostly adding correct imports)
           {
             const getImportPath = ( fileToImport: string ) => {
-              const result = path.relative( path.dirname( destPath ), fileToImport ).replace( /\\/g, '/' );
+              const result = path.relative( path.dirname( destPath ), fileToImport ).replaceAll( path.sep, '/' );
 
               return result.startsWith( '.' ) ? result : `./${result}`;
             };
