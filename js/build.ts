@@ -206,7 +206,7 @@ import { StringFileMap } from '../../chipper/js/common/ChipperStringUtils.js';
 
     fs.mkdirSync( './src/babel', { recursive: true } );
 
-    const precursor = 'window.phet = window.phet || {};window.phet.chipper = window.phet.chipper || {};';
+    const precursor = 'self.phet = self.phet || {};self.phet.chipper = self.phet.chipper || {};';
     fs.writeFileSync( './src/babel/babel-strings.js', `${precursor}
 const strings = ${stringEncoding.encodeStringMapToJS( stringMap as StringFileMap )};
 phet.chipper.strings = strings;
@@ -473,6 +473,15 @@ export default localeData;` );
                 modifiedContent = modifiedContent.replace( '// @ts-expect-error - fromByteArray Exterior lib', '' );
               }
             }
+
+            // Use `self` instead of `window` for WebWorker compatibility
+            // See https://github.com/scenerystack/scenerystack/issues/3
+            {
+              modifiedContent = modifiedContent.replace( /([ \(,!])window(\??[\., ])/g, '$1self$2' );
+
+              // Handle Namespace so it works correctly (it was failing in web workers)
+              modifiedContent = modifiedContent.replaceAll( '!globalThis.hasOwnProperty( \'window\' )', '!globalThis.self' );
+            }
           }
 
           fs.writeFileSync( destPath, modifiedContent, 'utf8' );
@@ -496,17 +505,17 @@ export default localeData;` );
   patch(
     './src/query-string-machine/js/QueryStringMachine.js',
     `}( this, () => {`,
-    `}( window, () => {`
+    `}( self, () => {`
   );
   patch(
     './src/query-string-machine/js/QueryStringMachine.js',
     `module.exports = factory();`,
-    `window.QueryStringMachine = factory();`
+    `self.QueryStringMachine = factory();`
   );
   patch(
     './src/sherpa/lib/himalaya-1.1.0.js',
     `module.exports=f()`,
-    `window.himalaya=f()`
+    `self.himalaya=f()`
   );
   patch(
     './src/sherpa/lib/big-6.2.1.js',

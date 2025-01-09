@@ -7,4 +7,4 @@
 
 import './query-string-machine/js/QueryStringMachine.js';
 
-export default window.QueryStringMachine;
+export default self.QueryStringMachine;

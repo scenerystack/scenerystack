@@ -27,5 +27,5 @@ export const onReadyToLaunch = ( callback: () => void ): void => {
   unlockLaunch();
 
   // Signify that the simLauncher was called, see https://github.com/phetsims/joist/issues/142
-  window.phet.joist.launchCalled = true;
+  self.phet.joist.launchCalled = true;
 };
