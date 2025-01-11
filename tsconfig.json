@@ -54,6 +54,9 @@
     "src/twixt.ts",
     "src/vegas.ts",
 
+    /* standalone entry point */
+    "src/standalone.ts",
+
     /* types */
     "src/types/**/*",
 

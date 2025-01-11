@@ -5,5 +5,4 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-const phet = self.phet;
-export default phet;
+export * from './standalone.js';

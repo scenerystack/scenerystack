@@ -37,7 +37,7 @@ export type { TRange, RangeStateObject } from './dot/js/Range.js';
 export { default as RangeWithValue } from './dot/js/RangeWithValue.js';
 export { default as Ray2 } from './dot/js/Ray2.js';
 export { default as Ray3 } from './dot/js/Ray3.js';
-export { default as Rectangle } from './dot/js/Rectangle.js';
+export { default as DotRectangle } from './dot/js/Rectangle.js';
 export { default as RunningAverage } from './dot/js/RunningAverage.js';
 export { default as Sphere3 } from './dot/js/Sphere3.js';
 export { default as Stats } from './dot/js/Stats.js';

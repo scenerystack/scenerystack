@@ -335,7 +335,7 @@ export default localeData;` );
 
           // references lodash from perennial-alias node_modules, don't want it!
           'sherpa/js/lodash.ts'
-        ].some( path => srcPath.includes( path.replaceAll( '/', path.sep ) ) ) ) {
+        ].some( aPath => srcPath.includes( aPath.replaceAll( '/', path.sep ) ) ) ) {
           continue;
         }
 
@@ -531,4 +531,8 @@ export default localeData;` );
   // Use tsc to generate the files we need.
   console.log( 'running tsc' );
   await execute( 'node', [ '../perennial-alias/node_modules/typescript/bin/tsc', '-b' ], '.' );
+
+  // Use rollup for bundles
+  console.log( 'running rollup' );
+  await execute( 'npx', [ 'rollup', '-c' ], '.' );
 } )();
