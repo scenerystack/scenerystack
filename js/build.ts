@@ -6,7 +6,7 @@
  *
  * Run as the following at the root of scenerystack:
  *
- * `sage run js/build.ts`
+ * `npm run build`
  *
  * Use local references for testing.
  *
