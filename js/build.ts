@@ -528,11 +528,36 @@ export default localeData;` );
     ``
   );
 
+  const conditionalLog = ( string: string ) => {
+    if ( string.trim().length ) {
+      console.log( string );
+    }
+  };
+  const conditionalError = ( string: string ) => {
+    if ( string.trim().length ) {
+      console.error( string );
+    }
+  };
+
   // Use tsc to generate the files we need.
   console.log( 'running tsc' );
-  await execute( 'node', [ '../perennial-alias/node_modules/typescript/bin/tsc', '-b' ], '.' );
+  const tscResult = await execute( 'node', [ '../perennial-alias/node_modules/typescript/bin/tsc', '-b' ], '.', { errors: 'resolve' } );
+
+  conditionalLog( tscResult.stdout );
+  conditionalError( tscResult.stderr );
+  if ( tscResult.code !== 0 ) {
+    console.error( 'tsc failed' );
+    process.exit( 1 );
+  }
 
   // Use rollup for bundles
   console.log( 'running rollup' );
-  await execute( 'npx', [ 'rollup', '-c' ], '.' );
+  const rollupResult = await execute( 'npx', [ 'rollup', '-c' ], '.', { errors: 'resolve' } );
+
+  conditionalLog( rollupResult.stdout );
+  conditionalError( rollupResult.stderr );
+  if ( rollupResult.code !== 0 ) {
+    console.error( 'rollup failed' );
+    process.exit( 1 );
+  }
 } )();
