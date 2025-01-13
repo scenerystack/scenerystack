@@ -14,6 +14,8 @@
  * TODO: figure out how to handle options types nicely
  * TODO: class inheritance
  * TODO: class template params
+ * TODO: link to classes/names and highlight types (crosslink) nicely
+ * TODO: can we inspect computed types???
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
@@ -334,7 +336,57 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       }
     }
     else if ( ts.isTypeAliasDeclaration( child ) ) {
+      const isExport = hasExportModifier( child );
+      const isDefaultExport = hasDefaultExportModifier( child );
 
+      const name = child.name.getText();
+      const comment = getSpecificLeadingComment( child );
+
+      if ( name.startsWith( '_' ) || comment?.includes( `${repo}-internal` ) ) {
+        continue;
+      }
+
+      // TODO: handle type literals, unions and intersections natively, so we can reference other things
+      const typeString = child.type.getText();
+
+      // TODO: presumably DO NOT resolve external types? if a literal, can we note the keys?
+      // TODO: showing all keys that are external (like inherited methods/fields) sounds great.
+      // TODO: is the main difficulty tracing through type links in the file (to imports?)
+      // TODO:   be lazy and guess imports (e.g. same name)
+      // TODO: we probably have to do type link-up after parsing everything, no?
+      // TODO: you can specify types out-of-order effectively.
+      // TODO:   when we reach the end, see if we can "resolve" internal types out (do NOT infinite loop)
+      // TODO:     do not infinite loop
+
+      // TypeLiteral
+      //   isTypeLiteral
+      //   : members
+      // IntersectionType
+      //   isIntersectionTypeNode
+      //   : types
+      // UnionType
+      //   isUnionTypeNode
+      //   : types
+
+      console.log( kindOf( child.type ) );
+      for ( const subChild of child.type.getChildren() ) {
+        console.log( `  ${kindOf( subChild )}\n` );
+      }
+
+      /*
+        readonly typeParameters?: NodeArray<TypeParameterDeclaration>;
+        readonly type: TypeNode;
+
+
+      interface TypeParameterDeclaration extends NamedDeclaration, JSDocContainer {
+        readonly kind: SyntaxKind.TypeParameter;
+        readonly parent: DeclarationWithTypeParameterChildren | InferTypeNode;
+        readonly modifiers?: NodeArray<Modifier>;
+        readonly name: Identifier;
+        readonly constraint?: TypeNode;
+        readonly default?: TypeNode;
+        expression?: Expression;
+       */
     }
     else if ( ts.isExpressionStatement( child ) ) {
 

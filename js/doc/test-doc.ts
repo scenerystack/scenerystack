@@ -1,12 +1,12 @@
 import fs from 'fs';
 import { extractDoc } from './extractDoc.js';
-import { docToMarkdown } from './docToMarkdown.js';
 
 const testDoc = ( sourcePath: string ) => {
   const doc = extractDoc( fs.readFileSync( `./src/${sourcePath}`, 'utf-8' ), sourcePath );
 
+  console.log( doc.debug );
+  doc.debug = null;
   console.log( JSON.stringify( doc, null, 2 ) );
-  console.log( docToMarkdown( doc ) );
 };
 
 // testDoc( 'dot/js/Bounds2.ts' );

@@ -17,6 +17,35 @@ import ts from 'typescript';
 import { Documentation, extractDoc } from './extractDoc.js';
 import { docToMarkdown } from './docToMarkdown.js';
 
+// NOTE: This is the order of entry points in documentation
+const entryPoints = [
+  'scenery',
+  'sun',
+  'phet-core',
+  'dot',
+  'kite',
+  'sim',
+  'scenery-phet',
+
+  'adapted-from-phet',
+  'alpenglow',
+  // 'assert', // TODO: add back in
+  'axon',
+  'brand',
+  'chipper',
+  // 'init', // TODO: add back in
+  'joist',
+  'mobius',
+  'perennial',
+  'phetcommon',
+  // 'query-string-machine', // TODO: add back in
+  // 'splash', // TODO: add back in
+  'tandem',
+  'tappi',
+  'twixt',
+  'vegas'
+] as const;
+
 export type ExportEntry = {
   module: string;
   importName: string;
@@ -141,32 +170,6 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
     };
   };
 
-  const entryPoints = [
-    'adapted-from-phet',
-    'alpenglow',
-    'assert',
-    'axon',
-    'brand',
-    'chipper',
-    'dot',
-    'init',
-    'joist',
-    'kite',
-    'mobius',
-    'perennial',
-    'phet-core',
-    'phetcommon',
-    'query-string-machine',
-    'scenery',
-    'scenery-phet',
-    'sim',
-    'splash',
-    'sun',
-    'tandem',
-    'tappi',
-    'twixt',
-    'vegas'
-  ];
   const entryPointModules: Module[] = entryPoints.map( entryPoint => `${entryPoint}.ts` );
 
   const scannedModules: Module[] = [];
@@ -282,7 +285,12 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
     return Object.keys( moduleExportMap ).find( key => moduleExportMap[ key ].importName === 'default' ) ?? path.basename( module ).replace( /\.[tj]s$/, '' );
   };
 
+  let navYAML = '';
+
   for ( const entryPoint of entryPoints ) {
+
+    navYAML += `      - ${entryPoint}:\n`;
+
     const exportMap = resolvedExportMaps[ entryPoint ];
 
     const modules = getModulesFromExportMap( exportMap );
@@ -297,9 +305,12 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
     fs.mkdirSync( `../community/docs/reference/api/${entryPoint}`, { recursive: true } );
 
     for ( const module of modules ) {
-      const moduleExportMap = subsetExportMapWithModule( exportMap, module );
 
       const pageName = getPageName( entryPoint, module );
+
+      navYAML += `        - ${pageName}: reference/api/${entryPoint}/${pageName}.md\n`;
+
+      const moduleExportMap = subsetExportMapWithModule( exportMap, module );
 
       console.log( `${entryPoint}/${pageName}.md` );
 
@@ -307,6 +318,34 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
 
       fs.writeFileSync( `../community/docs/reference/api/${entryPoint}/${pageName}.md`, markdown );
     }
+
+    const mkdocsYAML = fs.readFileSync( '../community/mkdocs.yml', 'utf-8' );
+
+    /*
+      We will put the strings between these places:
+
+  - Reference:
+    - API:
+    ....
+  - Community:
+     */
+
+    const beforeString = `### AUTO-GENERATE BELOW
+`;
+    const afterString = `### AUTO-GENERATE ABOVE
+`;
+
+    const apiIndex = mkdocsYAML.indexOf( beforeString );
+    const communityIndex = mkdocsYAML.indexOf( afterString );
+
+    if ( apiIndex === -1 || communityIndex === -1 ) {
+      throw new Error( 'Could not find API or Community in mkdocs.yml' );
+    }
+
+    const newMkdocsYAML = mkdocsYAML.slice( 0, apiIndex + beforeString.length ) + navYAML + mkdocsYAML.slice( communityIndex );
+
+    fs.writeFileSync( '../community/mkdocs.yml', newMkdocsYAML );
+
   }
 
   console.log( 'complete' );

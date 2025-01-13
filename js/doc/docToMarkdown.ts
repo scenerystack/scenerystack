@@ -13,7 +13,7 @@ import path from 'path';
 import { ClassMethodDocumentation, ClassPropertyDocumentation, Documentation } from "./extractDoc.js";
 import type { ExportMap } from './generateSceneryStackDocumentation.js';
 
-const DEBUG = true;
+const DEBUG = false;
 const TYPE_MAP = {
   class: 'Class'
 };
@@ -91,24 +91,25 @@ ${exports.filter( exportName => getExportInfo( exportName ) ).map( exportName =>
   const obj = exportInfo.object;
   
   const getID = ( name: string ) => {
-    return ` {: #${exportName === primaryName ? '' : `${exportName}-`}${name} }`;
+    const id = `${exportName === primaryName ? '' : `${exportName}-`}${name}`;
+    return ` {: #${id} data-toc-label='${id}' }`;
   };
   
   const methodDoc = ( method: ClassMethodDocumentation ): string => {
     const headerText = `${method.name}(${methodParameters( method )})${typeSuffix( method.returnTypeString )}${getID( method.name )}`;
-    return `#### ${headerText}${method.isProtected ? '\n\n(protected)' : ''}${method.comment ? `\n\n${method.comment}` : ''}`;
+    return `#### ${headerText}${method.isProtected ? '\n\n(protected)' : ''}${method.comment ? `\n\n${escapeChars( method.comment )}` : ''}`;
   };
   
   const propertyDoc = ( property: ClassPropertyDocumentation ): string => {
     const headerText = `${property.name}${typeSuffix( property.typeString )}${getID( property.name )}`;
     const attribs = [ property.isProtected ? 'protected' : '', property.isReadonly ? 'readonly' : '' ].filter( attrib => attrib.length ).join( ', ' );
-    return `#### ${headerText}${attribs.length ? `\n\n(${attribs})` : ''}${property.comment ? `\n\n${property.comment}` : ''}`;
+    return `#### ${headerText}${attribs.length ? `\n\n(${attribs})` : ''}${property.comment ? `\n\n${escapeChars( property.comment )}` : ''}`;
   };
 
   let body = '';
   
   if ( obj.comment ) {
-    body += `${obj.comment}\n\n`;
+    body += `${escapeChars( obj.comment )}\n\n`;
   }
   
   // Import statement
