@@ -95,8 +95,8 @@ export type { BooleanRoundToggleButtonOptions } from './sun/js/buttons/BooleanRo
 export { default as ButtonInteractionState } from './sun/js/buttons/ButtonInteractionState.js';
 export { default as ButtonModel } from './sun/js/buttons/ButtonModel.js';
 export type { ButtonModelOptions } from './sun/js/buttons/ButtonModel.js';
-export { default as ButtonNode } from './sun/js/buttons/ButtonNode.js';
-export type { ButtonNodeOptions, FlatAppearanceStrategy } from './sun/js/buttons/ButtonNode.js';
+export { default as ButtonNode, FlatAppearanceStrategy } from './sun/js/buttons/ButtonNode.js';
+export type { ButtonNodeOptions } from './sun/js/buttons/ButtonNode.js';
 export { default as CarouselButton } from './sun/js/buttons/CarouselButton.js';
 export type { CarouselButtonOptions } from './sun/js/buttons/CarouselButton.js';
 export { default as MomentaryButtonInteractionStateProperty } from './sun/js/buttons/MomentaryButtonInteractionStateProperty.js';
@@ -122,8 +122,8 @@ export { default as RectangularStickyToggleButton } from './sun/js/buttons/Recta
 export type { RectangularStickyToggleButtonOptions } from './sun/js/buttons/RectangularStickyToggleButton.js';
 export { default as RectangularToggleButton } from './sun/js/buttons/RectangularToggleButton.js';
 export type { RectangularToggleButtonOptions } from './sun/js/buttons/RectangularToggleButton.js';
-export { default as RoundButton } from './sun/js/buttons/RoundButton.js';
-export type { RoundButtonOptions, ThreeDAppearanceStrategy } from './sun/js/buttons/RoundButton.js';
+export { default as RoundButton, ThreeDAppearanceStrategy } from './sun/js/buttons/RoundButton.js';
+export type { RoundButtonOptions } from './sun/js/buttons/RoundButton.js';
 export { default as RoundMomentaryButton } from './sun/js/buttons/RoundMomentaryButton.js';
 export type { RoundMomentaryButtonOptions } from './sun/js/buttons/RoundMomentaryButton.js';
 export { default as RoundPushButton } from './sun/js/buttons/RoundPushButton.js';

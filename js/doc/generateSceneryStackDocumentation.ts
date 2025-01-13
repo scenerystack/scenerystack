@@ -1,5 +1,8 @@
 // Copyright 2025, University of Colorado Boulder
 
+// Because it doesn't like scenerystack URLs
+/* eslint-disable phet/todo-should-have-issue */
+
 /**
  * Write documentation into the community docs system (assuming it is
  * checked out as a sibling to this repo).

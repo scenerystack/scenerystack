@@ -1,5 +1,8 @@
 // Copyright 2024, University of Colorado Boulder
 
+// Because it doesn't like scenerystack URLs
+/* eslint-disable phet/todo-should-have-issue */
+
 /**
  * Extracts documentation from a TS/JS file.
  *
@@ -9,7 +12,6 @@
  *   SetAccessor: Will have SyntaxList with single Parameter (like methods)
  *   GetAccessor: ColonToken then return value, like methods
  * TODO: figure out how to handle options types nicely
- * TODO: avoid things that say repo-internal (or such)
  * TODO: class inheritance
  * TODO: class template params
  *
@@ -31,7 +33,7 @@ export type Documentation = {
 export type ClassDocumentation = {
   type: 'class';
   name: string;
-
+  comment: string | null;
   methods: ClassMethodDocumentation[];
   staticMethods: ClassMethodDocumentation[];
   properties: ClassPropertyDocumentation[];
@@ -41,6 +43,7 @@ export type ClassDocumentation = {
 export type ClassMethodDocumentation = {
   type: 'classMethod';
   name: string;
+  comment: string | null;
   isProtected: boolean;
   parameters: MethodParameterDocumentation[];
   returnTypeString: string;
@@ -49,6 +52,7 @@ export type ClassMethodDocumentation = {
 export type ClassPropertyDocumentation = {
   type: 'classProperty';
   name: string;
+  comment: string | null;
   isReadonly: boolean;
   isProtected: boolean;
   typeString: string;
@@ -132,6 +136,26 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     }
   };
 
+  // Either take the last block comment, or all of the last line comments.
+  // TODO: should we look for double newlines between line comments?
+  const getSpecificLeadingComment = ( node: ts.Node ): string | null => {
+    const comments = getLeadingComments( node );
+
+    if ( comments.length === 0 ) {
+      return null;
+    }
+
+    const isLastBlock = comments[ comments.length - 1 ].startsWith( '/*' );
+
+    if ( isLastBlock ) {
+      return cleanupComment( comments[ comments.length - 1 ] );
+    }
+    else {
+      const lastNonLineComment = comments.findLastIndex( comment => !comment.startsWith( '//' ) );
+      return comments.slice( lastNonLineComment + 1 ).map( cleanupComment ).join( '\n' );
+    }
+  };
+
   const mainChildren = sourceAST.getChildren()[ 0 ].getChildren();
 
   const topLevelComments = mainChildren.filter( node => node.kind === ts.SyntaxKind.ImportDeclaration ).map( node => {
@@ -149,6 +173,8 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       if ( className ) {
         debug += `class: ${className}\n`;
 
+        const comment = getSpecificLeadingComment( child );
+
         // heritage
         // console.log( child.heritageClauses );
 
@@ -161,11 +187,13 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
         const staticProperties: ClassPropertyDocumentation[] = [];
 
         for ( const member of child.members ) {
+          const memberComment = getSpecificLeadingComment( member );
+
           if ( ts.isPropertyDeclaration( member ) ) {
 
             const name = member.name.getText();
 
-            if ( name.startsWith( '_' ) ) {
+            if ( name.startsWith( '_' ) || memberComment?.includes( `${repo}-internal` ) ) {
               continue;
             }
 
@@ -181,7 +209,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
 
             let typeString = type?.getText() ?? null;
 
-            // TODO: handle Identifier<boo> also
+            // TODO: handle Identifier<boo> also https://github.com/scenerystack/community/issues/80
             if ( typeString === null && initializer && ts.isNewExpression( initializer ) && ts.isIdentifier( initializer.expression ) ) {
               typeString = initializer.expression.getText();
             }
@@ -193,6 +221,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
             ( isStatic ? staticProperties : properties ).push( {
               type: 'classProperty',
               name: name,
+              comment: memberComment,
               isReadonly: isReadonly,
               isProtected: isProtected,
               typeString: typeString
@@ -202,7 +231,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
 
             const name = ts.isMethodDeclaration( member ) ? member.name.getText() : 'constructor';
 
-            if ( name.startsWith( '_' ) ) {
+            if ( name.startsWith( '_' ) || memberComment?.includes( `${repo}-internal` ) ) {
               continue;
             }
 
@@ -245,31 +274,10 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
               returnTypeString = children[ colonIndex + 1 ].getText();
             }
 
-            /*
-              eg
-                :MethodDeclaration PublicKeyword
-                  JSDocComment
-                  SyntaxList
-                    PublicKeyword
-                  Identifier
-                  OpenParenToken
-                  SyntaxList
-                    Parameter
-                    CommaToken
-                    Parameter
-                    CommaToken
-                    Parameter
-                    CommaToken
-                    Parameter
-                  CloseParenToken
-                  ColonToken
-                  ThisType
-                  Block
-             */
-
             ( isStatic ? staticMethods : methods ).push( {
               type: 'classMethod',
               name: name,
+              comment: memberComment,
               isProtected: isProtected,
               parameters: parameters,
               returnTypeString: returnTypeString
@@ -281,6 +289,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
         const clazz = {
           type: 'class',
           name: className,
+          comment: comment,
           methods: methods,
           staticMethods: staticMethods,
           properties: properties,

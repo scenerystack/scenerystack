@@ -1,5 +1,8 @@
 // Copyright 2024, University of Colorado Boulder
 
+// Because it doesn't like scenerystack URLs
+/* eslint-disable phet/todo-should-have-issue */
+
 /**
  * Converts documentation to markdown.
  *
@@ -7,7 +10,7 @@
  */
 
 import path from 'path';
-import { ClassMethodDocumentation, Documentation } from "./extractDoc.js";
+import { ClassMethodDocumentation, ClassPropertyDocumentation, Documentation } from "./extractDoc.js";
 import type { ExportMap } from './generateSceneryStackDocumentation.js';
 
 const DEBUG = true;
@@ -87,55 +90,65 @@ ${exports.filter( exportName => getExportInfo( exportName ) ).map( exportName =>
   const exportInfo = getExportInfo( exportName )!;
   const obj = exportInfo.object;
   
+  const getID = ( name: string ) => {
+    return ` {: #${exportName === primaryName ? '' : `${exportName}-`}${name} }`;
+  };
+  
+  const methodDoc = ( method: ClassMethodDocumentation ): string => {
+    const headerText = `${method.name}(${methodParameters( method )})${typeSuffix( method.returnTypeString )}${getID( method.name )}`;
+    return `#### ${headerText}${method.isProtected ? '\n\n(protected)' : ''}${method.comment ? `\n\n${method.comment}` : ''}`;
+  };
+  
+  const propertyDoc = ( property: ClassPropertyDocumentation ): string => {
+    const headerText = `${property.name}${typeSuffix( property.typeString )}${getID( property.name )}`;
+    const attribs = [ property.isProtected ? 'protected' : '', property.isReadonly ? 'readonly' : '' ].filter( attrib => attrib.length ).join( ', ' );
+    return `#### ${headerText}${attribs.length ? `\n\n(${attribs})` : ''}${property.comment ? `\n\n${property.comment}` : ''}`;
+  };
+
   let body = '';
+  
+  if ( obj.comment ) {
+    body += `${obj.comment}\n\n`;
+  }
   
   // Import statement
   if ( obj.type === 'class' ) {
-    body += `### Import
-\`\`\`js
+    body += `\`\`\`js
 import { ${exportName} } from 'scenerystack/${entryPoint}';
 \`\`\`
 `;
   }
   
   if ( obj.type === 'class' ) {
-    
+
     const constructor = obj.methods.find( method => method.name === 'constructor' ) ?? null;
     if ( constructor ) {
       body += '### Constructor\n\n';
-      body += `#### new ${exportName}(${methodParameters( constructor )}) {: #constructor }\n\n`;
+      body += `#### new ${exportName}(${methodParameters( constructor )})${getID( 'constructor' )}\n\n`;
     }
     
     if ( obj.methods.length ) {
       body += '### Instance Methods\n\n';
-      body += obj.methods.filter( method => method.name !== 'constructor' ).map( method => {
-        return `#### ${method.name}(${methodParameters( method )})${typeSuffix( method.returnTypeString )} {: #${method.name} }`;
-      } ).join( '\n\n' ) + '\n\n';
+      body += obj.methods.filter( method => method.name !== 'constructor' ).map( methodDoc ).join( '\n\n' ) + '\n\n';
     }
     
     if ( obj.properties.length ) {
       body += '### Instance Properties\n\n';
-      body += obj.properties.map( prop => {
-        return `#### ${prop.name}${typeSuffix( prop.typeString )} {: #${prop.name} }`;
-      } ).join( '\n\n' ) + '\n\n';
+      body += obj.properties.map( propertyDoc ).join( '\n\n' ) + '\n\n';
     }
     
     if ( obj.staticMethods.length ) {
       body += '### Static Methods\n\n';
-      body += obj.staticMethods.map( method => {
-        return `#### ${method.name}(${methodParameters( method )})${typeSuffix( method.returnTypeString )} {: #${method.name} }`;
-      } ).join( '\n\n' ) + '\n\n';
+      body += obj.staticMethods.map( methodDoc ).join( '\n\n' ) + '\n\n';
     }
     
     if ( obj.staticProperties.length ) {
       body += '### Static Properties\n\n';
-      body += obj.staticProperties.map( prop => {
-        return `#### ${prop.name}${typeSuffix( prop.typeString )} {: #${prop.name} }`;
-      } ).join( '\n\n' ) + '\n\n';
+      body += obj.staticProperties.map( propertyDoc ).join( '\n\n' ) + '\n\n';
     }
   }
   
-  return `## ${TYPE_MAP[ obj.type ]} ${exportName}${body.length ? `\n${body}` : ''}`;
+  return `## ${TYPE_MAP[ obj.type ]} ${exportName} {: #${exportName} }\n\n${body.length ? `\n${body}` : ''}`;
 } ).join( '\n\n' )}
 
 ## Source Code
