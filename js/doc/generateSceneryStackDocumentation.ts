@@ -16,6 +16,7 @@ import { rimraf } from 'rimraf';
 import ts from 'typescript';
 import { Documentation, extractDoc } from './extractDoc.js';
 import { docToMarkdown } from './docToMarkdown.js';
+import execute from '../../../perennial-alias/js/common/execute.js';
 
 // NOTE: This is the order of entry points in documentation
 const entryPoints = [
@@ -346,6 +347,9 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
 
     fs.writeFileSync( '../community/mkdocs.yml', newMkdocsYAML );
 
+    // Add these changed files
+    await execute( 'git', [ 'add', 'mkdocs.yml' ], '../community' );
+    await execute( 'git', [ 'add', 'docs/reference/api' ], '../community' );
   }
 
   console.log( 'complete' );
