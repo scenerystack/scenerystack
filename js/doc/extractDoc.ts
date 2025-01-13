@@ -3,6 +3,16 @@
 /**
  * Extracts documentation from a TS/JS file.
  *
+ * TODO: how to handle getters/setters/getter-setters?
+ *   GetAccessorDeclaration / SetAccessorDeclaration
+ *   They have name/modifiers
+ *   SetAccessor: Will have SyntaxList with single Parameter (like methods)
+ *   GetAccessor: ColonToken then return value, like methods
+ * TODO: figure out how to handle options types nicely
+ * TODO: avoid things that say repo-internal (or such)
+ * TODO: class inheritance
+ * TODO: class template params
+ *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
@@ -15,18 +25,40 @@ export type Documentation = {
   topLevelComments: string[];
   classes: ClassDocumentation[];
   exports: ExportDocumentation[];
+  debug: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 };
 
 export type ClassDocumentation = {
   type: 'class';
   name: string;
+
+  methods: ClassMethodDocumentation[];
+  staticMethods: ClassMethodDocumentation[];
   properties: ClassPropertyDocumentation[];
+  staticProperties: ClassPropertyDocumentation[];
+};
+
+export type ClassMethodDocumentation = {
+  type: 'classMethod';
+  name: string;
+  isProtected: boolean;
+  parameters: MethodParameterDocumentation[];
+  returnTypeString: string;
 };
 
 export type ClassPropertyDocumentation = {
   type: 'classProperty';
   name: string;
   isReadonly: boolean;
+  isProtected: boolean;
+  typeString: string;
+};
+
+export type MethodParameterDocumentation = {
+  name: string;
+  dotDotDot: boolean;
+  question: boolean;
+  // TODO: initializer?
   typeString: string;
 };
 
@@ -49,6 +81,8 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
   const sourcePathBits = sourcePath.split( '/' );
   const repo = sourcePathBits[ 0 ];
   const sourceName = sourcePathBits[ sourcePathBits.length - 1 ].replace( /\.ts$/, '' ).replace( /\.js$/, '' );
+
+  let debug = '';
 
   const kindOf = ( node: ts.Node ) => ts.SyntaxKind[ node.kind ];
 
@@ -113,7 +147,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       const className = child.name?.getText();
 
       if ( className ) {
-        console.log( 'class', className );
+        debug += `class: ${className}\n`;
 
         // heritage
         // console.log( child.heritageClauses );
@@ -121,7 +155,10 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
         // type parameters
         // console.log( child.typeParameters );
 
+        const methods: ClassMethodDocumentation[] = [];
+        const staticMethods: ClassMethodDocumentation[] = [];
         const properties: ClassPropertyDocumentation[] = [];
+        const staticProperties: ClassPropertyDocumentation[] = [];
 
         for ( const member of child.members ) {
           if ( ts.isPropertyDeclaration( member ) ) {
@@ -137,6 +174,8 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
             }
 
             const isReadonly = member.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.ReadonlyKeyword ) ?? false;
+            const isStatic = member.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.StaticKeyword ) ?? false;
+            const isProtected = member.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.ProtectedKeyword ) ?? false;
             const type = member.type;
             const initializer = member.initializer;
 
@@ -151,19 +190,101 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
               typeString = 'any';
             }
 
-            properties.push( {
+            ( isStatic ? staticProperties : properties ).push( {
               type: 'classProperty',
               name: name,
               isReadonly: isReadonly,
+              isProtected: isProtected,
               typeString: typeString
             } );
+          }
+          if ( ts.isMethodDeclaration( member ) || ts.isConstructorDeclaration( member ) ) {
+
+            const name = ts.isMethodDeclaration( member ) ? member.name.getText() : 'constructor';
+
+            if ( name.startsWith( '_' ) ) {
+              continue;
+            }
+
+            if ( member.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.PrivateKeyword ) ) {
+              continue;
+            }
+
+            const isStatic = member.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.StaticKeyword ) ?? false;
+            const isProtected = member.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.ProtectedKeyword ) ?? false;
+
+            // TODO: see how comment extraction works. First thing might be JSDocComment type
+
+            const children = member.getChildren();
+
+            const openParenIndex = children.findIndex( child => child.kind === ts.SyntaxKind.OpenParenToken );
+            const colonIndex = children.findIndex( child => child.kind === ts.SyntaxKind.ColonToken );
+
+            if ( openParenIndex === -1 ) {
+              throw new Error( 'Expected OpenParenToken' );
+            }
+
+            const parameterSyntaxList = children[ openParenIndex + 1 ];
+            if ( parameterSyntaxList.kind !== ts.SyntaxKind.SyntaxList ) {
+              throw new Error( 'Expected SyntaxList' );
+            }
+
+            const parameterNodes = parameterSyntaxList.getChildren().filter( child => ts.isParameter( child ) );
+
+            const parameters = parameterNodes.map( parameterNode => {
+              return {
+                name: parameterNode.name.getText(),
+                dotDotDot: !!parameterNode.dotDotDotToken,
+                question: !!parameterNode.questionToken,
+                typeString: parameterNode.type?.getText() ?? 'any'
+              };
+            } );
+
+            let returnTypeString = 'any';
+            if ( colonIndex !== -1 ) {
+              returnTypeString = children[ colonIndex + 1 ].getText();
+            }
+
+            /*
+              eg
+                :MethodDeclaration PublicKeyword
+                  JSDocComment
+                  SyntaxList
+                    PublicKeyword
+                  Identifier
+                  OpenParenToken
+                  SyntaxList
+                    Parameter
+                    CommaToken
+                    Parameter
+                    CommaToken
+                    Parameter
+                    CommaToken
+                    Parameter
+                  CloseParenToken
+                  ColonToken
+                  ThisType
+                  Block
+             */
+
+            ( isStatic ? staticMethods : methods ).push( {
+              type: 'classMethod',
+              name: name,
+              isProtected: isProtected,
+              parameters: parameters,
+              returnTypeString: returnTypeString
+            } );
+
           }
         }
 
         const clazz = {
           type: 'class',
           name: className,
-          properties: properties
+          methods: methods,
+          staticMethods: staticMethods,
+          properties: properties,
+          staticProperties: staticProperties
         } as const;
 
         classes.push( clazz );
@@ -214,14 +335,34 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     }
 
     // @ts-expect-error
-    console.log( kindOf( child ), child.modifiers ? child.modifiers.map( kindOf ) : '' );
+    debug += `${kindOf( child )} ${child.modifiers ? child.modifiers.map( kindOf ) : ''}\n`;
 
     if ( ts.isClassDeclaration( child ) ) {
       for ( const subChild of child.getChildren() ) {
-        console.log( `  ${kindOf( subChild )}` );
+        debug += `  ${kindOf( subChild )}\n`;
       }
       for ( const member of child.members ) {
-        console.log( `  :${kindOf( member )}` );
+        // @ts-expect-error
+        debug += `  :${kindOf( member )} ${member.modifiers ? member.modifiers.map( kindOf ) : ''}\n`;
+
+        if ( [ ts.SyntaxKind.PropertyDeclaration, ts.SyntaxKind.MethodDeclaration, ts.SyntaxKind.GetAccessor, ts.SyntaxKind.SetAccessor ].includes( member.kind ) ) {
+          for ( const subChild of member.getChildren() ) {
+            debug += `    ${kindOf( subChild )}\n`;
+
+            if ( subChild.kind === ts.SyntaxKind.SyntaxList ) {
+              for ( const subSubChild of subChild.getChildren() ) {
+                // @ts-expect-error
+                debug += `      ${kindOf( subSubChild )} ${member.modifiers ? member.modifiers.map( kindOf ) : ''}\n`;
+
+                if ( ts.isParameter( subSubChild ) ) {
+                  for ( const subSubSubChild of subSubChild.getChildren() ) {
+                    debug += `        ${kindOf( subSubSubChild )}\n`;
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
 
@@ -232,7 +373,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       ts.SyntaxKind.ExportAssignment
     ].includes( child.kind ) ) {
       for ( const subChild of child.getChildren() ) {
-        console.log( `  ${kindOf( subChild )}` );
+        debug += `  ${kindOf( subChild )}\n`;
       }
     }
   }
@@ -243,6 +384,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     sourceName: sourceName,
     topLevelComments: topLevelComments,
     classes: classes,
-    exports: exports
+    exports: exports,
+    debug: debug
   };
 };

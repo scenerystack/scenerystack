@@ -298,10 +298,13 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
 
       const pageName = getPageName( entryPoint, module );
 
+      console.log( `${entryPoint}/${pageName}.md` );
+
       const markdown = docToMarkdown( docMap[ module ], moduleExportMap, entryPoint, pageName );
 
-      console.log( `Writing ${entryPoint}/${pageName}.md` );
       fs.writeFileSync( `../community/docs/reference/api/${entryPoint}/${pageName}.md`, markdown );
     }
   }
+
+  console.log( 'complete' );
 };
