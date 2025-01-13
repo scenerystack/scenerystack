@@ -15,7 +15,8 @@ import type { ExportMap } from './generateSceneryStackDocumentation.js';
 
 const DEBUG = false;
 const TYPE_MAP = {
-  class: 'Class'
+  class: 'Class',
+  type: 'Type'
 };
 
 export const docToMarkdown = (
@@ -139,9 +140,9 @@ ${exports.filter( exportName => getExportInfo( exportName ) ).map( exportName =>
   }
   
   // Import statement
-  if ( obj.type === 'class' ) {
+  if ( obj.type === 'class' || obj.type === 'type' ) {
     body += `\`\`\`js
-import { ${exportName} } from 'scenerystack/${entryPoint}';
+import ${obj.type === 'type' ? 'type ' : ''}{ ${exportName} } from 'scenerystack/${entryPoint}';
 \`\`\`
 `;
   }
@@ -173,6 +174,10 @@ import { ${exportName} } from 'scenerystack/${entryPoint}';
       body += '### Static Properties\n\n';
       body += obj.staticProperties.map( propertyDoc ).join( '\n\n' ) + '\n\n';
     }
+  }
+  
+  if ( obj.type === 'type' ) {
+    
   }
   
   return `## ${TYPE_MAP[ obj.type ]} ${exportName} {: #${exportName} }\n\n${body.length ? `\n${body}` : ''}`;

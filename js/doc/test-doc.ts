@@ -14,8 +14,8 @@ const testDoc = ( sourcePath: string ) => {
 // testDoc( 'scenery/js/nodes/Node.ts' );
 // testDoc( 'twixt/js/Animation.ts' );
 
-// testDoc( 'axon/js/NumberProperty.ts' );
-testDoc( 'joist/js/i18n/localeProperty.ts' );
+testDoc( 'axon/js/NumberProperty.ts' );
+// testDoc( 'joist/js/i18n/localeProperty.ts' );
 //
 // // console.log( JSON.stringify( extractDoc( fs.readFileSync( './src/dot/js/Bounds2.ts', 'utf-8' ), 'dot/js/Bounds2.ts' ), null, 2 ) );
 // console.log( JSON.stringify( extractDoc( fs.readFileSync( './src/scenery/js/layout/nodes/AlignBox.ts', 'utf-8' ), 'scenery/js/layout/nodes/AlignBox.ts' ), null, 2 ) );

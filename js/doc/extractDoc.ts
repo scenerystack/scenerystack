@@ -28,6 +28,7 @@ export type Documentation = {
   sourceName: string;
   topLevelComments: string[];
   classes: ClassDocumentation[];
+  typeAliases: TypeAliasDocumentation[];
   exports: ExportDocumentation[];
   debug: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 };
@@ -68,11 +69,24 @@ export type MethodParameterDocumentation = {
   typeString: string;
 };
 
+export type TypeAliasDocumentation = {
+  type: 'type';
+  name: string;
+  comment: string | null;
+  typeDoc: TypeDocumentation;
+};
+
 export type TypePropertySignatureDocumentation = {
   type: 'typePropertySignature';
   name: string; // .name.getText()
   question: boolean; // !!.questionToken
   typeString: string; // .type.getText()
+};
+
+export type TypeLiteralDocumentation = {
+  type: 'typeLiteral';
+  // TODO: rename signatures
+  members: TypePropertySignatureDocumentation[];
 };
 
 export type TypeIntersectionDocumentation = {
@@ -101,8 +115,8 @@ export type TypeRawDocumentation = {
   typeString: string;
 };
 
-export type ExportableType = ClassDocumentation;
-export type TypeDocumentation = TypePropertySignatureDocumentation | TypeIntersectionDocumentation | TypeUnionDocumentation | TypeReferenceDocumentation | TypeStringLiteralDocumentation | TypeRawDocumentation;
+export type ExportableType = ClassDocumentation | TypeAliasDocumentation;
+export type TypeDocumentation = TypeLiteralDocumentation | TypeIntersectionDocumentation | TypeUnionDocumentation | TypeReferenceDocumentation | TypeStringLiteralDocumentation | TypeRawDocumentation;
 
 export type ExportDocumentation = {
   name: string; // 'default' an option
@@ -174,6 +188,8 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
 
   // Either take the last block comment, or all of the last line comments.
   // TODO: should we look for double newlines between line comments?
+  //
+  // // TODO: or get trailing comment too (e.g. single-line things that get doc'ed)
   const getSpecificLeadingComment = ( node: ts.Node ): string | null => {
     const comments = getLeadingComments( node );
 
@@ -192,6 +208,54 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     }
   };
 
+  const parseToTypeDoc = ( type: ts.TypeNode ): TypeDocumentation => {
+    if ( ts.isTypeLiteralNode( type ) ) {
+      const literal: TypeLiteralDocumentation = {
+        type: 'typeLiteral',
+        members: []
+      };
+
+      // TODO: how to handle different... members?
+      for ( const member of type.members ) {
+        if ( ts.isPropertySignature( member ) ) {
+          literal.members.push( {
+            type: 'typePropertySignature',
+            name: member.name.getText(),
+            question: !!member.questionToken,
+            typeString: member.type?.getText() ?? 'any'
+          } );
+        }
+      }
+
+      return literal;
+    }
+    else if ( ts.isIntersectionTypeNode( type ) || ts.isUnionTypeNode( type ) ) {
+      return {
+        type: ts.isIntersectionTypeNode( type ) ? 'typeIntersection' : 'typeUnion',
+        types: type.types.map( parseToTypeDoc )
+      };
+    }
+    else if ( ts.isTypeReferenceNode( type ) ) {
+      return {
+        type: 'typeReference',
+        name: type.typeName.getText(),
+        arguments: type.typeArguments ? type.typeArguments.map( parseToTypeDoc ) : []
+      };
+    }
+    else if ( ts.isLiteralTypeNode( type ) && ts.isStringLiteral( type.literal ) ) {
+      return {
+        type: 'typeStringLiteral',
+        text: type.literal.text
+      };
+    }
+    else {
+      return {
+        type: 'typeRaw',
+        typeString: type.getText()
+      };
+    }
+  };
+
   const mainChildren = sourceAST.getChildren()[ 0 ].getChildren();
 
   const topLevelComments = mainChildren.filter( node => node.kind === ts.SyntaxKind.ImportDeclaration ).map( node => {
@@ -199,6 +263,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
   } ).flat().filter( comment => !( comment.includes( 'Copyright' ) && comment.includes( 'University of Colorado Boulder' ) ) );
 
   const classes: ClassDocumentation[] = [];
+  const typeAliases: TypeAliasDocumentation[] = [];
   const exports: ExportDocumentation[] = [];
 
   for ( const child of mainChildren ) {
@@ -322,7 +387,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
           }
         }
 
-        const clazz = {
+        const clazz: ClassDocumentation = {
           type: 'class',
           name: className,
           comment: comment,
@@ -330,7 +395,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
           staticMethods: staticMethods,
           properties: properties,
           staticProperties: staticProperties
-        } as const;
+        };
 
         classes.push( clazz );
 
@@ -361,6 +426,15 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
           }
         }
 
+        if ( !exportableObject ) {
+          for ( const typeAlias of typeAliases ) {
+            if ( typeAlias.name === identifierName ) {
+              exportableObject = typeAlias;
+              break;
+            }
+          }
+        }
+
         if ( exportableObject ) {
           exports.push( {
             name: name,
@@ -370,59 +444,34 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       }
     }
     else if ( ts.isTypeAliasDeclaration( child ) ) {
-      const isExport = hasExportModifier( child );
-      const isDefaultExport = hasDefaultExportModifier( child );
-
       const name = child.name.getText();
+
+      // TODO: or get trailing comment too
       const comment = getSpecificLeadingComment( child );
 
       if ( name.startsWith( '_' ) || comment?.includes( `${repo}-internal` ) ) {
         continue;
       }
 
-      // TODO: handle type literals, unions and intersections natively, so we can reference other things
-      const typeString = child.type.getText();
+      const typeDoc = parseToTypeDoc( child.type );
 
-      // TODO: presumably DO NOT resolve external types? if a literal, can we note the keys?
-      // TODO: showing all keys that are external (like inherited methods/fields) sounds great.
-      // TODO: is the main difficulty tracing through type links in the file (to imports?)
-      // TODO:   be lazy and guess imports (e.g. same name)
-      // TODO: we probably have to do type link-up after parsing everything, no?
-      // TODO: you can specify types out-of-order effectively.
-      // TODO:   when we reach the end, see if we can "resolve" internal types out (do NOT infinite loop)
-      // TODO:     do not infinite loop
+      const typeAlias: TypeAliasDocumentation = {
+        type: 'type',
+        name: name,
+        comment: comment,
+        typeDoc: typeDoc
+      };
 
-      // TypeLiteral
-      //   isTypeLiteral
-      //   : members
-      // IntersectionType
-      //   isIntersectionTypeNode
-      //   : types
-      // UnionType
-      //   isUnionTypeNode
-      //   : types
+      typeAliases.push( typeAlias );
 
-      // TODO: OMG --- get type docs OR property docs if they are AT THE END OF THE LINE (line comment)
-
-      // console.log( kindOf( child.type ) );
-      // for ( const subChild of child.type.getChildren() ) {
-      //   console.log( `  ${kindOf( subChild )}\n` );
-      // }
-
-      /*
-        readonly typeParameters?: NodeArray<TypeParameterDeclaration>;
-        readonly type: TypeNode;
-
-
-      interface TypeParameterDeclaration extends NamedDeclaration, JSDocContainer {
-        readonly kind: SyntaxKind.TypeParameter;
-        readonly parent: DeclarationWithTypeParameterChildren | InferTypeNode;
-        readonly modifiers?: NodeArray<Modifier>;
-        readonly name: Identifier;
-        readonly constraint?: TypeNode;
-        readonly default?: TypeNode;
-        expression?: Expression;
-       */
+      if ( hasExportModifier( child ) ) {
+        // TODO: ' as ... '
+        const isDefault = hasDefaultExportModifier( child );
+        exports.push( {
+          name: isDefault ? 'default' : name,
+          object: typeAlias
+        } );
+      }
     }
     else if ( ts.isExpressionStatement( child ) ) {
 
@@ -458,15 +507,6 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
 
           if ( ts.isPropertySignature( member ) ) {
             debug += `      "${member.name.getText()}"${member.questionToken ? '?' : ''}: ${member.type ? kindOf( member.type ) : 'any'}\n`;
-
-            /*
-                    readonly kind: SyntaxKind.PropertySignature;
-        readonly parent: TypeLiteralNode | InterfaceDeclaration;
-        readonly modifiers?: NodeArray<Modifier>;
-        readonly name: PropertyName;
-        readonly questionToken?: QuestionToken;
-        readonly type?: TypeNode;
-             */
           }
         }
       }
@@ -518,12 +558,133 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     }
   }
 
+  // Resolve and simplify exported types (so they aren't using type aliases that are not exported)
+  // This helps a lot with the options patterns used.
+  for ( const exportDoc of exports ) {
+    if ( exportDoc.object.type === 'type' ) {
+      const originalTypeDoc = exportDoc.object.typeDoc;
+
+      const resolveAndSimplify = ( typeDoc: TypeDocumentation ): TypeDocumentation => {
+        // resolve
+        if ( typeDoc.type === 'typeReference' ) {
+          const matchingAlias = typeAliases.find( alias => alias.name === typeDoc.name );
+
+          // If we have a type AND it is not exported, we can inline it
+          if ( matchingAlias && !exports.some( exp => exp.name === typeDoc.name ) ) {
+            return resolveAndSimplify( matchingAlias.typeDoc );
+          }
+          else if ( typeDoc.name === 'StrictOmit' ) {
+            // TODO
+          }
+          else if ( typeDoc.name === 'Pick' ) {
+            // TODO
+          }
+          else if ( typeDoc.name === 'PickOptional' ) {
+            // TODO
+          }
+          else if ( typeDoc.name === 'PickRequired' ) {
+            // TODO
+          }
+        }
+        // simplify
+        else if ( typeDoc.type === 'typeIntersection' ) {
+          const simplifiedAndFlattenedTypes = typeDoc.types.map( resolveAndSimplify ).map( member => {
+            return member.type === 'typeIntersection' ? member.types : [ member ];
+          } ).flat();
+
+          const literalTypes = simplifiedAndFlattenedTypes.filter( member => member.type === 'typeLiteral' );
+          const nonLiteralTypes = simplifiedAndFlattenedTypes.filter( member => member.type !== 'typeLiteral' );
+
+          const resultingTypes: TypeDocumentation[] = [];
+
+          if ( literalTypes.length === 1 ) {
+            resultingTypes.push( literalTypes[ 0 ] );
+          }
+          else if ( literalTypes.length > 1 ) {
+            // Merge them!
+            const mergedLiteral: TypeLiteralDocumentation = {
+              type: 'typeLiteral',
+              members: []
+            };
+
+            for ( const type of literalTypes ) {
+              for ( const signature of type.members ) {
+                const conflictMergedSignature = mergedLiteral.members.find( mergedSignature => mergedSignature.name === signature.name );
+
+                if ( conflictMergedSignature ) {
+                  // TODO: conflict! Handle this better
+
+                  conflictMergedSignature.question &&= signature.question;
+
+                  let typeString;
+
+                  // Same is easy
+                  if ( signature.typeString === conflictMergedSignature.typeString ) {
+                    typeString = signature.typeString;
+                  }
+                  // Pick the longer one (case A)
+                  else if (
+                    signature.typeString.startsWith( conflictMergedSignature.typeString ) ||
+                    signature.typeString.endsWith( conflictMergedSignature.typeString )
+                  ) {
+                    typeString = signature.typeString;
+                  }
+                  // Pick the longer one (case B)
+                  else if (
+                    conflictMergedSignature.typeString.startsWith( signature.typeString ) ||
+                    conflictMergedSignature.typeString.endsWith( signature.typeString )
+                  ) {
+                    typeString = conflictMergedSignature.typeString;
+                  }
+                  // I guess just concatenate them (TODO: could do smarter things, or use TS compiler lib)
+                  else {
+                    typeString = `( ${conflictMergedSignature.typeString} ) & ( ${signature.typeString} )`;
+                  }
+
+                  conflictMergedSignature.typeString = typeString;
+
+                  // TODO: add comments!!! OH NO
+                }
+                else {
+                  mergedLiteral.members.push( signature );
+                }
+              }
+            }
+          }
+
+          resultingTypes.push( ...nonLiteralTypes );
+
+          // Write if any changes
+          if ( typeDoc.types.some( type => !resultingTypes.includes( type ) ) ) {
+            if ( resultingTypes.length === 1 ) {
+              return resultingTypes[ 0 ];
+            }
+            else {
+              return {
+                type: 'typeIntersection',
+                types: resultingTypes
+              };
+            }
+          }
+        }
+
+        return typeDoc;
+      };
+
+      const resolvedTypeDoc = resolveAndSimplify( originalTypeDoc );
+      if ( resolvedTypeDoc !== originalTypeDoc ) {
+        exportDoc.object.typeDoc = resolvedTypeDoc;
+      }
+    }
+  }
+
   return {
     repo: repo,
     sourcePath: sourcePath,
     sourceName: sourceName,
     topLevelComments: topLevelComments,
     classes: classes,
+    typeAliases: typeAliases,
     exports: exports,
     debug: debug
   };
