@@ -68,7 +68,41 @@ export type MethodParameterDocumentation = {
   typeString: string;
 };
 
-type ExportableType = ClassDocumentation;
+export type TypePropertySignatureDocumentation = {
+  type: 'typePropertySignature';
+  name: string; // .name.getText()
+  question: boolean; // !!.questionToken
+  typeString: string; // .type.getText()
+};
+
+export type TypeIntersectionDocumentation = {
+  type: 'typeIntersection';
+  types: TypeDocumentation[];
+};
+
+export type TypeUnionDocumentation = {
+  type: 'typeUnion';
+  types: TypeDocumentation[];
+};
+
+export type TypeReferenceDocumentation = {
+  type: 'typeReference';
+  name: string;
+  arguments: TypeDocumentation[];
+};
+
+export type TypeStringLiteralDocumentation = {
+  type: 'typeStringLiteral';
+  text: string;
+};
+
+export type TypeRawDocumentation = {
+  type: 'typeRaw';
+  typeString: string;
+};
+
+export type ExportableType = ClassDocumentation;
+export type TypeDocumentation = TypePropertySignatureDocumentation | TypeIntersectionDocumentation | TypeUnionDocumentation | TypeReferenceDocumentation | TypeStringLiteralDocumentation | TypeRawDocumentation;
 
 export type ExportDocumentation = {
   name: string; // 'default' an option
@@ -368,6 +402,8 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       //   isUnionTypeNode
       //   : types
 
+      // TODO: OMG --- get type docs OR property docs if they are AT THE END OF THE LINE (line comment)
+
       // console.log( kindOf( child.type ) );
       // for ( const subChild of child.type.getChildren() ) {
       //   console.log( `  ${kindOf( subChild )}\n` );
@@ -397,6 +433,50 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
 
     // @ts-expect-error
     debug += `${kindOf( child )} ${child.modifiers ? child.modifiers.map( kindOf ) : ''}\n`;
+
+    if ( ts.isTypeAliasDeclaration( child ) ) {
+      debug += `  :${kindOf( child.type )}\n`;
+
+      if ( ts.isIntersectionTypeNode( child.type ) || ts.isUnionTypeNode( child.type ) ) {
+        for ( const type of child.type.types ) {
+          debug += `    ${ts.isIntersectionTypeNode( child.type ) ? '&' : '|'}${kindOf( type )}\n`;
+
+          if ( ts.isTypeReferenceNode( type ) ) {
+            debug += `      "${type.typeName.getText()}${type.typeArguments ? `<${type.typeArguments.map( kindOf ).join( ', ' )}>` : ''}"\n`;
+          }
+          if ( ts.isLiteralTypeNode( type ) ) {
+            if ( ts.isStringLiteral( type.literal ) ) {
+              debug += `      "${type.literal.text}"\n`;
+            }
+          }
+        }
+      }
+      if ( ts.isTypeLiteralNode( child.type ) ) {
+        for ( const member of child.type.members ) {
+          // @ts-expect-error
+          debug += `    .${kindOf( member )} ${member.modifiers ? member.modifiers.map( kindOf ) : ''}\n`;
+
+          if ( ts.isPropertySignature( member ) ) {
+            debug += `      "${member.name.getText()}"${member.questionToken ? '?' : ''}: ${member.type ? kindOf( member.type ) : 'any'}\n`;
+
+            /*
+                    readonly kind: SyntaxKind.PropertySignature;
+        readonly parent: TypeLiteralNode | InterfaceDeclaration;
+        readonly modifiers?: NodeArray<Modifier>;
+        readonly name: PropertyName;
+        readonly questionToken?: QuestionToken;
+        readonly type?: TypeNode;
+             */
+          }
+        }
+      }
+
+      if ( child.typeParameters ) {
+        for ( const typeParameter of child.typeParameters ) {
+          debug += `  <${kindOf( typeParameter )}\n`;
+        }
+      }
+    }
 
     if ( ts.isClassDeclaration( child ) ) {
       for ( const subChild of child.getChildren() ) {
@@ -428,7 +508,6 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     }
 
     if ( [
-      ts.SyntaxKind.TypeAliasDeclaration,
       ts.SyntaxKind.ExpressionStatement,
       ts.SyntaxKind.FunctionDeclaration,
       ts.SyntaxKind.ExportAssignment
