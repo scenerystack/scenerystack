@@ -368,10 +368,10 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       //   isUnionTypeNode
       //   : types
 
-      console.log( kindOf( child.type ) );
-      for ( const subChild of child.type.getChildren() ) {
-        console.log( `  ${kindOf( subChild )}\n` );
-      }
+      // console.log( kindOf( child.type ) );
+      // for ( const subChild of child.type.getChildren() ) {
+      //   console.log( `  ${kindOf( subChild )}\n` );
+      // }
 
       /*
         readonly typeParameters?: NodeArray<TypeParameterDeclaration>;

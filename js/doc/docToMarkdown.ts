@@ -10,7 +10,7 @@
  */
 
 import path from 'path';
-import { ClassMethodDocumentation, ClassPropertyDocumentation, Documentation } from "./extractDoc.js";
+import { ClassMethodDocumentation, ClassPropertyDocumentation, Documentation } from './extractDoc.js';
 import type { ExportMap } from './generateSceneryStackDocumentation.js';
 
 const DEBUG = false;
@@ -22,7 +22,8 @@ export const docToMarkdown = (
   doc: Documentation,
   exportMap: ExportMap,
   entryPoint: string,
-  primaryName: string
+  primaryName: string,
+  wrapNameString: ( name: string, string?: string ) => string
 ): string => {
 
   const pathBits = doc.sourcePath.split( '/' );
@@ -48,12 +49,37 @@ export const docToMarkdown = (
     return doc.exports.find( info => info.name === getExportForExternalExport( exportName ) ) ?? null;
   };
 
+  const wrapNamesIn = ( string: string ): string => {
+    const matches = Array.from( string.matchAll( /\w+/g ) );
+
+    let result = '';
+    let lastIndex = 0;
+
+    for ( const match of matches ) {
+      const matchIndex = match.index;
+      const word = match[ 0 ];
+
+      result += escapeChars( string.slice( lastIndex, matchIndex ) );
+      result += wrapNameString( word );
+
+      lastIndex = matchIndex + word.length;
+    }
+
+    // After last match
+    result += escapeChars( string.slice( lastIndex ) );
+
+    return result;
+  };
+
   const typeStyle = ( typeString: string ): string => {
-    return `<span style="font-weight: 400; opacity: 80%;">${escapeChars( typeString )}</span>`;
+    if ( !typeString ) {
+      return '';
+    }
+    return `<span style="font-weight: 400;">${wrapNamesIn( typeString )}</span>`;
   };
 
   const typeSuffix = ( typeString: string ): string => {
-    if ( typeString === 'any' ) {
+    if ( typeString === 'any' || typeString === 'void' || !typeString ) {
       return '';
     }
     else {

@@ -47,6 +47,15 @@ const entryPoints = [
   'vegas'
 ] as const;
 
+const EXTERNAL_DOC_URLS: Record<string, string> = {
+  // TODO: expand this list
+  HTMLCanvasElement: 'https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement'
+};
+
+const KEYWORD_LIST = [
+  'null', 'undefined', 'this', 'number', 'string', 'boolean', 'unknown', 'any', 'bigint', 'symbol', 'never', 'void'
+];
+
 export type ExportEntry = {
   module: string;
   importName: string;
@@ -286,6 +295,42 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
     return Object.keys( moduleExportMap ).find( key => moduleExportMap[ key ].importName === 'default' ) ?? path.basename( module ).replace( /\.[tj]s$/, '' );
   };
 
+  const getURLForName = ( name: string ): string | null => {
+    const entryPoint = entryPoints.find( entryPoint => Object.hasOwn( resolvedExportMaps[ entryPoint ], name ) );
+    if ( entryPoint ) {
+      const sourceModule = resolvedExportMaps[ entryPoint ][ name ].module;
+      const page = `../${entryPoint}/${getPageName( entryPoint, resolvedExportMaps[ entryPoint ][ name ].module )}.md`;
+
+      // TODO: This detection isn't working. Carousel + CarouselOptions is example
+      const isSameName = name === getPageName( entryPoint, sourceModule );
+
+      return `${page}${isSameName ? '' : `#${name}`}`;
+    }
+    else if ( EXTERNAL_DOC_URLS[ name ] ) {
+      return EXTERNAL_DOC_URLS[ name ];
+    }
+    else {
+      return null;
+    }
+  };
+
+  const wrapNameString = ( name: string, string: string = name ): string => {
+    const url = getURLForName( name );
+
+    // TODO: number/string/boolean/etc. highlighting? Use KEYWORD_LIST
+    if ( url ) {
+      return `[${string}](${url})`;
+    }
+    else if ( KEYWORD_LIST.includes( name ) ) {
+      return `<span style="color: hsla(calc(var(--md-hue) + 180deg),80%,40%,1);">${string}</span>`;
+      // TODO: can we get this working with accent colors that are more built-in?
+      return `<!--<span style="color: var(&#45;&#45;md-accent-fg-color);">${string}</span>-->`;
+    }
+    else {
+      return string;
+    }
+  };
+
   let navYAML = '';
 
   for ( const entryPoint of entryPoints ) {
@@ -314,8 +359,9 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
       const moduleExportMap = subsetExportMapWithModule( exportMap, module );
 
       console.log( `${entryPoint}/${pageName}.md` );
+      // TODO: just log missing exports!
 
-      const markdown = docToMarkdown( docMap[ module ], moduleExportMap, entryPoint, pageName );
+      const markdown = docToMarkdown( docMap[ module ], moduleExportMap, entryPoint, pageName, wrapNameString );
 
       fs.writeFileSync( `../community/docs/reference/api/${entryPoint}/${pageName}.md`, markdown );
     }
