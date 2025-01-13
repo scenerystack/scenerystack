@@ -33,16 +33,15 @@ export type ClassPropertyDocumentation = {
 type ExportableType = ClassDocumentation;
 
 export type ExportDocumentation = {
-  name: string; // sourceName if default export
-  isDefault: boolean;
+  name: string; // 'default' an option
   object: ExportableType;
 };
 
 type HasModifiers = ts.ParameterDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration | ts.IndexSignatureDeclaration | ts.ClassDeclaration | ts.ClassExpression | ts.InterfaceDeclaration | ts.TypeAliasDeclaration | ts.EnumDeclaration | ts.ModuleDeclaration | ts.ImportEqualsDeclaration | ts.ImportDeclaration | ts.ExportDeclaration | ts.ExportAssignment;
 
-export const extractDoc = ( sourceCode: string, sourcePath: string ): Documentation => {
-  const sourceAST = ts.createSourceFile(
-    'Bounds2.ts',
+export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?: ts.SourceFile ): Documentation => {
+  const sourceAST = sourceFile ? sourceFile : ts.createSourceFile(
+    sourcePath,
     sourceCode,
     ts.ScriptTarget.ESNext,
     true
@@ -137,7 +136,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string ): Documentat
               continue;
             }
 
-            const isReadonly = member.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.ReadonlyKeyword );
+            const isReadonly = member.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.ReadonlyKeyword ) ?? false;
             const type = member.type;
             const initializer = member.initializer;
 
@@ -172,10 +171,9 @@ export const extractDoc = ( sourceCode: string, sourcePath: string ): Documentat
         if ( hasExportModifier( child ) ) {
           // TODO: ' as ... '
           const isDefault = hasDefaultExportModifier( child );
-          const name = isDefault ? sourceName : className;
+          const name = isDefault ? 'default' : className;
           exports.push( {
             name: name,
-            isDefault: isDefault,
             object: clazz
           } );
         }
@@ -183,7 +181,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string ): Documentat
     }
     else if ( ts.isExportAssignment( child ) ) {
       const isDefault = child.getChildren().some( subChild => kindOf( subChild ) === 'DefaultKeyword' );
-      const name = isDefault ? sourceName : child.name?.getText() ?? null;
+      const name = isDefault ? 'default' : child.name?.getText() ?? null;
       // NOTE: only a simple case for now
       const identifierName = child.getChildren().find( subChild => ts.isIdentifier( subChild ) )?.getText() ?? null;
 
@@ -200,7 +198,6 @@ export const extractDoc = ( sourceCode: string, sourcePath: string ): Documentat
         if ( exportableObject ) {
           exports.push( {
             name: name,
-            isDefault: isDefault,
             object: exportableObject
           } );
         }
