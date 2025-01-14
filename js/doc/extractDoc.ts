@@ -22,6 +22,8 @@
  *
  * TODO: Node constructor docs
  *
+ * TODO: objects/functions (will need to potentially record and scan definitions)
+ *
  * TODO: comment patcher (so we don't have to duplicate comments, e.g. setX, getX, set X(), get X(), FooOptions.x)
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
@@ -56,7 +58,7 @@ export type ClassMethodDocumentation = {
   name: string;
   comment: string | null;
   isProtected: boolean;
-  parameters: MethodParameterDocumentation[];
+  parameters: FunctionParameterDocumentation[];
   returnTypeString: string;
 };
 
@@ -69,7 +71,8 @@ export type ClassPropertyDocumentation = {
   typeString: string;
 };
 
-export type MethodParameterDocumentation = {
+export type FunctionParameterDocumentation = {
+  type: 'functionParameter';
   name: string;
   dotDotDot: boolean;
   question: boolean;
@@ -217,6 +220,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     }
   };
 
+  // if in the form of `typeof VALUES[number]`, return `VALUES`
   const getPossibleStringEnumName = ( type: ts.TypeNode ): string | null => {
     if ( ts.isIndexedAccessTypeNode( type ) && ts.isTypeQueryNode( type.objectType ) && type.indexType.kind === ts.SyntaxKind.NumberKeyword ) {
       return type.objectType.exprName.getText();
@@ -226,6 +230,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     }
   };
 
+  // given a name, find `const name = <initializer>;` and return the initializer
   const getTopLevelInitializedValue = ( name: string, topLevelNodes: readonly ts.Node[] ): ts.Expression | null => {
     for ( const node of topLevelNodes ) {
       if ( node.kind === ts.SyntaxKind.FirstStatement ) {
@@ -243,6 +248,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     return null;
   };
 
+  // [ 'left', 'center', 'right' ] as const => 'left' | 'center' | 'right'
   const getConstStringArrayAsType = ( expression: ts.Expression ) : TypeDocumentation | null => {
     if ( ts.isAsExpression( expression ) && ts.isArrayLiteralExpression( expression.expression ) ) {
       const stringLiterals: TypeStringLiteralDocumentation[] = [];
@@ -282,6 +288,80 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     }
 
     return null;
+  };
+
+  const getFunctionParameters = ( type: ts.Node ): FunctionParameterDocumentation[] => {
+    const children = type.getChildren();
+
+    const openParenIndex = children.findIndex( child => child.kind === ts.SyntaxKind.OpenParenToken );
+    const closeParenIndex = children.findIndex( child => child.kind === ts.SyntaxKind.CloseParenToken );
+
+    if ( openParenIndex === -1 ) {
+      throw new Error( 'Expected OpenParenToken' );
+    }
+
+    // Handle no-args
+    if ( openParenIndex + 1 === closeParenIndex ) {
+      return [];
+    }
+
+    const parameterSyntaxList = children[ openParenIndex + 1 ];
+    if ( parameterSyntaxList.kind !== ts.SyntaxKind.SyntaxList ) {
+      throw new Error( 'Expected SyntaxList' );
+    }
+
+    const parameterNodes = parameterSyntaxList.getChildren().filter( child => ts.isParameter( child ) );
+
+    return parameterNodes.map( parameterNode => {
+      return {
+        type: 'functionParameter',
+        name: parameterNode.name.getText(),
+        dotDotDot: !!parameterNode.dotDotDotToken,
+        question: !!parameterNode.questionToken,
+        typeString: parameterNode.type?.getText() ?? 'any'
+      };
+    } );
+  };
+
+  const getFunctionReturnTypeString = ( type: ts.Node ): string => {
+    const children = type.getChildren();
+    const colonIndex = children.findIndex( child => child.kind === ts.SyntaxKind.ColonToken );
+
+    let returnTypeString = 'any';
+    if ( colonIndex !== -1 ) {
+      returnTypeString = children[ colonIndex + 1 ].getText();
+    }
+
+    return returnTypeString;
+  };
+
+  const isNodePrivate = ( type: ts.Node & { modifiers?: ts.NodeArray<ts.ModifierLike> } ): boolean => {
+    return type.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.PrivateKeyword ) ?? false;
+  };
+
+  const isNodeProtected = ( type: ts.Node & { modifiers?: ts.NodeArray<ts.ModifierLike> } ): boolean => {
+    return type.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.ProtectedKeyword ) ?? false;
+  };
+
+  const isNodeStatic = ( type: ts.Node & { modifiers?: ts.NodeArray<ts.ModifierLike> } ): boolean => {
+    return type.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.StaticKeyword ) ?? false;;
+  };
+
+  const isNodeReadonly = ( type: ts.Node & { modifiers?: ts.NodeArray<ts.ModifierLike> } ): boolean => {
+    return type.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.ReadonlyKeyword ) ?? false;;
+  };
+
+  const isNameExcluded = ( name: string ): boolean => {
+    return name.startsWith( '_' );
+  };
+
+  const isCommentExcluded = ( comment: string | null ): boolean => {
+    if ( comment ) {
+      return comment.includes( `${repo}-internal` );
+    }
+    else {
+      return false;
+    }
   };
 
   const parseToTypeDoc = ( type: ts.TypeNode ): TypeDocumentation => {
@@ -371,23 +451,21 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
 
             const name = member.name.getText();
 
-            if ( name.startsWith( '_' ) || memberComment?.includes( `${repo}-internal` ) ) {
+            if (
+              isNameExcluded( name ) ||
+              isCommentExcluded( memberComment ) ||
+              isNodePrivate( member )
+            ) {
               continue;
             }
 
-            if ( member.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.PrivateKeyword ) ) {
-              continue;
-            }
-
-            const isReadonly = member.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.ReadonlyKeyword ) ?? false;
-            const isStatic = member.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.StaticKeyword ) ?? false;
-            const isProtected = member.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.ProtectedKeyword ) ?? false;
             const type = member.type;
             const initializer = member.initializer;
 
             let typeString = type?.getText() ?? null;
 
             // TODO: handle Identifier<boo> also https://github.com/scenerystack/community/issues/80
+            // Handle where the type is not declared, but we have a `foo: new SomeType` (typeString should be SomeType)
             if ( typeString === null && initializer && ts.isNewExpression( initializer ) && ts.isIdentifier( initializer.expression ) ) {
               typeString = initializer.expression.getText();
             }
@@ -396,12 +474,12 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
               typeString = 'any';
             }
 
-            ( isStatic ? staticProperties : properties ).push( {
+            ( isNodeStatic( member ) ? staticProperties : properties ).push( {
               type: 'classProperty',
               name: name,
               comment: memberComment,
-              isReadonly: isReadonly,
-              isProtected: isProtected,
+              isReadonly: isNodeReadonly( member ),
+              isProtected: isNodeProtected( member ),
               typeString: typeString
             } );
           }
@@ -409,56 +487,21 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
 
             const name = ts.isMethodDeclaration( member ) ? member.name.getText() : 'constructor';
 
-            if ( name.startsWith( '_' ) || memberComment?.includes( `${repo}-internal` ) ) {
+            if (
+              isNameExcluded( name ) ||
+              isCommentExcluded( memberComment ) ||
+              isNodePrivate( member )
+            ) {
               continue;
             }
 
-            if ( member.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.PrivateKeyword ) ) {
-              continue;
-            }
-
-            const isStatic = member.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.StaticKeyword ) ?? false;
-            const isProtected = member.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.ProtectedKeyword ) ?? false;
-
-            // TODO: see how comment extraction works. First thing might be JSDocComment type
-
-            const children = member.getChildren();
-
-            const openParenIndex = children.findIndex( child => child.kind === ts.SyntaxKind.OpenParenToken );
-            const colonIndex = children.findIndex( child => child.kind === ts.SyntaxKind.ColonToken );
-
-            if ( openParenIndex === -1 ) {
-              throw new Error( 'Expected OpenParenToken' );
-            }
-
-            const parameterSyntaxList = children[ openParenIndex + 1 ];
-            if ( parameterSyntaxList.kind !== ts.SyntaxKind.SyntaxList ) {
-              throw new Error( 'Expected SyntaxList' );
-            }
-
-            const parameterNodes = parameterSyntaxList.getChildren().filter( child => ts.isParameter( child ) );
-
-            const parameters = parameterNodes.map( parameterNode => {
-              return {
-                name: parameterNode.name.getText(),
-                dotDotDot: !!parameterNode.dotDotDotToken,
-                question: !!parameterNode.questionToken,
-                typeString: parameterNode.type?.getText() ?? 'any'
-              };
-            } );
-
-            let returnTypeString = 'any';
-            if ( colonIndex !== -1 ) {
-              returnTypeString = children[ colonIndex + 1 ].getText();
-            }
-
-            ( isStatic ? staticMethods : methods ).push( {
+            ( isNodeStatic( member ) ? staticMethods : methods ).push( {
               type: 'classMethod',
               name: name,
               comment: memberComment,
-              isProtected: isProtected,
-              parameters: parameters,
-              returnTypeString: returnTypeString
+              isProtected: isNodeProtected( member ),
+              parameters: getFunctionParameters( member ),
+              returnTypeString: getFunctionReturnTypeString( member )
             } );
 
           }
