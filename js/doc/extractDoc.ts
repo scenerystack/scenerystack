@@ -16,11 +16,17 @@
  * TODO: class template params
  * TODO: link to classes/names and highlight types (crosslink) nicely
  * TODO: can we inspect computed types???
+ * TODO: typeof ALIGN_VALUES[number]
+ *
+ * TODO: comments at the end of a line for certain things
+ *
+ * TODO: comments for types
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
 import ts from 'typescript';
+import _ from 'lodash';
 
 export type Documentation = {
   repo: string;
@@ -80,7 +86,7 @@ export type TypePropertySignatureDocumentation = {
   type: 'typePropertySignature';
   name: string; // .name.getText()
   question: boolean; // !!.questionToken
-  typeString: string; // .type.getText()
+  typeDoc: TypeDocumentation | null;
 };
 
 export type TypeLiteralDocumentation = {
@@ -222,7 +228,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
             type: 'typePropertySignature',
             name: member.name.getText(),
             question: !!member.questionToken,
-            typeString: member.type?.getText() ?? 'any'
+            typeDoc: member.type ? parseToTypeDoc( member.type ) : null
           } );
         }
       }
@@ -474,10 +480,10 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       }
     }
     else if ( ts.isExpressionStatement( child ) ) {
-
+      // TODO
     }
     else if ( ts.isFunctionDeclaration( child ) ) {
-
+      // TODO
     }
 
     // @ts-expect-error
@@ -588,9 +594,16 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
         }
         // simplify
         else if ( typeDoc.type === 'typeIntersection' ) {
-          const simplifiedAndFlattenedTypes = typeDoc.types.map( resolveAndSimplify ).map( member => {
+          const simplifiedAndFlattenedTypes = _.uniqWith( typeDoc.types.map( resolveAndSimplify ).map( member => {
             return member.type === 'typeIntersection' ? member.types : [ member ];
-          } ).flat();
+          } ).flat().filter( td => {
+            // Filter out EmptySelfOptions
+            if ( td.type === 'typeReference' && td.name === 'EmptySelfOptions' ) {
+              return false;
+            }
+
+            return true;
+          } ), _.isEqual ); // simplifies duplicates
 
           const literalTypes = simplifiedAndFlattenedTypes.filter( member => member.type === 'typeLiteral' );
           const nonLiteralTypes = simplifiedAndFlattenedTypes.filter( member => member.type !== 'typeLiteral' );
@@ -616,32 +629,10 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
 
                   conflictMergedSignature.question &&= signature.question;
 
-                  let typeString;
-
-                  // Same is easy
-                  if ( signature.typeString === conflictMergedSignature.typeString ) {
-                    typeString = signature.typeString;
-                  }
-                  // Pick the longer one (case A)
-                  else if (
-                    signature.typeString.startsWith( conflictMergedSignature.typeString ) ||
-                    signature.typeString.endsWith( conflictMergedSignature.typeString )
-                  ) {
-                    typeString = signature.typeString;
-                  }
-                  // Pick the longer one (case B)
-                  else if (
-                    conflictMergedSignature.typeString.startsWith( signature.typeString ) ||
-                    conflictMergedSignature.typeString.endsWith( signature.typeString )
-                  ) {
-                    typeString = conflictMergedSignature.typeString;
-                  }
-                  // I guess just concatenate them (TODO: could do smarter things, or use TS compiler lib)
-                  else {
-                    typeString = `( ${conflictMergedSignature.typeString} ) & ( ${signature.typeString} )`;
-                  }
-
-                  conflictMergedSignature.typeString = typeString;
+                  conflictMergedSignature.typeDoc = resolveAndSimplify( {
+                    type: 'typeIntersection',
+                    types: [ conflictMergedSignature.typeDoc, signature.typeDoc ].filter( f => f !== null )
+                  } );
 
                   // TODO: add comments!!! OH NO
                 }

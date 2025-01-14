@@ -10,7 +10,7 @@
  */
 
 import path from 'path';
-import { ClassMethodDocumentation, ClassPropertyDocumentation, Documentation } from './extractDoc.js';
+import { ClassMethodDocumentation, ClassPropertyDocumentation, Documentation, TypeDocumentation, TypeIntersectionDocumentation, TypeLiteralDocumentation } from './extractDoc.js';
 import type { ExportMap } from './generateSceneryStackDocumentation.js';
 
 const DEBUG = false;
@@ -77,6 +77,15 @@ export const docToMarkdown = (
       return '';
     }
     return `<span style="font-weight: 400;">${wrapNamesIn( typeString )}</span>`;
+  };
+
+  const rawTypeSuffix = ( typeString: string ): string => {
+    if ( typeString === 'any' || typeString === 'void' || !typeString ) {
+      return '';
+    }
+    else {
+      return ` : ${typeString}`;
+    }
   };
 
   const typeSuffix = ( typeString: string ): string => {
@@ -177,7 +186,79 @@ import ${obj.type === 'type' ? 'type ' : ''}{ ${exportName} } from 'scenerystack
   }
   
   if ( obj.type === 'type' ) {
+    const isLiteralLike = ( typeDoc: TypeDocumentation ): boolean => {
+      return typeDoc.type === 'typeLiteral' ||
+        ( typeDoc.type === 'typeIntersection' && typeDoc.types.length > 0 && typeDoc.types[ 0 ].type === 'typeLiteral' );
+    };
     
+    const toSingleString = ( typeDoc: TypeDocumentation ): string => {
+      if ( typeDoc.type === 'typeLiteral' ) {
+        return `{ ${typeDoc.members.map( property => `${property.name}${property.question ? '?' : ''}${property.typeDoc ? `: ${toSingleString( property.typeDoc )}` : ''}` ).join( '; ' )} }`;
+      }
+      else if ( typeDoc.type === 'typeIntersection' ) {
+        return typeDoc.types.map( toSingleString ).join( ' & ' );
+      }
+      else if ( typeDoc.type === 'typeUnion' ) {
+        return typeDoc.types.map( toSingleString ).join( ' | ' );
+      }
+      else if ( typeDoc.type === 'typeReference' ) {
+        return `${typeDoc.name}${typeDoc.arguments.length ? `<${typeDoc.arguments.map( toSingleString ).join( ', ' )}>` : ''}`;
+      }
+      else if ( typeDoc.type === 'typeStringLiteral' ) {
+        return JSON.stringify( typeDoc.text );
+      }
+      else if ( typeDoc.type === 'typeRaw' ) {
+        return typeDoc.typeString;
+      }
+      else {
+        throw new Error( `missing type to toSingleString: ${JSON.stringify( typeDoc )}` );
+      }
+    };
+    
+    const toNestedString = ( typeDoc: TypeDocumentation, indent = '' ): string => {
+      const literal = ( typeDoc.type === 'typeLiteral' ? typeDoc : ( typeDoc as TypeIntersectionDocumentation ).types[ 0 ] ) as TypeLiteralDocumentation;
+      const signatures = literal.members;
+      const nonLiterals = typeDoc.type === 'typeIntersection' ? [ ...typeDoc.types.slice( 1 ) ] : [];
+      
+      // TODO: add comments docs to these?
+      
+      let result = '';
+      
+      for ( const signature of signatures ) {
+        result += `${indent}- **${signature.name}**${signature.question ? '?' : ''}`;
+        if ( signature.typeDoc ) {
+          if ( isLiteralLike( signature.typeDoc ) ) {
+            result += ':\n';
+            result += toNestedString( signature.typeDoc, `${indent}  ` );
+          }
+          else {
+            result += `: ${wrapNamesIn( toSingleString( signature.typeDoc ) )}\n`;
+          }
+        }
+        else {
+          result += '\n';
+        }
+      }
+      
+      if ( nonLiterals.length ) {
+        result += `- &amp; ${nonLiterals.map( nonLiteral => wrapNamesIn( toSingleString( nonLiteral ) ) ).join( ' &amp; ' )}\n`;
+      }
+      
+      return result;
+    };
+    
+    // Nested 
+    if ( isLiteralLike( obj.typeDoc ) ) {
+      body += toNestedString( obj.typeDoc );
+      body += '\n\n';
+    }
+    else {
+      body += `${wrapNamesIn( toSingleString( obj.typeDoc ) )}\n\n`;
+    }
+    
+    // TODO: add comments
+    
+    // TODO: we will want to recursively output nested structures for literals (i.e. nested options)
   }
   
   return `## ${TYPE_MAP[ obj.type ]} ${exportName} {: #${exportName} }\n\n${body.length ? `\n${body}` : ''}`;
