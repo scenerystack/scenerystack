@@ -16,11 +16,11 @@
  * TODO: class template params
  * TODO: link to classes/names and highlight types (crosslink) nicely
  * TODO: can we inspect computed types???
- * TODO: typeof ALIGN_VALUES[number]
  *
  * TODO: comments at the end of a line for certain things
  *
  * TODO: comments for types
+ * TODO: PressListener buggy
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
@@ -212,6 +212,73 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       const lastNonLineComment = comments.findLastIndex( comment => !comment.startsWith( '//' ) );
       return comments.slice( lastNonLineComment + 1 ).map( cleanupComment ).join( '\n' );
     }
+  };
+
+  const getPossibleStringEnumName = ( type: ts.TypeNode ): string | null => {
+    if ( ts.isIndexedAccessTypeNode( type ) && ts.isTypeQueryNode( type.objectType ) && type.indexType.kind === ts.SyntaxKind.NumberKeyword ) {
+      return type.objectType.exprName.getText();
+    }
+    else {
+      return null;
+    }
+  };
+
+  const getTopLevelInitializedValue = ( name: string, topLevelNodes: readonly ts.Node[] ): ts.Expression | null => {
+    for ( const node of topLevelNodes ) {
+      if ( node.kind === ts.SyntaxKind.FirstStatement ) {
+        for ( const child of node.getChildren() ) {
+          if ( ts.isVariableDeclarationList( child ) ) {
+            for ( const declaration of child.declarations ) {
+              if ( declaration.name.getText() === name && declaration.initializer ) {
+                return declaration.initializer;
+              }
+            }
+          }
+        }
+      }
+    }
+    return null;
+  };
+
+  const getConstStringArrayAsType = ( expression: ts.Expression ) : TypeDocumentation | null => {
+    if ( ts.isAsExpression( expression ) && ts.isArrayLiteralExpression( expression.expression ) ) {
+      const stringLiterals: TypeStringLiteralDocumentation[] = [];
+
+      for ( const element of expression.expression.elements ) {
+        if ( ts.isStringLiteral( element ) ) {
+          stringLiterals.push( {
+            type: 'typeStringLiteral',
+            text: element.text
+          } );
+        }
+        else {
+          return null;
+        }
+      }
+
+      return {
+        type: 'typeUnion',
+        types: stringLiterals
+      };
+    }
+    return null;
+  };
+
+  // Given a `typeof VALUES[number]`,
+  // find the `const VALUES = [ 'left', 'center', 'right' ] as const;`
+  // and return `'left' | 'center' | 'right'`
+  const getStringUnionType = ( type: ts.TypeNode, topLevelNodes: readonly ts.Node[] ): TypeDocumentation | null => {
+    const name = getPossibleStringEnumName( type );
+
+    if ( name ) {
+      const expression = getTopLevelInitializedValue( name, topLevelNodes );
+
+      if ( expression ) {
+        return getConstStringArrayAsType( expression );
+      }
+    }
+
+    return null;
   };
 
   const parseToTypeDoc = ( type: ts.TypeNode ): TypeDocumentation => {
@@ -459,7 +526,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
         continue;
       }
 
-      const typeDoc = parseToTypeDoc( child.type );
+      const typeDoc = getStringUnionType( child.type, mainChildren ) ?? parseToTypeDoc( child.type );
 
       const typeAlias: TypeAliasDocumentation = {
         type: 'type',
@@ -489,8 +556,64 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     // @ts-expect-error
     debug += `${kindOf( child )} ${child.modifiers ? child.modifiers.map( kindOf ) : ''}\n`;
 
+    if ( child.kind === ts.SyntaxKind.FirstStatement ) {
+      for ( const subChild of child.getChildren() ) {
+        debug += `  ${kindOf( subChild )}\n`;
+
+        if ( ts.isVariableDeclarationList( subChild ) ) {
+          // readonly declarations: NodeArray<VariableDeclaration>;
+
+          for ( const variableDeclaration of subChild.declarations ) {
+            debug += `    ${variableDeclaration.name.getText()}\n`;
+            if ( variableDeclaration.initializer ) {
+              debug += `      ${kindOf( variableDeclaration.initializer )}\n`;
+
+              if ( ts.isAsExpression( variableDeclaration.initializer ) ) {
+                debug += `        ${kindOf( variableDeclaration.initializer.expression )}\n`;
+                // readonly expression: Expression;
+                // readonly type: TypeNode;
+
+                if ( ts.isArrayLiteralExpression( variableDeclaration.initializer.expression ) ) {
+                  for ( const element of variableDeclaration.initializer.expression.elements ) {
+                    debug += `          ${kindOf( element )}\n`;
+
+                    if ( ts.isStringLiteral( element ) ) {
+                      debug += `            "${element.text}"\n`;
+                    }
+                    // StringLiteral???
+                    // isStringLiteral =>
+                  }
+                }
+              }
+            }
+
+            // readonly name: BindingName;
+            // readonly exclamationToken?: ExclamationToken;
+            // readonly type?: TypeNode;
+            // readonly initializer?: Expression;
+          }
+        }
+      }
+    }
+
     if ( ts.isTypeAliasDeclaration( child ) ) {
       debug += `  :${kindOf( child.type )}\n`;
+
+      if ( ts.isIndexedAccessTypeNode( child.type ) ) {
+        debug += `    obj: ${kindOf( child.type.objectType )}\n`;
+        debug += `    index: ${kindOf( child.type.indexType )}\n`;
+
+        if ( ts.isTypeQueryNode( child.type.objectType ) && child.type.indexType.kind === ts.SyntaxKind.NumberKeyword ) {
+          debug += `      "${child.type.objectType.exprName.getText()}"\n`;
+
+          //         readonly exprName: EntityName;
+        }
+/*
+        readonly kind: SyntaxKind.IndexedAccessType;
+        readonly objectType: TypeNode;
+        readonly indexType: TypeNode;
+ */
+      }
 
       if ( ts.isIntersectionTypeNode( child.type ) || ts.isUnionTypeNode( child.type ) ) {
         for ( const type of child.type.types ) {
