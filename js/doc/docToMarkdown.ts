@@ -131,6 +131,11 @@ ${exports.filter( exportName => getExportInfo( exportName ) ).map( exportName =>
     return ` {: #${id} data-toc-label='${id}' }`;
   };
   
+  const getConstructorID = ( name: string ) => {
+    const id = `${exportName === primaryName ? '' : `${exportName}-`}${name}`;
+    return ` {: #${id}-constructor data-toc-label='new ${id}' }`;
+  };
+  
   const methodDoc = ( method: ClassMethodDocumentation ): string => {
     const headerText = `${method.name}(${methodParameters( method )})${typeSuffix( method.returnTypeString )}${getID( method.name )}`;
     return `#### ${headerText}${method.isProtected ? '\n\n(protected)' : ''}${method.comment ? `\n\n${escapeChars( method.comment )}` : ''}`;
@@ -161,7 +166,7 @@ import ${obj.type === 'type' ? 'type ' : ''}{ ${exportName} } from 'scenerystack
     const constructor = obj.methods.find( method => method.name === 'constructor' ) ?? null;
     if ( constructor ) {
       body += '### Constructor\n\n';
-      body += `#### new ${exportName}(${methodParameters( constructor )})${getID( 'constructor' )}\n\n`;
+      body += `#### new ${exportName}(${methodParameters( constructor )})${getConstructorID( exportName )}\n\n`;
     }
     
     if ( obj.methods.length ) {
