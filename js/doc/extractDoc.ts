@@ -11,7 +11,9 @@
  *   They have name/modifiers
  *   SetAccessor: Will have SyntaxList with single Parameter (like methods)
  *   GetAccessor: ColonToken then return value, like methods
- * TODO: class inheritance
+ * TODO: class inheritance (WITH mixins)
+ *   TODO: show names (possibly) of inherited methods/properties???
+ *   TODO: at least have methods / etc. for mixins
  * TODO: class template params
  * TODO: link to classes/names and highlight types (crosslink) nicely
  * TODO: can we inspect computed types???
