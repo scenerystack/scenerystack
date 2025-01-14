@@ -11,7 +11,7 @@ export { default as DescriptionRegistry } from './tandem/js/DescriptionRegistry.
 export { default as DynamicTandem } from './tandem/js/DynamicTandem.js';
 export { default as EventType } from './tandem/js/EventType.js';
 export { default as LinkedElementIO } from './tandem/js/LinkedElementIO.js';
-export { default as tandem } from './tandem/js/tandemNamespace.js';
+export { default as tandemNamespace } from './tandem/js/tandemNamespace.js';
 export { default as PhetioAction } from './tandem/js/PhetioAction.js';
 export type { ActionOptions } from './tandem/js/PhetioAction.js';
 export { default as PhetioObject } from './tandem/js/PhetioObject.js';

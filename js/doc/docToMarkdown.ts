@@ -28,7 +28,7 @@ export const docToMarkdown = (
 ): string => {
 
   const pathBits = doc.sourcePath.split( '/' );
-  const repo = pathBits[ 0 ];
+  const repo = pathBits[ 0 ] === 'perennial-alias' ? 'perennial' : pathBits[ 0 ];
   const pathBase = path.basename( doc.sourcePath );
   const githubRepoURL = `https://github.com/phetsims/${repo}`;
   const githubPathURL = `${githubRepoURL}/blob/main/${pathBits.slice( 1 ).join( '/' )}`;
@@ -48,6 +48,10 @@ export const docToMarkdown = (
   };
   const getExportInfo = ( exportName: string ) => {
     return doc.exports.find( info => info.name === getExportForExternalExport( exportName ) ) ?? null;
+  };
+
+  const indentMultiline = ( string: string, indent: string ): string => {
+    return string.split( '\n' ).map( line => `${indent}${line}` ).join( '\n' );
   };
 
   const wrapNamesIn = ( string: string ): string => {
@@ -77,15 +81,6 @@ export const docToMarkdown = (
       return '';
     }
     return `<span style="font-weight: 400;">${wrapNamesIn( typeString )}</span>`;
-  };
-
-  const rawTypeSuffix = ( typeString: string ): string => {
-    if ( typeString === 'any' || typeString === 'void' || !typeString ) {
-      return '';
-    }
-    else {
-      return ` : ${typeString}`;
-    }
   };
 
   const typeSuffix = ( typeString: string ): string => {
@@ -231,10 +226,11 @@ import ${obj.type === 'type' ? 'type ' : ''}{ ${exportName} } from 'scenerystack
       
       for ( const signature of signatures ) {
         result += `${indent}- **${signature.name}**${signature.question ? '?' : ''}`;
+        
+        // Finish the main line
         if ( signature.typeDoc ) {
           if ( isLiteralLike( signature.typeDoc ) ) {
             result += ':\n';
-            result += toNestedString( signature.typeDoc, `${indent}  ` );
           }
           else {
             result += `: ${wrapNamesIn( toSingleString( signature.typeDoc ) )}\n`;
@@ -242,6 +238,16 @@ import ${obj.type === 'type' ? 'type ' : ''}{ ${exportName} } from 'scenerystack
         }
         else {
           result += '\n';
+        }
+        
+        if ( signature.comment ) {
+          // Break for separation from rest of signature
+          result += `<br>${indentMultiline( escapeChars( signature.comment ), `${indent}  ` )}\n`;
+        }
+        
+        // Sub-options
+        if ( signature.typeDoc && isLiteralLike( signature.typeDoc ) ) {
+          result += toNestedString( signature.typeDoc, `${indent}  ` );
         }
       }
       

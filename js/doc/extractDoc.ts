@@ -11,7 +11,6 @@
  *   They have name/modifiers
  *   SetAccessor: Will have SyntaxList with single Parameter (like methods)
  *   GetAccessor: ColonToken then return value, like methods
- * TODO: figure out how to handle options types nicely
  * TODO: class inheritance
  * TODO: class template params
  * TODO: link to classes/names and highlight types (crosslink) nicely
@@ -19,9 +18,9 @@
  *
  * TODO: comments at the end of a line for certain things
  *
- * TODO: comments for types
- *
  * TODO: Node constructor docs
+ *
+ * TODO: comment patcher (so we don't have to duplicate comments, e.g. setX, getX, set X(), get X(), FooOptions.x)
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
@@ -88,6 +87,7 @@ export type TypePropertySignatureDocumentation = {
   name: string; // .name.getText()
   question: boolean; // !!.questionToken
   typeDoc: TypeDocumentation | null;
+  comment: string | null;
 };
 
 export type TypeLiteralDocumentation = {
@@ -296,7 +296,8 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
             type: 'typePropertySignature',
             name: member.name.getText(),
             question: !!member.questionToken,
-            typeDoc: member.type ? parseToTypeDoc( member.type ) : null
+            typeDoc: member.type ? parseToTypeDoc( member.type ) : null,
+            comment: getSpecificLeadingComment( member )
           } );
         }
       }
@@ -551,7 +552,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       // TODO
     }
     else if ( ts.isFunctionDeclaration( child ) ) {
-      // TODO
+      // TODO (e.g. affirm)
     }
 
     // @ts-expect-error

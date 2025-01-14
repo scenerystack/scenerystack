@@ -17,7 +17,9 @@ const testDoc = ( sourcePath: string ) => {
 // testDoc( 'axon/js/NumberProperty.ts' );
 // testDoc( 'sun/js/ComboBoxButton.ts' );
 // testDoc( 'joist/js/i18n/localeProperty.ts' );
-testDoc( 'scenery/js/listeners/PressListener.ts' );
+// testDoc( 'scenery/js/listeners/PressListener.ts' );
+// testDoc( 'sun/js/buttons/ButtonNode.ts' );
+testDoc( 'perennial-alias/js/browser-and-node/affirm.ts' );
 //
 // // console.log( JSON.stringify( extractDoc( fs.readFileSync( './src/dot/js/Bounds2.ts', 'utf-8' ), 'dot/js/Bounds2.ts' ), null, 2 ) );
 // console.log( JSON.stringify( extractDoc( fs.readFileSync( './src/scenery/js/layout/nodes/AlignBox.ts', 'utf-8' ), 'scenery/js/layout/nodes/AlignBox.ts' ), null, 2 ) );
