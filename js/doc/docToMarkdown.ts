@@ -249,10 +249,12 @@ import ${obj.type === 'type' ? 'type ' : ''}{ ${exportName} } from 'scenerystack
     
     // Nested 
     if ( isLiteralLike( obj.typeDoc ) ) {
+      body += '\n\n';
       body += toNestedString( obj.typeDoc );
       body += '\n\n';
     }
     else {
+      body += '\n\n';
       body += `${wrapNamesIn( toSingleString( obj.typeDoc ) )}\n\n`;
     }
     
