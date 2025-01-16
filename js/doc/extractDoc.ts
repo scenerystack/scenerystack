@@ -569,10 +569,11 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       // TODO: or get trailing comment too
       const comment = getSpecificLeadingComment( child );
 
-      if ( name.startsWith( '_' ) || comment?.includes( `${repo}-internal` ) ) {
+      if ( isNameExcluded( name ) || isCommentExcluded( comment ) ) {
         continue;
       }
 
+      // See if we are pulling type from a string enum
       const typeDoc = getStringUnionType( child.type, mainChildren ) ?? parseToTypeDoc( child.type );
 
       const typeAlias: TypeAliasDocumentation = {
@@ -633,11 +634,6 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
                 }
               }
             }
-
-            // readonly name: BindingName;
-            // readonly exclamationToken?: ExclamationToken;
-            // readonly type?: TypeNode;
-            // readonly initializer?: Expression;
           }
         }
       }

@@ -236,10 +236,6 @@
     /* Sherpa allowlist */
     "src/sherpa/lib/himalaya-1.1.0.js",
     "src/sherpa/lib/game-up-camera-1.0.0.js",
-    "src/sherpa/js/fontawesome-4/checkEmptySolidShape.*",
-    "src/sherpa/js/fontawesome-4/checkSquareOSolidShape.*",
-    "src/sherpa/js/fontawesome-4/homeShape.*",
-    "src/sherpa/js/fontawesome-4/warningSignShape.*",
     "src/sherpa/js/fontawesome-5/**/*", // TODO: BAD LICENSING
 
     /* Sounds */
