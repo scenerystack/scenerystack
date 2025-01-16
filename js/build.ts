@@ -20,12 +20,14 @@
 /* eslint-disable */
 
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import webpackGlobalLibraries from '../../chipper/js/common/webpackGlobalLibraries.js';
 import stringEncoding from '../../chipper/js/common/stringEncoding.js';
 import execute from '../../perennial-alias/js/common/execute.js';
 import _ from 'lodash';
 import { StringFileMap } from '../../chipper/js/common/ChipperStringUtils.js';
+import pascalCase from '../../chipper/js/common/pascalCase.js';
 
 ( async () => {
   const wipeDir = ( dirname: string ) => {
@@ -72,6 +74,17 @@ import { StringFileMap } from '../../chipper/js/common/ChipperStringUtils.js';
   repos.forEach( repo => {
     wipeDir( `src/${repo}` );
   } );
+
+  const localeData = JSON.parse( fs.readFileSync( '../babel/localeData.json', 'utf8' ) );
+
+  // TODO: expose these on the global namespace? export them?
+  const stringKeyToIdentifier = ( repo: string, stringKey: string ): string => {
+    return `string_${repo}_${stringKey}_StringProperty`.replaceAll( /[^a-zA-Z0-9_]/g, '_' );
+  };
+
+  const stringKeyToRelativePath = ( repo: string, stringKey: string ): string => {
+    return `${repo}/js/strings/${stringKey.replaceAll( '.', '/' )}.ts`;
+  };
 
   // dependencies.json
   {
@@ -172,8 +185,6 @@ import { StringFileMap } from '../../chipper/js/common/ChipperStringUtils.js';
         }
       }
     }
-
-    const localeData = JSON.parse( fs.readFileSync( '../babel/localeData.json', 'utf8' ) );
 
     // Stub in translations as required (for the stringMap compression)
     {
@@ -276,6 +287,8 @@ export default localeData;` );
   } );
 
   const licensePaths: string[] = [];
+  const usedStrings: Record<string, string[]> = {};
+  const stringModulePaths: string[] = [];
 
   // TODO: how do we ... remove assertions and such? maybe we build a separate dev package?
   repos.forEach( repo => {
@@ -304,8 +317,6 @@ export default localeData;` );
               if ( !requiredLibs.includes( name ) ) {
                 continue;
               }
-
-              console.log( `including ${name}` );
             }
 
             if ( srcPath.includes( `licenses${path.sep}` ) ) {
@@ -320,6 +331,52 @@ export default localeData;` );
           continue;
         }
         if ( [
+          'eslint.config.mjs',
+          'alpenglow/tests',
+          'brand/phet',
+          'brand/phet-io',
+          'chipper/data',
+          'chipper/js/grunt',
+          'chipper/js/phet-io',
+          'chipper/js/scripts',
+          'chipper/js/test',
+          'chipper/templates',
+          'chipper/tsconfig',
+          'dot/assets',
+          'dot/doc',
+          'dot/examples',
+          'dot/tests',
+          'joist/assets',
+          'joist/doc',
+          'kite/doc',
+          'kite/examples',
+          'kite/tests',
+          'perennial-alias/aider',
+          'perennial-alias/bin',
+          'perennial-alias/data',
+          'perennial-alias/doc',
+          'perennial-alias/logs',
+          'perennial-alias/tsconfig',
+          'perennial-alias/views',
+          'perennial-alias/js/build-server',
+          'perennial-alias/js/eslint',
+          'perennial-alias/js/grunt',
+          'phet-core/tests',
+          'scenery/assets',
+          'scenery/doc',
+          'scenery/examples',
+          'scenery/tests',
+          'scenery-phet/assets',
+          'scenery-phet/util',
+          'sun/doc',
+          'tambo/assets',
+          'tambo/css',
+          'tambo/doc',
+          'tambo/html',
+          'tambo/resources',
+          'tappi/doc',
+          'vegas/assets',
+
           // includes griddle!!!
           'tappi/js/demo/patterns/PatternsScreen',
           'tappi/js/demo/patterns/view/PatternsScreenView',
@@ -333,6 +390,66 @@ export default localeData;` );
           'joist/js/simLauncher.ts',
           'chipper/js/browser/sim-tests/qunitStart.js',
 
+          // Is the main for the demo
+          'bamboo/js/bamboo-main.',
+          'joist/js/joist-main.',
+          'mobius/js/mobius-main.',
+          'nitroglycerin/js/nitroglycerin-main.',
+          'scenery/js/scenery-main.',
+          'scenery-phet/js/scenery-phet-main.',
+          'sun/js/sun-main.',
+          'tambo/js/tambo-main.',
+          'tappi/js/tappi-main.',
+          'twixt/js/twixt-main.',
+          'vegas/js/vegas-main.',
+
+          // parts of demo
+          'bamboo/js/demo',
+          'joist/js/demo',
+          'mobius/js/demo',
+          'nitroglycerin/js/demo',
+          'scenery-phet/js/demo',
+          'sun/js/demo',
+          'tappi/js/demo',
+          'tambo/js/demo',
+          'twixt/js/demo',
+          'vegas/js/demo',
+
+          // Tests
+          'axon/js/axon-tests.',
+          'dot/js/dot-tests.',
+          'joist/js/joist-tests.',
+          'kite/js/kite-tests.',
+          'phet-core/js/phet-core-tests.',
+          'phetcommon/js/phetcommon-tests.',
+          'scenery-phet/js/scenery-phet-tests.',
+          'scenery/js/scenery-tests.',
+          'sun/js/sun-tests.',
+          'tandem/js/tandem-tests.',
+          'twixt/js/twixt-tests.',
+
+          // Unneeded mains
+          'alpenglow/js/main.',
+          'axon/js/main.',
+          'dot/js/dot-main.',
+          'dot/js/main.',
+          'joist/js/main.',
+          'kite/js/kite-main.',
+          'kite/js/main.',
+          'mobius/js/main.',
+          'nitroglycerin/js/main.',
+          'phet-core/js/main.',
+          'phetcommon/js/main.',
+          'scenery-phet/js/main.',
+          'scenery/js/main.',
+          'sun/js/main.',
+          'tambo/js/main.',
+          'tandem/js/main.',
+          'twixt/js/main.',
+          'utterance-queue/js/main.',
+          'vegas/js/main.',
+
+
           // references lodash from perennial-alias node_modules, don't want it!
           'sherpa/js/lodash.ts'
         ].some( aPath => srcPath.includes( aPath.replaceAll( '/', path.sep ) ) ) ) {
@@ -345,25 +462,31 @@ export default localeData;` );
           }
         }
         else if ( suffixes.some( suffix => name.endsWith( suffix ) ) ) {
+          console.log( `including ${srcPath}` );
+
           // Read, modify, and write the file if it matches the filter
           const content = fs.readFileSync( srcPath, 'utf8' );
 
+          if ( srcPath.endsWith( 'Strings.ts' ) && content.includes( 'Strings = getStringModule(' ) ) {
+            stringModulePaths.push( destPath );
+          }
+
           let modifiedContent = content;
+
+            const getImportPath = ( fileToImport: string ) => {
+            const result = path.relative( path.dirname( destPath ), fileToImport ).replaceAll( path.sep, '/' );
+
+            return result.startsWith( '.' ) ? result : `./${result}`;
+          };
+
+          const insertImport = ( importLine: string ): void => {
+            const currentImportIndex = modifiedContent.indexOf( '\nimport ' ) + 1;
+
+            modifiedContent = `${modifiedContent.slice( 0, currentImportIndex )}${importLine}\n${modifiedContent.slice( currentImportIndex )}`;
+          };
 
           // Modify content (mostly adding correct imports)
           {
-            const getImportPath = ( fileToImport: string ) => {
-              const result = path.relative( path.dirname( destPath ), fileToImport ).replaceAll( path.sep, '/' );
-
-              return result.startsWith( '.' ) ? result : `./${result}`;
-            };
-
-            const insertImport = ( importLine: string ): void => {
-              const currentImportIndex = modifiedContent.indexOf( '\nimport ' ) + 1;
-
-              modifiedContent = `${modifiedContent.slice( 0, currentImportIndex )}${importLine}\n${modifiedContent.slice( currentImportIndex )}`;
-            };
-
             if ( repo !== 'sherpa' ) {
               if ( !destPath.includes( 'QueryStringMachine' ) && !destPath.includes( 'assert/js/assert' ) && modifiedContent.includes( 'QueryStringMachine' ) ) {
                 insertImport( `import '${getImportPath( 'src/query-string-machine/js/QueryStringMachine.js' )}';` );
@@ -445,7 +568,6 @@ export default localeData;` );
                 insertImport( `import he from 'he';` );
               }
               if ( modifiedContent.includes( 'Math.seedrandom' ) ) {
-                // TODO: don't use global here? `import Math from`.
                 insertImport( `import 'seedrandom';` );
 
                 modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error\s+assert && assert\( Math\.seedrandom/g, 'assert && assert( Math.seedrandom' );
@@ -483,10 +605,10 @@ export default localeData;` );
                 insertImport( `import base64js from 'base64-js';const fromByteArray = base64js.fromByteArray;` );
               }
               if ( modifiedContent.includes( 'TextEncoderLite' ) ) {
-                insertImport( `import TextEncoder from 'text-encoder-lite';const TextEncoderLite = TextEncoder.TextEncoderLite;` );
+                insertImport( `import TextEncoder from 'text-encoder-lite';` );
 
-                // TODO: replace TextEncoderLite usages with TextEncoder.TextEncoderLite
                 modifiedContent = modifiedContent.replace( '// @ts-expect-error - fromByteArray Exterior lib', '' );
+                modifiedContent = modifiedContent.replace( 'new TextEncoderLite', 'new TextEncoder.TextEncoderLite' );
               }
 
               // NOTE: keep last, so it will be up top
@@ -503,12 +625,238 @@ export default localeData;` );
             }
           }
 
+          // String handling
+          {
+            // See getStringMap for documentation
+            for ( const stringRepo of repos ) {
+              const prefix = `${pascalCase( stringRepo )}Strings`; // e.g. JoistStrings
+              if ( modifiedContent.includes( `import ${prefix} from` ) ) {
+                const matches = Array.from( modifiedContent.matchAll( new RegExp( `${prefix}(\\.[a-zA-Z_$][a-zA-Z0-9_$]*|\\[\\s*['"][^'"]+['"]\\s*\\])+[^\\.\\[]`, 'g' ) ) );
+
+                const imports: string[] = [];
+
+                for ( const match of matches.reverse() ) {
+                  // Strip off the last character - it's a character that shouldn't be in a string access
+                  const matchedString = match[ 0 ].slice( 0, match[ 0 ].length - 1 );
+
+                  // Ignore imports
+                  if ( matchedString === `${prefix}.js` ) {
+                    continue;
+                  }
+
+                  const matchedIndex = match.index;
+                  const stringAccess = matchedString
+                      .replace( /StringProperty'\s?].*/, '\' ]' )
+                      .replace( /StringProperty.*/, '' )
+                      .replace( /\[ '/g, '[\'' )
+                      .replace( /' \]/g, '\']' );
+
+                  const depth = 2; // TODO: this is not a great way to do this, coppied from getStringMap
+                  const stringKeyParts = stringAccess.match( /\.[a-zA-Z_$][a-zA-Z0-9_$]*|\[\s*['"][^'"]+['"]\s*\]/g )!.map( token => {
+                    return token.startsWith( '.' ) ? token.slice( 1 ) : token.slice( depth, token.length - depth );
+                  } );
+                  const partialStringKey = stringKeyParts.join( '.' );
+
+                  usedStrings[ stringRepo ] = usedStrings[ stringRepo ] || [];
+                  if ( !usedStrings[ stringRepo ].includes( partialStringKey ) ) {
+                    usedStrings[ stringRepo ].push( partialStringKey );
+                  }
+
+                  const stringModulePath = stringKeyToRelativePath( stringRepo, partialStringKey );
+                  const identifier = stringKeyToIdentifier( stringRepo, partialStringKey );
+
+                  const importString = `import { ${identifier} } from '${getImportPath( `src/${stringModulePath.replace( /\.ts$/, '.js' )}` )}';`;
+
+                  if ( !imports.includes( importString ) ) {
+                    imports.push( importString );
+                  }
+
+                  modifiedContent = modifiedContent.slice( 0, matchedIndex ) + identifier + modifiedContent.slice( matchedIndex + matchedString.length );
+                }
+
+                for ( const importString of imports ) {
+                  insertImport( importString );
+                }
+
+                // We should now have removed all usages (except for the 2 in the import)
+                // Count how many times prefix shows up
+                const prefixUsages = Array.from( modifiedContent.matchAll( new RegExp( prefix, 'g' ) ) ).length;
+                if ( prefixUsages !== 2 ) {
+                  throw new Error( 'Failed to remove all string usages' );
+                }
+
+                // Remove the now-unused import
+                modifiedContent = modifiedContent.replace( new RegExp( `${os.EOL}import ${prefix} from '[^']+';`, 'g' ), '' );
+              }
+            }
+          }
+
           fs.writeFileSync( destPath, modifiedContent, 'utf8' );
         }
       }
     };
     copyAndModify( `../${repo}`, `./src/${repo}` );
   } );
+
+  // Create string modules
+  for ( const stringRepo of Object.keys( usedStrings ).sort() ) {
+    const stringKeys = usedStrings[ stringRepo ].sort();
+
+    // load string files into memory
+    const stringFiles: Record<string, any> = {
+      en: JSON.parse( fs.readFileSync( `../${stringRepo}/${stringRepo}-strings_en.json`, 'utf8' ) )
+    };
+    const locales = Object.keys( localeData );
+    for ( const locale of locales ) {
+      const babelPath = `../babel/${stringRepo}/${stringRepo}-strings_${locale}.json`;
+      if ( fs.existsSync( babelPath ) ) {
+        stringFiles[ locale ] = JSON.parse( fs.readFileSync( babelPath, 'utf8' ) );
+      }
+    }
+
+    const requireJSNamespace = JSON.parse( fs.readFileSync( `../${stringRepo}/package.json`, 'utf8' ) ).phet.requirejsNamespace;
+
+    const repoLocales = Object.keys( stringFiles );
+
+    for ( const stringKey of stringKeys ) {
+      const stringModulePath = `./src/${stringKeyToRelativePath( stringRepo, stringKey )}`;
+      fs.mkdirSync( path.dirname( stringModulePath ), { recursive: true } );
+
+      const stringMap: Record<string, string> = {};
+      for ( const locale of repoLocales ) {
+        const entry = _.at( stringFiles[ locale ], stringKey )[ 0 ];
+
+        if ( locale === 'en' && !entry ) {
+          throw new Error( `Missing English string for ${stringRepo}/${stringKey}` );
+        }
+
+        if ( entry ) {
+          stringMap[ locale ] = entry.value;
+        }
+      }
+
+      // TODO: some simplification if they ALL have the same value?
+
+      const rootDirToModule = path.relative( path.dirname( stringModulePath ), './src' ).replaceAll( path.sep, '/' );
+      const moduleString = `// Copyright ${new Date().getFullYear() + ''}, University of Colorado Boulder
+
+/* eslint-disable */
+/* @formatter:off */
+
+/**
+ * Auto-generated from scenerystack build
+ */
+
+import '${rootDirToModule}/globals.js';
+import LocalizedString from '${rootDirToModule}/chipper/js/browser/LocalizedString.js';
+import LocalizedStringProperty from '${rootDirToModule}/chipper/js/browser/LocalizedStringProperty.js';
+import Tandem from '${rootDirToModule}/tandem/js/Tandem.js';
+
+export const ${stringKeyToIdentifier( stringRepo, stringKey )} = new LocalizedStringProperty(
+  new LocalizedString( ${JSON.stringify( `${requireJSNamespace}/${stringKey}` )}, ${JSON.stringify( stringMap, null, 2 )}, Tandem.OPT_OUT ),
+  Tandem.OPT_OUT
+);
+`;
+      fs.writeFileSync( stringModulePath, moduleString, 'utf8' );
+    }
+  }
+
+  // Patch up actual string modules, so that we are exporting all of the strings
+  // IF the user wants to e.g. import JoistStrings (should work well after tree shaking)
+  for ( const stringModulePath of stringModulePaths ) {
+    let content;
+
+    console.log( `rewriting ${stringModulePath}` );
+
+    const repo = stringModulePath.split( '/' )[ 1 ];
+    const namespace = _.camelCase( repo );
+    const stringModuleName = `${pascalCase( repo )}Strings`;
+
+
+    if ( usedStrings[ repo ] ) {
+      const imports: string[] = [];
+      const recursiveMap: any = {};
+
+      for ( const stringKey of usedStrings[ repo ] ) {
+        const singleStringModulePath = stringKeyToRelativePath( repo, stringKey );
+        const identifier = stringKeyToIdentifier( repo, stringKey );
+
+        const importBits = singleStringModulePath.replace( /\.ts$/, '.js' ).split( '/' );
+        importBits[ 1 ] = '.';
+        imports.push( `import { ${identifier} } from '${importBits.slice( 1 ).join( '/' )}';` );
+
+        const parts = stringKey.split( '.' );
+
+        let map = recursiveMap;
+        for ( let i = 0; i < parts.length; i++ ) {
+          const part = parts[ i ];
+          const islastPart = i === parts.length - 1;
+
+          if ( islastPart ) {
+            map[ part ] = stringKey;
+          }
+          else {
+            map[ part ] = map[ part ] || {};
+            map = map[ part ];
+          }
+        }
+      }
+
+      const mapToString = ( recursiveMap: any, indent = '' ): string => {
+        if ( typeof recursiveMap === 'string' ) {
+          return stringKeyToIdentifier( repo, recursiveMap );
+        }
+        else {
+          return `{\n${Object.keys( recursiveMap ).map( key => {
+            return `  ${indent}"${key}": ${mapToString( recursiveMap[ key ], indent + '  ' )}`;
+          } ).join( ',\n' )}\n${indent}}`;
+        }
+      };
+
+      content = `// Copyright ${new Date().getFullYear() + ''}, University of Colorado Boulder
+
+/* eslint-disable */
+/* @formatter:off */
+
+/**
+ * Auto-generated from scenerystack build
+ */
+
+import ${namespace} from './${namespace}.js';
+${imports.join( os.EOL )}
+
+// Detected no strings (probably had demo strings)
+const ${stringModuleName} = ${mapToString( recursiveMap )};
+
+${namespace}.register( '${stringModuleName}', ${stringModuleName} );
+
+export default ${stringModuleName};
+`;
+    }
+    else {
+      // No strings (probably had demo strings).
+      content = `// Copyright ${new Date().getFullYear() + ''}, University of Colorado Boulder
+
+/* eslint-disable */
+/* @formatter:off */
+
+/**
+ * Auto-generated from scenerystack build
+ */
+
+import ${namespace} from './${namespace}.js';
+
+// Detected no strings (probably had demo strings)
+const ${stringModuleName} = {};
+
+${namespace}.register( '${stringModuleName}', ${stringModuleName} );
+
+export default ${stringModuleName};
+`;
+    }
+
+    fs.writeFileSync( stringModulePath, content, 'utf8' );
+  }
 
   licensePaths.forEach( src => {
     const dest = `./third-party-licenses/${path.basename( src )}`;

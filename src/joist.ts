@@ -16,3 +16,4 @@ export type { Locale } from './joist/js/i18n/localeProperty.js';
 export { default as LocalizedImageProperty } from './joist/js/i18n/LocalizedImageProperty.js';
 export { default as regionAndCultureProperty } from './joist/js/i18n/regionAndCultureProperty.js';
 export type { default as TModel } from './joist/js/TModel.js';
+export { default as JoistStrings } from './joist/js/JoistStrings.js';

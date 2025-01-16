@@ -125,6 +125,7 @@
     "src/brand/adapted-from-phet/images/logo_png.*",
     "src/brand/adapted-from-phet/images/logoOnWhite_png.*",
     "src/brand/adapted-from-phet/images/splash_svg.*",
+    "src/brand/js/strings/**/*",
 
     /* Chipper allowlist */
     "src/chipper/js/browser/chipper.*",
@@ -196,6 +197,7 @@
     "src/scenery-phet/js/TimeSpeedRadioButtonGroup.*",
     "src/scenery-phet/js/TriangleNode.*",
     "src/scenery-phet/js/isResettingAllProperty.*",
+    "src/scenery-phet/js/strings/**/*",
 
     /* perennial-alias allowlist */
     "src/perennial-alias/js/browser-and-node/affirm.ts",
@@ -220,6 +222,7 @@
     "src/vegas/js/VegasStrings.*",
     "src/vegas/js/getGameLevelsSchema.*",
     "src/vegas/js/vegasQueryParameters.*",
+    "src/vegas/js/strings/**/*",
 
     /* tappi allowlist */
     "src/tappi/js/tappi.*",
