@@ -358,13 +358,18 @@ export default localeData;` );
               return result.startsWith( '.' ) ? result : `./${result}`;
             };
 
+            const insertImport = ( importLine: string ): void => {
+              const currentImportIndex = modifiedContent.indexOf( '\nimport ' ) + 1;
+
+              modifiedContent = `${modifiedContent.slice( 0, currentImportIndex )}${importLine}\n${modifiedContent.slice( currentImportIndex )}`;
+            };
+
             if ( repo !== 'sherpa' ) {
-              modifiedContent = `import '${getImportPath( 'src/globals.js' )}';\n${modifiedContent}`;
               if ( !destPath.includes( 'QueryStringMachine' ) && !destPath.includes( 'assert/js/assert' ) && modifiedContent.includes( 'QueryStringMachine' ) ) {
-                modifiedContent = `import '${getImportPath( 'src/query-string-machine/js/QueryStringMachine.js' )}';\n${modifiedContent}`;
+                insertImport( `import '${getImportPath( 'src/query-string-machine/js/QueryStringMachine.js' )}';` );
               }
               if ( !destPath.includes( 'src/assert' ) && modifiedContent.includes( 'assert' ) ) {
-                modifiedContent = `import '${getImportPath( 'src/assert/js/assert.js' )}';\n${modifiedContent}`;
+                insertImport( `import '${getImportPath( 'src/assert/js/assert.js' )}';` );
               }
               if ( !destPath.includes( 'initialize-globals' ) && [
                 'chipper.queryParameters',
@@ -395,24 +400,24 @@ export default localeData;` );
                 'phet?.log',
 
               ].some( str => modifiedContent.includes( str ) ) ) {
-                modifiedContent = `import '${getImportPath( 'src/chipper/js/browser/initialize-globals.js' )}';\n${modifiedContent}`;
+                insertImport( `import '${getImportPath( 'src/chipper/js/browser/initialize-globals.js' )}';` );
               }
               if ( modifiedContent.includes( 'phet.chipper.strings' ) ) {
-                modifiedContent = `import '${getImportPath( 'src/babel/babel-strings.js' )}';\n${modifiedContent}`;
+                insertImport( `import '${getImportPath( 'src/babel/babel-strings.js' )}';` );
               }
               if ( modifiedContent.includes( 'phet.chipper.stringMetadata' ) ) {
-                modifiedContent = `import '${getImportPath( 'src/babel/babel-metadata.js' )}';\n${modifiedContent}`;
+                insertImport( `import '${getImportPath( 'src/babel/babel-metadata.js' )}';` );
               }
               if ( modifiedContent.includes( 'phet.chipper.stringRepos' ) ) {
-                modifiedContent = `import '${getImportPath( 'src/babel/babel-stringRepos.js' )}';\n${modifiedContent}`;
+                insertImport( `import '${getImportPath( 'src/babel/babel-stringRepos.js' )}';` );
               }
               if ( modifiedContent.includes( 'phet.chipper.localeData' ) ) {
-                modifiedContent = `import '${getImportPath( 'src/babel/localeData.js' )}';\n${modifiedContent}`;
+                insertImport( `import '${getImportPath( 'src/babel/localeData.js' )}';` );
               }
 
               // Add lodash import if it is not imported
               if ( modifiedContent.includes( '_.' ) && !modifiedContent.includes( 'import _ ' ) ) {
-                modifiedContent = `import _ from 'lodash';\n${modifiedContent}`;
+                insertImport( `import _ from 'lodash';` );
               }
 
               // Replace lodash sherpa import
@@ -431,22 +436,23 @@ export default localeData;` );
               }
 
               if ( modifiedContent.includes( '$(' ) ) {
-                modifiedContent = `import $ from 'jquery';\n${modifiedContent}`;
+                insertImport( `import $ from 'jquery';` );
               }
               if ( modifiedContent.includes( 'paper.' ) ) {
-                modifiedContent = `import paper from 'paper';\n${modifiedContent}`;
+                insertImport( `import paper from 'paper';` );
               }
               if ( modifiedContent.includes( 'he.decode' ) ) {
-                modifiedContent = `import he from 'he';\n${modifiedContent}`;
+                insertImport( `import he from 'he';` );
               }
               if ( modifiedContent.includes( 'Math.seedrandom' ) ) {
-                modifiedContent = `import 'seedrandom';\n${modifiedContent}`;
+                // TODO: don't use global here? `import Math from`.
+                insertImport( `import 'seedrandom';` );
 
                 modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error\s+assert && assert\( Math\.seedrandom/g, 'assert && assert( Math.seedrandom' );
                 modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error\s+this\.seedrandom = Math\.seedrandom/g, 'this.seedrandom = Math.seedrandom' );
               }
               if ( modifiedContent.includes( 'window.saveAs( blob, filename )' ) ) {
-                modifiedContent = `import saveAs from 'file-saver';\n${modifiedContent}`;
+                insertImport( `import saveAs from 'file-saver';` );
 
                 modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error when typescript knows anything about window\. \. \.\.\s+window\.saveAs\( blob, filename \);/g, 'saveAs( blob, filename );' );
 
@@ -454,8 +460,8 @@ export default localeData;` );
                 // window.saveAs( blob, filename );
 
               }
-              if ( modifiedContent.includes( 'THREE' ) ) {
-                modifiedContent = `import * as THREE from 'three';\n${modifiedContent}`;
+              if ( modifiedContent.match( /THREE[^:]/g ) ) {
+                insertImport( `import * as THREE from 'three';` );
 
                 if ( modifiedContent.includes( '.needsUpdate = true;' ) ) {
                   modifiedContent = modifiedContent.replaceAll( 'this.attributes.position.needsUpdate = true;', '// @ts-expect-error\nthis.attributes.position.needsUpdate = true;' );
@@ -463,24 +469,28 @@ export default localeData;` );
                 }
               }
               if ( modifiedContent.includes( 'LineBreaker' ) ) {
-                modifiedContent = `import { LineBreaker } from 'linebreak-ts';\n${modifiedContent}`;
+                insertImport( `import { LineBreaker } from 'linebreak-ts';` );
 
                 modifiedContent = modifiedContent.replace( 'lineBreaker[ Symbol.iterator ]', '// @ts-expect-error\nlineBreaker[ Symbol.iterator ]' );
                 modifiedContent = modifiedContent.replace( 'for ( const brk of lineBreaker ) {', '// @ts-expect-error\nfor ( const brk of lineBreaker ) {' );
               }
               if ( modifiedContent.includes( 'FlatQueue' ) ) {
-                modifiedContent = `import FlatQueue from 'flatqueue';\n${modifiedContent}`;
+                insertImport( `import FlatQueue from 'flatqueue';` );
 
                 modifiedContent = modifiedContent.replaceAll( 'new window.FlatQueue()', 'new FlatQueue()' );
               }
               if ( modifiedContent.includes( 'fromByteArray(' ) ) {
-                modifiedContent = `import base64js from 'base64-js';const fromByteArray = base64js.fromByteArray;\n${modifiedContent}`;
+                insertImport( `import base64js from 'base64-js';const fromByteArray = base64js.fromByteArray;` );
               }
               if ( modifiedContent.includes( 'TextEncoderLite' ) ) {
-                modifiedContent = `import TextEncoder from 'text-encoder-lite';const TextEncoderLite = TextEncoder.TextEncoderLite;\n${modifiedContent}`;
+                insertImport( `import TextEncoder from 'text-encoder-lite';const TextEncoderLite = TextEncoder.TextEncoderLite;` );
 
+                // TODO: replace TextEncoderLite usages with TextEncoder.TextEncoderLite
                 modifiedContent = modifiedContent.replace( '// @ts-expect-error - fromByteArray Exterior lib', '' );
               }
+
+              // NOTE: keep last, so it will be up top
+              insertImport( `import '${getImportPath( 'src/globals.js' )}';` );
             }
 
             // Use `self` instead of `window` for WebWorker compatibility
