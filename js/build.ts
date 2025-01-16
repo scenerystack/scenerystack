@@ -421,6 +421,15 @@ export default localeData;` );
                 modifiedContent = modifiedContent.replace( lodashImportRegex, `import _ from 'lodash';` );
               }
 
+              // Replace fluent sherpa imports
+              // e.g.
+              // input: '../../../sherpa/lib/fluent/fluent-bundle-0.18.0/src/bundle.js';
+              // output: 'fluent-bundle'
+              const fluentImportRegex = /import (.+) from '[^'\n]*sherpa\/lib\/fluent-(\w+)-\/[^'\n]*';/g;
+              while ( modifiedContent.match( fluentImportRegex ) ) {
+                modifiedContent = modifiedContent.replace( fluentImportRegex, `import $1 from 'fluent-$2';` );
+              }
+
               if ( modifiedContent.includes( '$(' ) ) {
                 modifiedContent = `import $ from 'jquery';\n${modifiedContent}`;
               }
