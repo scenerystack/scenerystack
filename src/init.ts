@@ -27,7 +27,14 @@ const init = ( options: InitOptions ): void => {
   self.phet.chipper.locale = options.locale ?? 'en';
   self.phet.chipper.isDebugBuild = options.isDebugBuild ?? false;
   self.phet.chipper.allowLocaleSwitching = options.allowLocaleSwitching ?? true;
-  self.phet.chipper.availableLocales = options.availableLocales;
+  self.phet.chipper.availableLocales = options.availableLocales || [ 'en' ];
+
+  // Replace keys in phet.chipper.strings with a map for the actual locales we will use
+  self.phet.chipper.strings = {};
+  for ( const locale of self.phet.chipper.availableLocales ) {
+    self.phet.chipper.strings[ locale ] = {};
+  }
+
   self.phet.chipper.packageObject = {
     name: options.name,
     version: options.version

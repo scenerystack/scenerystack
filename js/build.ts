@@ -23,10 +23,8 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import webpackGlobalLibraries from '../../chipper/js/common/webpackGlobalLibraries.js';
-import stringEncoding from '../../chipper/js/common/stringEncoding.js';
 import execute from '../../perennial-alias/js/common/execute.js';
 import _ from 'lodash';
-import { StringFileMap } from '../../chipper/js/common/ChipperStringUtils.js';
 import pascalCase from '../../chipper/js/common/pascalCase.js';
 
 ( async () => {
@@ -124,102 +122,23 @@ import pascalCase from '../../chipper/js/common/pascalCase.js';
       'vegas'
     ];
 
-    const stringMap: Record<string, Record<string, string>> = {
-      en: {}
-    };
-    const stringMetadata: Record<string, unknown> = {};
     const stringReposInfo: { repo: string, requirejsNamespace: string }[] = [];
-
-    // Scan for all locales, so we can patch things in
-    const locales = [ 'en' ];
-
     for ( const repo of stringRepos ) {
-
       const requireJSNamespace = JSON.parse( fs.readFileSync( `../${repo}/package.json`, 'utf8' ) ).phet.requirejsNamespace;
 
       stringReposInfo.push( { repo, requirejsNamespace: requireJSNamespace } );
-
-      // English data
-      {
-        const englishFile = path.normalize( `../${repo}/${repo}-strings_en.json` );
-
-        const englishStringData = JSON.parse( fs.readFileSync( englishFile, 'utf8' ) );
-
-        const recur = ( obj: any, stringKeyPrefix: string ) => {
-          if ( obj.value && typeof obj.value === 'string' ) {
-            stringMap.en[ stringKeyPrefix ] = obj.value;
-            if ( obj.metadata ) {
-              stringMetadata[ stringKeyPrefix ] = obj.metadata;
-            }
-          }
-          for ( const key of Object.keys( obj ) ) {
-            if ( typeof obj[ key ] === 'object' ) {
-              recur( obj[ key ], `${stringKeyPrefix}${stringKeyPrefix.endsWith( '/' ) ? '' : '.'}${key}` );
-            }
-          }
-        };
-        recur( englishStringData, `${requireJSNamespace}/` );
-      }
-
-      // Translated data (if it has any ... note sun has no translation directories)
-      if ( fs.existsSync( `../babel/${repo}` ) ) {
-        const potentialFiles = fs.readdirSync( `../babel/${repo}` ).filter( file => file.startsWith( `${repo}-strings_` ) && file.endsWith( '.json' ) );
-
-        for ( const file of potentialFiles ) {
-          const locale = file.slice( `${repo}-strings_`.length, -'.json'.length );
-          if ( !locales.includes( locale ) ) {
-            locales.push( locale );
-          }
-
-          const stringData = JSON.parse( fs.readFileSync( `../babel/${repo}/${file}`, 'utf8' ) );
-
-          stringMap[ locale ] = stringMap[ locale ] || {};
-          for ( const key of Object.keys( stringData ) ) {
-            const fullKey = `${requireJSNamespace}/${key}`;
-
-            // Only translate things with English values
-            if ( typeof stringData[ key ].value === 'string' && stringMap.en[ fullKey ] ) {
-              stringMap[ locale ][ fullKey ] = stringData[ key ].value;
-            }
-          }
-        }
-      }
     }
-
-    // Stub in translations as required (for the stringMap compression)
-    {
-
-      const localeFallbacks = ( locale: string ): string[] => {
-        return [
-          ...( locale !== 'en' ? [ locale ] : [] ),
-          ...( localeData[ locale ].fallbackLocales || [] ),
-          'en'
-        ];
-      };
-
-      // Handle all of our English keys
-      for ( const key of Object.keys( stringMap.en ) ) {
-        for ( const locale of locales ) {
-          if ( !stringMap[ locale ][ key ] ) {
-            for ( const fallback of localeFallbacks( locale ) ) {
-              if ( stringMap[ fallback ][ key ] ) {
-                stringMap[ locale ][ key ] = stringMap[ fallback ][ key ];
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
-
-    // console.log( stringMap );
-    // console.log( stringMetadata );
 
     fs.mkdirSync( './src/babel', { recursive: true } );
 
+    const emptyStringMap: Record<string, {}> = {};
+    for ( const locale of Object.keys( localeData ) ) {
+      emptyStringMap[ locale ] = {};
+    }
+
     const precursor = 'self.phet = self.phet || {};self.phet.chipper = self.phet.chipper || {};';
     fs.writeFileSync( './src/babel/babel-strings.js', `${precursor}
-const strings = ${stringEncoding.encodeStringMapToJS( stringMap as StringFileMap )};
+const strings = ${JSON.stringify( emptyStringMap )};
 phet.chipper.strings = strings;
 export default strings;
 if ( phet.chipper.availableLocales ) { 
@@ -230,7 +149,7 @@ if ( phet.chipper.availableLocales ) {
   } );
 }` );
     fs.writeFileSync( './src/babel/babel-metadata.js', `${precursor}
-const metadata = ${JSON.stringify( stringMetadata )};
+const metadata = ${JSON.stringify( {} )};
 phet.chipper.stringMetadata = metadata;
 export default metadata;` );
     fs.writeFileSync( './src/babel/babel-stringRepos.js', `${precursor}
