@@ -1,11 +1,5 @@
 // Copyright 2024, University of Colorado Boulder
 
-// Because it doesn't like scenerystack URLs
-/* eslint-disable phet/todo-should-have-issue */
-
-// Because we can't use IntentionalAny
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 /**
  * Experimental build of scenery stack
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
@@ -22,8 +16,23 @@
  * `npm version patch` (or minor/major)
  * `npm publish` (once ready)
  *
- * TODO: we should be able to split this file into modules
+ * Conditional exports (development/others) used in bundlers:
+ * - https://vite.dev/config/shared-options#resolve-conditions
+ * - https://webpack.js.org/guides/package-exports/
+ * - https://parceljs.org/features/dependency-resolution/
+ * We are using that instead of import.meta.env.PROD / process.env.NODE_ENV
+ * because of broader support.
+ * Note: could use PURE annotations in the future:
+ *   https://github.com/javascript-compiler-hints/compiler-notations-spec/blob/main/pure-notation-spec.md
  */
+
+// Because it doesn't like scenerystack URLs
+/* eslint-disable phet/todo-should-have-issue */
+
+// Because we can't use IntentionalAny
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+// TODO: we should be able to split this file into modules
 
 import fs from 'fs';
 import os from 'os';
