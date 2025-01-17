@@ -333,7 +333,13 @@ export default localeData;` );
     return true;
   } );
 
-  type ExportEntry = { isType: boolean; originalName: string; exportedName: string; path: string };
+  type ExportEntry = {
+    isType: boolean;
+    requiresSim: boolean; // will it fail if run in a non-simulation context
+    originalName: string;
+    exportedName: string;
+    path: string;
+  };
 
   const licensePaths: string[] = [];
   const usedStrings: Record<string, string[]> = {};
@@ -560,7 +566,7 @@ export default localeData;` );
 
           let modifiedContent = content;
 
-            const getImportPath = ( fileToImport: string ) => {
+          const getImportPath = ( fileToImport: string ) => {
             const result = path.relative( path.dirname( destPath ), fileToImport ).replaceAll( path.sep, '/' );
 
             return result.startsWith( '.' ) ? result : `./${result}`;
@@ -967,9 +973,6 @@ type NumberLiteral = {
             if ( repo === 'sun' && destPath.includes( 'Dialog' ) ) {
               exportFile = 'sim';
             }
-            if ( repo === 'mobius' && destPath.includes( 'MobiusScreenView' ) ) {
-              exportFile = 'sim';
-            }
             if ( repo === 'joist' && [ 'Screen', 'Sim' ].some( s => destPath.includes( s ) ) ) {
               exportFile = 'sim';
             }
@@ -981,6 +984,7 @@ type NumberLiteral = {
 
             const entry = {
               isType: isType,
+              requiresSim: exportFile === 'sim',
               originalName: originalName,
               exportedName: exportedName,
               path: destPath
@@ -1029,10 +1033,10 @@ type NumberLiteral = {
     fixNamedAndDefaultExport( exportEntries.joist, 'concreteRegionAndCultureProperty' );
   }
 
+  const flattenedExportEntries = _.flatten( Object.values( exportEntries ) );
+
   // Sanity checks for export name conflicts
   {
-    const flattenedExportEntries = _.flatten( Object.values( exportEntries ) );
-
     const globalNameSet = new Set<string>();
     for ( const exportFile of Object.keys( exportEntries ) ) {
       const entries = exportEntries[ exportFile ];
@@ -1044,6 +1048,60 @@ type NumberLiteral = {
           throw new Error( `duplicate export for ${entry.exportedName}: ${JSON.stringify( entries, null, 2 )}` );
         }
         globalNameSet.add( entry.exportedName );
+      }
+    }
+  }
+
+  // Propagate the "sim"-ness of exports (ones that lead to code that will fail if not run in a simulation)
+  {
+    const exportedPaths = _.uniq( flattenedExportEntries.map( entry => entry.path ) );
+
+    // Initialize sim-required paths
+    const simRequiredPaths: string[] = [];
+    for ( const entry of flattenedExportEntries ) {
+      if ( entry.requiresSim && !simRequiredPaths.includes( entry.path ) ) {
+        simRequiredPaths.push( entry.path );
+      }
+    }
+
+    // Iteratively expand the paths that are required
+    let hadSimChange = true;
+    while ( hadSimChange ) {
+      hadSimChange = false;
+
+      for ( const exportedPath of exportedPaths ) {
+        if ( simRequiredPaths.includes( exportedPath ) ) {
+          continue;
+        }
+
+        const contents = fs.readFileSync( `./${exportedPath}`, 'utf8' );
+
+        for ( const simRequiredPath of simRequiredPaths ) {
+          const pathString = path.relative( path.dirname( exportedPath ), simRequiredPath ).replaceAll( path.sep, '/' ).replace( /\.ts$/, '.js' ) + '\';';
+
+          if ( contents.includes( pathString ) ) {
+            simRequiredPaths.push( exportedPath );
+            hadSimChange = true;
+            break;
+          }
+        }
+      }
+    }
+
+    for ( const entry of flattenedExportEntries ) {
+      if ( simRequiredPaths.includes( entry.path ) ) {
+        entry.requiresSim = true;
+
+        if ( !exportEntries.sim.includes( entry ) ) {
+          exportEntries.sim.push( entry );
+        }
+
+        // More complicated removal
+        for ( const exportNamespace of Object.keys( exportEntries ) ) {
+          if ( exportNamespace !== 'sim' && exportEntries[ exportNamespace ].includes( entry ) ) {
+            exportEntries[ exportNamespace ].splice( exportEntries[ exportNamespace ].indexOf( entry ), 1 );
+          }
+        }
       }
     }
   }
@@ -1067,8 +1125,6 @@ type NumberLiteral = {
             } ).join( ', ' )} } from '${modulePath.replace( /^src/, '.' ).replace( /\.ts$/, '.js' )}'`;
 
             exportLines.push( exportLine );
-
-            console.log( exportLine );
           }
         };
         addLine( matchingEntries.filter( entry => !entry.isType ), false );
@@ -1076,7 +1132,7 @@ type NumberLiteral = {
       }
 
       // TODO: write?
-      // TODO: scenery missing?
+      // TODO: scenery missing? --- NOT missing, we just need to figure out which things ARE types, and which are NOT. OOOF
 
       const barrelFileContents = `// Copyright ${new Date().getFullYear() + ''}, University of Colorado Boulder
 
