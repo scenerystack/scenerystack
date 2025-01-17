@@ -145,7 +145,7 @@ const getExportNames = ( js: string ): { exports: string[]; typeExports: string[
           const exportedName = specifier.name.text;
           const originalName = specifier.propertyName?.text || exportedName;
 
-          const array = getGeneralNameArray( originalName );
+          const array = node.isTypeOnly ? typeExports : getGeneralNameArray( originalName );
 
           // alias?
           if ( exportedName === 'default' ) {
