@@ -697,7 +697,17 @@ type NumberLiteral = {
                 // We need to exclude ts-expect-error
                 const needsFullStart = modifiedContent.slice( assertionNode.getFullStart(), assertionNode.getEnd() ).includes( '@ts-expect-error' );
 
-                modifiedContent = modifiedContent.slice( 0, needsFullStart ? assertionNode.getFullStart() : assertionNode.getStart() ) + replacement + modifiedContent.slice( assertionNode.getEnd() );
+                const start = needsFullStart ? assertionNode.getFullStart() : assertionNode.getStart();
+                const end = assertionNode.getEnd();
+
+                if ( end - start < replacement.length ) {
+                  throw new Error( 'cannot maintain source map compatibility' );
+                }
+
+                // Replace with same-length things so source maps will still work
+                const paddedReplacement = _.repeat( ' ', end - start - replacement.length ) + replacement;
+
+                modifiedContent = modifiedContent.slice( 0, start ) + paddedReplacement + modifiedContent.slice( end );
               }
             }
 
@@ -727,7 +737,9 @@ type NumberLiteral = {
                   const namespacePattern = `${namespaceName}.${node.expression.arguments[ 0 ].text}`;
                   if ( !excludedNamespaces.includes( namespacePattern ) ) {
                     removedNamespacePatterns.push( namespacePattern );
-                    modifiedContent = modifiedContent.slice( 0, node.getStart() ) + modifiedContent.slice( node.getEnd() );
+
+                    // Replace with same-length things so source maps will still work
+                    modifiedContent = modifiedContent.slice( 0, node.getStart() ) + _.repeat( ' ', node.getEnd() - node.getStart() ) + modifiedContent.slice( node.getEnd() );
                   }
                 }
               }
@@ -1097,6 +1109,8 @@ const rollupRun = async () => {
   await tscRun( true );
 
   // copy "development version" into ./src/
+  // NOTE: do this last, since it will leave the assertions/namespaces untouched
+  // so source maps will look nicer
   await copyAndPatch( {
     removeAssertions: false,
     removeNamespacing: false
@@ -1104,13 +1118,6 @@ const rollupRun = async () => {
 
   // tsc files into ./dist/dev/
   await tscRun( false );
-
-  // copy "production version" into ./src/ (again, so that it will be the ending version
-  // note: this is repeated, so we can get the "production" version done first for faster testing
-  await copyAndPatch( {
-    removeAssertions: true,
-    removeNamespacing: true
-  } );
 
   // Use rollup for bundles written to ./dist/
   await rollupRun();
