@@ -57,6 +57,9 @@
     /* standalone entry point */
     "src/standalone.ts",
 
+    /* scenerystack internals */
+    "src/scenerystack/**/*",
+
     /* types */
     "src/types/**/*",
 

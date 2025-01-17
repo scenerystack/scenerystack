@@ -27,6 +27,10 @@ src/twixt/
 src/utterance-queue/
 src/vegas/
 
+src/adapted-from-phet.ts
+src/alpenglow.ts
+src/assert.ts
+
 third-party-licenses/
 dependencies.json
 

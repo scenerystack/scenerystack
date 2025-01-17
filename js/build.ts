@@ -380,632 +380,652 @@ export default localeData;` );
     vegas: []
   };
 
-  // TODO: how do we ... remove assertions and such? maybe we build a separate dev package?
-  repos.forEach( repo => {
-    const copyAndModify = ( srcDir: string, destDir: string ) => {
-      fs.mkdirSync( destDir, { recursive: true } );
+  const copyAndModify = ( repo: string, srcDir: string, destDir: string, writeFile = true ) => {
+    fs.mkdirSync( destDir, { recursive: true } );
 
-      const entries = fs.readdirSync( srcDir, { withFileTypes: true } );
+    const entries = fs.readdirSync( srcDir, { withFileTypes: true } );
 
-      for ( const entry of entries ) {
-        const srcPath = path.join( srcDir, entry.name );
-        const destPath = path.join( destDir, entry.name );
+    for ( const entry of entries ) {
+      const srcPath = path.join( srcDir, entry.name );
+      const destPath = path.join( destDir, entry.name );
 
-        const name = path.basename( srcPath );
+      const name = path.basename( srcPath );
 
-        // We have to handle LICENSE setup somewhat differently here!
-        if ( repo === 'sherpa' ) {
+      // We have to handle LICENSE setup somewhat differently here!
+      if ( repo === 'sherpa' ) {
 
-          if ( entry.isDirectory() ) {
-            // TODO: BAD LICENSE fontawesome-5
-            if ( !name.includes( 'sherpa' ) && name !== 'lib' && name !== 'licenses' && name !== 'js' && name !== 'fontawesome-4' && name !== 'fontawesome-5' && name !== 'brands' ) {
+        if ( entry.isDirectory() ) {
+          // TODO: BAD LICENSE fontawesome-5
+          if ( !name.includes( 'sherpa' ) && name !== 'lib' && name !== 'licenses' && name !== 'js' && name !== 'fontawesome-4' && name !== 'fontawesome-5' && name !== 'brands' ) {
+            continue;
+          }
+        }
+        else {
+          if ( srcPath.includes( `lib${path.sep}` ) ) {
+            if ( !requiredLibs.includes( name ) ) {
               continue;
             }
           }
-          else {
-            if ( srcPath.includes( `lib${path.sep}` ) ) {
-              if ( !requiredLibs.includes( name ) ) {
-                continue;
-              }
-            }
 
-            if ( srcPath.includes( `licenses${path.sep}` ) ) {
-              if ( requiredLibs.includes( name.slice( 0, -( '.txt'.length ) ) ) ) {
-                licensePaths.push( srcPath );
-              }
+          if ( srcPath.includes( `licenses${path.sep}` ) ) {
+            if ( requiredLibs.includes( name.slice( 0, -( '.txt'.length ) ) ) ) {
+              licensePaths.push( srcPath );
             }
           }
         }
+      }
 
-        if ( srcPath.includes( `alpenglow${path.sep}doc` ) ) {
-          continue;
+      if ( srcPath.includes( `alpenglow${path.sep}doc` ) ) {
+        continue;
+      }
+      if ( [
+        'eslint.config.mjs',
+        'alpenglow/tests',
+        'brand/phet',
+        'brand/phet-io',
+        'chipper/data',
+        'chipper/js/grunt',
+        'chipper/js/phet-io',
+        'chipper/js/scripts',
+        'chipper/js/test',
+        'chipper/templates',
+        'chipper/tsconfig',
+        'dot/assets',
+        'dot/doc',
+        'dot/examples',
+        'dot/tests',
+        'joist/assets',
+        'joist/doc',
+        'kite/doc',
+        'kite/examples',
+        'kite/tests',
+        'perennial-alias/aider',
+        'perennial-alias/bin',
+        'perennial-alias/data',
+        'perennial-alias/doc',
+        'perennial-alias/logs',
+        'perennial-alias/tsconfig',
+        'perennial-alias/views',
+        'perennial-alias/js/build-server',
+        'perennial-alias/js/eslint',
+        'perennial-alias/js/grunt',
+        'phet-core/tests',
+        'scenery/assets',
+        'scenery/doc',
+        'scenery/examples',
+        'scenery/tests',
+        'scenery-phet/assets',
+        'scenery-phet/util',
+        'sun/doc',
+        'tambo/assets',
+        'tambo/css',
+        'tambo/doc',
+        'tambo/html',
+        'tambo/resources',
+        'tappi/doc',
+        'vegas/assets',
+
+        // we will create our own brand when needed.
+        'brand/adapted-from-phet/js/Brand.',
+
+        // includes griddle!!!
+        'tappi/js/demo/patterns/PatternsScreen',
+        'tappi/js/demo/patterns/view/PatternsScreenView',
+        'tappi/js/view/VibrationChart',
+        'tappi/js/main',
+
+        // includes icons that don't exist
+        'sherpa/js/fontawesome-5/iconList.js',
+
+        // has phetioEngine
+        'joist/js/simLauncher.ts',
+        'chipper/js/browser/sim-tests/qunitStart.js',
+
+        // Is the main for the demo
+        'bamboo/js/bamboo-main.',
+        'joist/js/joist-main.',
+        'mobius/js/mobius-main.',
+        'nitroglycerin/js/nitroglycerin-main.',
+        'scenery/js/scenery-main.',
+        'scenery-phet/js/scenery-phet-main.',
+        'sun/js/sun-main.',
+        'tambo/js/tambo-main.',
+        'tappi/js/tappi-main.',
+        'twixt/js/twixt-main.',
+        'vegas/js/vegas-main.',
+
+        // parts of demo
+        'bamboo/js/demo',
+        'joist/js/demo',
+        'mobius/js/demo',
+        'nitroglycerin/js/demo',
+        'scenery-phet/js/demo',
+        'sun/js/demo',
+        'tappi/js/demo',
+        'tambo/js/demo',
+        'twixt/js/demo',
+        'vegas/js/demo',
+
+        // Tests
+        'axon/js/axon-tests.',
+        'dot/js/dot-tests.',
+        'joist/js/joist-tests.',
+        'kite/js/kite-tests.',
+        'phet-core/js/phet-core-tests.',
+        'phetcommon/js/phetcommon-tests.',
+        'scenery-phet/js/scenery-phet-tests.',
+        'scenery/js/scenery-tests.',
+        'sun/js/sun-tests.',
+        'tandem/js/tandem-tests.',
+        'twixt/js/twixt-tests.',
+        'dot/js/UtilsTests.',
+        'chipper/js/browser/sim-tests',
+        'phet-core/js/qunitStartWithoutPhetioTests.',
+
+        // Unneeded mains
+        'alpenglow/js/main.',
+        'axon/js/main.',
+        'dot/js/dot-main.',
+        'dot/js/main.',
+        'joist/js/main.',
+        'kite/js/kite-main.',
+        'kite/js/main.',
+        'mobius/js/main.',
+        'nitroglycerin/js/main.',
+        'phet-core/js/main.',
+        'phetcommon/js/main.',
+        'scenery-phet/js/main.',
+        'scenery/js/main.',
+        'sun/js/main.',
+        'tambo/js/main.',
+        'tandem/js/main.',
+        'twixt/js/main.',
+        'utterance-queue/js/main.',
+        'vegas/js/main.',
+
+
+        // references lodash from perennial-alias node_modules, don't want it!
+        'sherpa/js/lodash.ts'
+      ].some( aPath => srcPath.includes( aPath.replaceAll( '/', path.sep ) ) ) ) {
+        continue;
+      }
+
+      if ( entry.isDirectory() ) {
+        if ( !name.includes( '.' ) && !badDirectoryNames.includes( name ) ) {
+          copyAndModify( repo, srcPath, destPath, writeFile );
         }
-        if ( [
-          'eslint.config.mjs',
-          'alpenglow/tests',
-          'brand/phet',
-          'brand/phet-io',
-          'chipper/data',
-          'chipper/js/grunt',
-          'chipper/js/phet-io',
-          'chipper/js/scripts',
-          'chipper/js/test',
-          'chipper/templates',
-          'chipper/tsconfig',
-          'dot/assets',
-          'dot/doc',
-          'dot/examples',
-          'dot/tests',
-          'joist/assets',
-          'joist/doc',
-          'kite/doc',
-          'kite/examples',
-          'kite/tests',
-          'perennial-alias/aider',
-          'perennial-alias/bin',
-          'perennial-alias/data',
-          'perennial-alias/doc',
-          'perennial-alias/logs',
-          'perennial-alias/tsconfig',
-          'perennial-alias/views',
-          'perennial-alias/js/build-server',
-          'perennial-alias/js/eslint',
-          'perennial-alias/js/grunt',
-          'phet-core/tests',
-          'scenery/assets',
-          'scenery/doc',
-          'scenery/examples',
-          'scenery/tests',
-          'scenery-phet/assets',
-          'scenery-phet/util',
-          'sun/doc',
-          'tambo/assets',
-          'tambo/css',
-          'tambo/doc',
-          'tambo/html',
-          'tambo/resources',
-          'tappi/doc',
-          'vegas/assets',
+      }
+      else if ( suffixes.some( suffix => name.endsWith( suffix ) ) ) {
+        // console.log( `including ${srcPath}` );
 
-          // includes griddle!!!
-          'tappi/js/demo/patterns/PatternsScreen',
-          'tappi/js/demo/patterns/view/PatternsScreenView',
-          'tappi/js/view/VibrationChart',
-          'tappi/js/main',
+        // Read, modify, and write the file if it matches the filter
+        const content = fs.readFileSync( srcPath, 'utf8' );
 
-          // includes icons that don't exist
-          'sherpa/js/fontawesome-5/iconList.js',
-
-          // has phetioEngine
-          'joist/js/simLauncher.ts',
-          'chipper/js/browser/sim-tests/qunitStart.js',
-
-          // Is the main for the demo
-          'bamboo/js/bamboo-main.',
-          'joist/js/joist-main.',
-          'mobius/js/mobius-main.',
-          'nitroglycerin/js/nitroglycerin-main.',
-          'scenery/js/scenery-main.',
-          'scenery-phet/js/scenery-phet-main.',
-          'sun/js/sun-main.',
-          'tambo/js/tambo-main.',
-          'tappi/js/tappi-main.',
-          'twixt/js/twixt-main.',
-          'vegas/js/vegas-main.',
-
-          // parts of demo
-          'bamboo/js/demo',
-          'joist/js/demo',
-          'mobius/js/demo',
-          'nitroglycerin/js/demo',
-          'scenery-phet/js/demo',
-          'sun/js/demo',
-          'tappi/js/demo',
-          'tambo/js/demo',
-          'twixt/js/demo',
-          'vegas/js/demo',
-
-          // Tests
-          'axon/js/axon-tests.',
-          'dot/js/dot-tests.',
-          'joist/js/joist-tests.',
-          'kite/js/kite-tests.',
-          'phet-core/js/phet-core-tests.',
-          'phetcommon/js/phetcommon-tests.',
-          'scenery-phet/js/scenery-phet-tests.',
-          'scenery/js/scenery-tests.',
-          'sun/js/sun-tests.',
-          'tandem/js/tandem-tests.',
-          'twixt/js/twixt-tests.',
-          'dot/js/UtilsTests.',
-          'chipper/js/browser/sim-tests',
-          'phet-core/js/qunitStartWithoutPhetioTests.',
-
-          // Unneeded mains
-          'alpenglow/js/main.',
-          'axon/js/main.',
-          'dot/js/dot-main.',
-          'dot/js/main.',
-          'joist/js/main.',
-          'kite/js/kite-main.',
-          'kite/js/main.',
-          'mobius/js/main.',
-          'nitroglycerin/js/main.',
-          'phet-core/js/main.',
-          'phetcommon/js/main.',
-          'scenery-phet/js/main.',
-          'scenery/js/main.',
-          'sun/js/main.',
-          'tambo/js/main.',
-          'tandem/js/main.',
-          'twixt/js/main.',
-          'utterance-queue/js/main.',
-          'vegas/js/main.',
-
-
-          // references lodash from perennial-alias node_modules, don't want it!
-          'sherpa/js/lodash.ts'
-        ].some( aPath => srcPath.includes( aPath.replaceAll( '/', path.sep ) ) ) ) {
-          continue;
+        if ( srcPath.endsWith( 'Strings.ts' ) && content.includes( 'Strings = getStringModule(' ) ) {
+          stringModulePaths.push( destPath );
         }
 
-        if ( entry.isDirectory() ) {
-          if ( !name.includes( '.' ) && !badDirectoryNames.includes( name ) ) {
-            copyAndModify( srcPath, destPath );
-          }
-        }
-        else if ( suffixes.some( suffix => name.endsWith( suffix ) ) ) {
-          // console.log( `including ${srcPath}` );
+        let modifiedContent = content;
 
-          // Read, modify, and write the file if it matches the filter
-          const content = fs.readFileSync( srcPath, 'utf8' );
+        const getImportPath = ( fileToImport: string ) => {
+          const result = path.relative( path.dirname( destPath ), fileToImport ).replaceAll( path.sep, '/' );
 
-          if ( srcPath.endsWith( 'Strings.ts' ) && content.includes( 'Strings = getStringModule(' ) ) {
-            stringModulePaths.push( destPath );
-          }
+          return result.startsWith( '.' ) ? result : `./${result}`;
+        };
 
-          let modifiedContent = content;
+        const insertImport = ( importLine: string ): void => {
+          const currentImportIndex = modifiedContent.indexOf( '\nimport ' ) + 1;
 
-          const getImportPath = ( fileToImport: string ) => {
-            const result = path.relative( path.dirname( destPath ), fileToImport ).replaceAll( path.sep, '/' );
+          modifiedContent = `${modifiedContent.slice( 0, currentImportIndex )}${importLine}\n${modifiedContent.slice( currentImportIndex )}`;
+        };
 
-            return result.startsWith( '.' ) ? result : `./${result}`;
-          };
+        // Modify content (mostly adding correct imports)
+        {
+          if ( repo !== 'sherpa' ) {
+            if ( !destPath.includes( 'QueryStringMachine' ) && !destPath.includes( 'assert/js/assert' ) && modifiedContent.includes( 'QueryStringMachine' ) ) {
+              insertImport( `import '${getImportPath( 'src/query-string-machine/js/QueryStringMachine.js' )}';` );
+            }
+            if ( !destPath.includes( 'src/assert' ) && modifiedContent.includes( 'assert' ) ) {
+              insertImport( `import '${getImportPath( 'src/assert/js/assert.js' )}';` );
+            }
+            if ( !destPath.includes( 'initialize-globals' ) && [
+              'chipper.queryParameters',
+              'chipper?.queryParameters',
+              'chipper.isProduction',
+              'chipper?.isProduction',
+              'chipper.isApp',
+              'chipper?.isApp',
+              'chipper.colorProfiles',
+              'chipper?.colorProfiles',
+              'chipper.brand',
+              'chipper?.brand',
+              'chipper.mapString',
+              'chipper?.mapString',
+              'chipper.remapLocale',
+              'chipper?.remapLocale',
+              'chipper.getValidRuntimeLocale',
+              'chipper?.getValidRuntimeLocale',
+              'chipper.checkAndRemapLocale',
+              'chipper?.checkAndRemapLocale',
+              'chipper.makeEverythingSlow',
+              'chipper?.makeEverythingSlow',
+              'chipper.makeRandomSlowness',
+              'chipper?.makeRandomSlowness',
+              'chipper.reportContinuousTestResult',
+              'chipper?.reportContinuousTestResult',
+              'phet.log',
+              'phet?.log'
 
-          const insertImport = ( importLine: string ): void => {
-            const currentImportIndex = modifiedContent.indexOf( '\nimport ' ) + 1;
+            ].some( str => modifiedContent.includes( str ) ) ) {
+              insertImport( `import '${getImportPath( 'src/chipper/js/browser/initialize-globals.js' )}';` );
+            }
+            if ( modifiedContent.includes( 'phet.chipper.strings' ) ) {
+              insertImport( `import '${getImportPath( 'src/babel/babel-strings.js' )}';` );
+            }
+            if ( modifiedContent.includes( 'phet.chipper.stringMetadata' ) ) {
+              insertImport( `import '${getImportPath( 'src/babel/babel-metadata.js' )}';` );
+            }
+            if ( modifiedContent.includes( 'phet.chipper.stringRepos' ) ) {
+              insertImport( `import '${getImportPath( 'src/babel/babel-stringRepos.js' )}';` );
+            }
+            if ( modifiedContent.includes( 'phet.chipper.localeData' ) ) {
+              insertImport( `import '${getImportPath( 'src/babel/localeData.js' )}';` );
+            }
 
-            modifiedContent = `${modifiedContent.slice( 0, currentImportIndex )}${importLine}\n${modifiedContent.slice( currentImportIndex )}`;
-          };
+            // Add lodash import if it is not imported
+            if ( modifiedContent.includes( '_.' ) && !modifiedContent.includes( 'import _ ' ) ) {
+              insertImport( 'import _ from \'lodash\';' );
+            }
 
-          // Modify content (mostly adding correct imports)
-          {
-            if ( repo !== 'sherpa' ) {
-              if ( !destPath.includes( 'QueryStringMachine' ) && !destPath.includes( 'assert/js/assert' ) && modifiedContent.includes( 'QueryStringMachine' ) ) {
-                insertImport( `import '${getImportPath( 'src/query-string-machine/js/QueryStringMachine.js' )}';` );
-              }
-              if ( !destPath.includes( 'src/assert' ) && modifiedContent.includes( 'assert' ) ) {
-                insertImport( `import '${getImportPath( 'src/assert/js/assert.js' )}';` );
-              }
-              if ( !destPath.includes( 'initialize-globals' ) && [
-                'chipper.queryParameters',
-                'chipper?.queryParameters',
-                'chipper.isProduction',
-                'chipper?.isProduction',
-                'chipper.isApp',
-                'chipper?.isApp',
-                'chipper.colorProfiles',
-                'chipper?.colorProfiles',
-                'chipper.brand',
-                'chipper?.brand',
-                'chipper.mapString',
-                'chipper?.mapString',
-                'chipper.remapLocale',
-                'chipper?.remapLocale',
-                'chipper.getValidRuntimeLocale',
-                'chipper?.getValidRuntimeLocale',
-                'chipper.checkAndRemapLocale',
-                'chipper?.checkAndRemapLocale',
-                'chipper.makeEverythingSlow',
-                'chipper?.makeEverythingSlow',
-                'chipper.makeRandomSlowness',
-                'chipper?.makeRandomSlowness',
-                'chipper.reportContinuousTestResult',
-                'chipper?.reportContinuousTestResult',
-                'phet.log',
-                'phet?.log'
+            // Replace lodash sherpa import
+            const lodashImportRegex = /import _ from '[^'\n]*sherpa\/js\/lodash\.js';/g;
+            if ( modifiedContent.match( lodashImportRegex ) ) {
+              modifiedContent = modifiedContent.replace( lodashImportRegex, 'import _ from \'lodash\';' );
+            }
 
-              ].some( str => modifiedContent.includes( str ) ) ) {
-                insertImport( `import '${getImportPath( 'src/chipper/js/browser/initialize-globals.js' )}';` );
-              }
-              if ( modifiedContent.includes( 'phet.chipper.strings' ) ) {
-                insertImport( `import '${getImportPath( 'src/babel/babel-strings.js' )}';` );
-              }
-              if ( modifiedContent.includes( 'phet.chipper.stringMetadata' ) ) {
-                insertImport( `import '${getImportPath( 'src/babel/babel-metadata.js' )}';` );
-              }
-              if ( modifiedContent.includes( 'phet.chipper.stringRepos' ) ) {
-                insertImport( `import '${getImportPath( 'src/babel/babel-stringRepos.js' )}';` );
-              }
-              if ( modifiedContent.includes( 'phet.chipper.localeData' ) ) {
-                insertImport( `import '${getImportPath( 'src/babel/localeData.js' )}';` );
-              }
+            // Replace fluent sherpa imports
+            // e.g.
+            // input: '../../../sherpa/lib/fluent/fluent-bundle-0.18.0/src/bundle.js';
+            // output: 'fluent-bundle'
+            const fluentImportRegex = /import (.+) from '[^'\n]*sherpa\/lib\/fluent\/fluent-(\w+)-[^'\n]*';/g;
+            while ( modifiedContent.match( fluentImportRegex ) ) {
+              modifiedContent = modifiedContent.replace( fluentImportRegex, 'import $1 from \'@fluent/$2\';' );
+            }
 
-              // Add lodash import if it is not imported
-              if ( modifiedContent.includes( '_.' ) && !modifiedContent.includes( 'import _ ' ) ) {
-                insertImport( 'import _ from \'lodash\';' );
-              }
-
-              // Replace lodash sherpa import
-              const lodashImportRegex = /import _ from '[^'\n]*sherpa\/js\/lodash\.js';/g;
-              if ( modifiedContent.match( lodashImportRegex ) ) {
-                modifiedContent = modifiedContent.replace( lodashImportRegex, 'import _ from \'lodash\';' );
-              }
-
-              // Replace fluent sherpa imports
-              // e.g.
-              // input: '../../../sherpa/lib/fluent/fluent-bundle-0.18.0/src/bundle.js';
-              // output: 'fluent-bundle'
-              const fluentImportRegex = /import (.+) from '[^'\n]*sherpa\/lib\/fluent\/fluent-(\w+)-[^'\n]*';/g;
-              while ( modifiedContent.match( fluentImportRegex ) ) {
-                modifiedContent = modifiedContent.replace( fluentImportRegex, 'import $1 from \'@fluent/$2\';' );
-              }
-
-              if ( modifiedContent.includes( 'import { Pattern } from \'@fluent/bundle\';' ) ) {
-                modifiedContent = modifiedContent.replace( 'import { Pattern } from \'@fluent/bundle\';', '' );
-                modifiedContent = modifiedContent.replace( 'export type { Pattern as FluentPattern };', `export type FluentPattern = string | ComplexPattern;
+            if ( modifiedContent.includes( 'import { Pattern } from \'@fluent/bundle\';' ) ) {
+              modifiedContent = modifiedContent.replace( 'import { Pattern } from \'@fluent/bundle\';', '' );
+              modifiedContent = modifiedContent.replace( 'export type { Pattern as FluentPattern };', `export type FluentPattern = string | ComplexPattern;
 type ComplexPattern = Array<PatternElement>;
 type PatternElement = string | Expression;
 type Expression = SelectExpression | VariableReference | TermReference | MessageReference | FunctionReference | Literal;
 type SelectExpression = {
-    type: "select";
-    selector: Expression;
-    variants: Array<Variant>;
-    star: number;
+  type: "select";
+  selector: Expression;
+  variants: Array<Variant>;
+  star: number;
 };
 type VariableReference = {
-    type: "var";
-    name: string;
+  type: "var";
+  name: string;
 };
 type TermReference = {
-    type: "term";
-    name: string;
-    attr: string | null;
-    args: Array<Expression | NamedArgument>;
+  type: "term";
+  name: string;
+  attr: string | null;
+  args: Array<Expression | NamedArgument>;
 };
 type MessageReference = {
-    type: "mesg";
-    name: string;
-    attr: string | null;
+  type: "mesg";
+  name: string;
+  attr: string | null;
 };
 type FunctionReference = {
-    type: "func";
-    name: string;
-    args: Array<Expression | NamedArgument>;
+  type: "func";
+  name: string;
+  args: Array<Expression | NamedArgument>;
 };
 type Variant = {
-    key: Literal;
-    value: Pattern;
+  key: Literal;
+  value: Pattern;
 };
 type NamedArgument = {
-    type: "narg";
-    name: string;
-    value: Literal;
+  type: "narg";
+  name: string;
+  value: Literal;
 };
 type Literal = StringLiteral | NumberLiteral;
 type StringLiteral = {
-    type: "str";
-    value: string;
+  type: "str";
+  value: string;
 };
 type NumberLiteral = {
-    type: "num";
-    value: number;
-    precision: number;
+  type: "num";
+  value: number;
+  precision: number;
 };
 ` );
-              }
-
-              if ( modifiedContent.includes( '$(' ) ) {
-                insertImport( 'import $ from \'jquery\';' );
-              }
-              if ( modifiedContent.includes( 'paper.' ) ) {
-                insertImport( 'import paper from \'paper\';' );
-              }
-              if ( modifiedContent.includes( 'he.decode' ) ) {
-                insertImport( 'import he from \'he\';' );
-              }
-              if ( modifiedContent.includes( 'Math.seedrandom' ) ) {
-                insertImport( 'import \'seedrandom\';' );
-
-                modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error\s+assert && assert\( Math\.seedrandom/g, 'assert && assert( Math.seedrandom' );
-                modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error\s+this\.seedrandom = Math\.seedrandom/g, 'this.seedrandom = Math.seedrandom' );
-              }
-              if ( modifiedContent.includes( 'window.saveAs( blob, filename )' ) ) {
-                insertImport( 'import saveAs from \'file-saver\';' );
-
-                modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error when typescript knows anything about window\. \. \.\.\s+window\.saveAs\( blob, filename \);/g, 'saveAs( blob, filename );' );
-
-                // // @ts-expect-error when typescript knows anything about window. . ..
-                // window.saveAs( blob, filename );
-
-              }
-              if ( modifiedContent.match( /THREE[^:]/g ) ) {
-                insertImport( 'import * as THREE from \'three\';' );
-
-                if ( modifiedContent.includes( '.needsUpdate = true;' ) ) {
-                  modifiedContent = modifiedContent.replaceAll( 'this.attributes.position.needsUpdate = true;', '// @ts-expect-error\nthis.attributes.position.needsUpdate = true;' );
-                  modifiedContent = modifiedContent.replaceAll( 'this.attributes.normal.needsUpdate = true;', '// @ts-expect-error\nthis.attributes.normal.needsUpdate = true;' );
-                }
-              }
-              if ( modifiedContent.includes( 'LineBreaker' ) ) {
-                insertImport( 'import { LineBreaker } from \'linebreak-ts\';' );
-
-                modifiedContent = modifiedContent.replace( 'lineBreaker[ Symbol.iterator ]', '// @ts-expect-error\nlineBreaker[ Symbol.iterator ]' );
-                modifiedContent = modifiedContent.replace( 'for ( const brk of lineBreaker ) {', '// @ts-expect-error\nfor ( const brk of lineBreaker ) {' );
-              }
-              if ( modifiedContent.includes( 'FlatQueue' ) ) {
-                insertImport( 'import FlatQueue from \'flatqueue\';' );
-
-                modifiedContent = modifiedContent.replaceAll( 'new window.FlatQueue()', 'new FlatQueue()' );
-              }
-              if ( modifiedContent.includes( 'fromByteArray(' ) ) {
-                insertImport( 'import base64js from \'base64-js\';const fromByteArray = base64js.fromByteArray;' );
-              }
-              if ( modifiedContent.includes( 'TextEncoderLite' ) ) {
-                insertImport( 'import TextEncoder from \'text-encoder-lite\';' );
-
-                modifiedContent = modifiedContent.replace( '// @ts-expect-error - fromByteArray Exterior lib', '' );
-                modifiedContent = modifiedContent.replace( 'new TextEncoderLite', 'new TextEncoder.TextEncoderLite' );
-              }
-
-              // NOTE: keep last, so it will be up top
-              insertImport( `import '${getImportPath( 'src/globals.js' )}';` );
             }
 
-            // Use `self` instead of `window` for WebWorker compatibility
-            // See https://github.com/scenerystack/scenerystack/issues/3
-            {
-              modifiedContent = modifiedContent.replace( /([ (,!])window(\??[., ])/g, '$1self$2' );
-
-              // Handle Namespace so it works correctly (it was failing in web workers)
-              modifiedContent = modifiedContent.replaceAll( '!globalThis.hasOwnProperty( \'window\' )', '!globalThis.self' );
+            if ( modifiedContent.includes( '$(' ) ) {
+              insertImport( 'import $ from \'jquery\';' );
             }
+            if ( modifiedContent.includes( 'paper.' ) ) {
+              insertImport( 'import paper from \'paper\';' );
+            }
+            if ( modifiedContent.includes( 'he.decode' ) ) {
+              insertImport( 'import he from \'he\';' );
+            }
+            if ( modifiedContent.includes( 'Math.seedrandom' ) ) {
+              insertImport( 'import \'seedrandom\';' );
 
-            // const kindOf = ( node: ts.Node ) => ts.SyntaxKind[ node.kind ];
+              modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error\s+assert && assert\( Math\.seedrandom/g, 'assert && assert( Math.seedrandom' );
+              modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error\s+this\.seedrandom = Math\.seedrandom/g, 'this.seedrandom = Math.seedrandom' );
+            }
+            if ( modifiedContent.includes( 'window.saveAs( blob, filename )' ) ) {
+              insertImport( 'import saveAs from \'file-saver\';' );
 
-            if ( removeAssertions ) {
-              const sourceAST = ts.createSourceFile(
-                srcPath,
-                modifiedContent,
-                ts.ScriptTarget.ESNext,
-                true
-              );
+              modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error when typescript knows anything about window\. \. \.\.\s+window\.saveAs\( blob, filename \);/g, 'saveAs( blob, filename );' );
 
-              const isAssertIdentifier = ( node: ts.Node ): boolean => {
-                return ts.isIdentifier( node ) && ( node.text === 'assert' || node.text === 'assertSlow' );
-              };
+              // // @ts-expect-error when typescript knows anything about window. . ..
+              // window.saveAs( blob, filename );
 
-              const isAssertAmpersands = ( node: ts.Node ): boolean => {
-                return ts.isBinaryExpression( node ) &&
-                       node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken &&
-                       isAssertNode( node.left ); // support assert && something && something-else
-              };
+            }
+            if ( modifiedContent.match( /THREE[^:]/g ) ) {
+              insertImport( 'import * as THREE from \'three\';' );
 
-              const isAssertNode = ( node: ts.Node ): boolean => {
-                return isAssertIdentifier( node ) || isAssertAmpersands( node );
-              };
-
-              const isAssertIf = ( node: ts.Node ): boolean => {
-                return ts.isIfStatement( node ) && isAssertNode( node.expression );
-              };
-
-              const assertionNodes: ts.Node[] = [];
-
-              const recur = ( node: ts.Node ) => {
-                if ( isAssertAmpersands( node ) || isAssertIf( node ) ) {
-                  assertionNodes.push( node );
-                }
-                // Don't recurse into the children of an assertion (we will strip it)
-                else {
-                  for ( const child of node.getChildren() ) {
-                    recur( child );
-                  }
-                }
-              };
-              recur( sourceAST.getChildren()[ 0 ] );
-
-              // Strip out assertions
-              for ( const assertionNode of assertionNodes.reverse() ) {
-                const replacement = ts.isExpressionStatement( assertionNode.parent ) ? '' : ( ts.isIfStatement( assertionNode.parent ) && ts.isIfStatement( assertionNode ) ? ' if ( false ) {}' : 'false' );
-
-                // We need to exclude ts-expect-error
-                const needsFullStart = modifiedContent.slice( assertionNode.getFullStart(), assertionNode.getEnd() ).includes( '@ts-expect-error' );
-
-                const start = needsFullStart ? assertionNode.getFullStart() : assertionNode.getStart();
-                const end = assertionNode.getEnd();
-
-                if ( end - start < replacement.length ) {
-                  throw new Error( 'cannot maintain source map compatibility' );
-                }
-
-                // Replace with same-length things so source maps will still work
-                const paddedReplacement = _.repeat( ' ', end - start - replacement.length ) + replacement;
-
-                modifiedContent = modifiedContent.slice( 0, start ) + paddedReplacement + modifiedContent.slice( end );
+              if ( modifiedContent.includes( '.needsUpdate = true;' ) ) {
+                modifiedContent = modifiedContent.replaceAll( 'this.attributes.position.needsUpdate = true;', '// @ts-expect-error\nthis.attributes.position.needsUpdate = true;' );
+                modifiedContent = modifiedContent.replaceAll( 'this.attributes.normal.needsUpdate = true;', '// @ts-expect-error\nthis.attributes.normal.needsUpdate = true;' );
               }
             }
+            if ( modifiedContent.includes( 'LineBreaker' ) ) {
+              insertImport( 'import { LineBreaker } from \'linebreak-ts\';' );
 
-            if ( removeNamespacing ) {
-              const namespaceName = repo === 'tandem' ? 'tandemNamespace' : ( repo === 'utterance-queue' ? 'utteranceQueueNamespace' : _.camelCase( repo ) );
-
-              const sourceAST = ts.createSourceFile(
-                srcPath,
-                modifiedContent,
-                ts.ScriptTarget.ESNext,
-                true
-              );
-
-              const mainChildren = sourceAST.getChildren()[ 0 ].getChildren();
-
-              // Note: could traverse tree to see if this is done internally.
-              for ( const node of [ ...mainChildren ].reverse() ) {
-                if (
-                  ts.isExpressionStatement( node ) &&
-                  ts.isCallExpression( node.expression ) &&
-                  ts.isPropertyAccessExpression( node.expression.expression ) &&
-                  node.expression.expression.name.getText() === 'register' &&
-                  node.expression.expression.expression.getText() === namespaceName &&
-                  node.expression.arguments.length >= 2 &&
-                  ts.isStringLiteral( node.expression.arguments[ 0 ] )
-                ) {
-                  const namespacePattern = `${namespaceName}.${node.expression.arguments[ 0 ].text}`;
-                  if ( !excludedNamespaces.includes( namespacePattern ) ) {
-                    removedNamespacePatterns.push( namespacePattern );
-
-                    // Replace with same-length things so source maps will still work
-                    modifiedContent = modifiedContent.slice( 0, node.getStart() ) + _.repeat( ' ', node.getEnd() - node.getStart() ) + modifiedContent.slice( node.getEnd() );
-                  }
-                }
-              }
+              modifiedContent = modifiedContent.replace( 'lineBreaker[ Symbol.iterator ]', '// @ts-expect-error\nlineBreaker[ Symbol.iterator ]' );
+              modifiedContent = modifiedContent.replace( 'for ( const brk of lineBreaker ) {', '// @ts-expect-error\nfor ( const brk of lineBreaker ) {' );
             }
+            if ( modifiedContent.includes( 'FlatQueue' ) ) {
+              insertImport( 'import FlatQueue from \'flatqueue\';' );
+
+              modifiedContent = modifiedContent.replaceAll( 'new window.FlatQueue()', 'new FlatQueue()' );
+            }
+            if ( modifiedContent.includes( 'fromByteArray(' ) ) {
+              insertImport( 'import base64js from \'base64-js\';const fromByteArray = base64js.fromByteArray;' );
+            }
+            if ( modifiedContent.includes( 'TextEncoderLite' ) ) {
+              insertImport( 'import TextEncoder from \'text-encoder-lite\';' );
+
+              modifiedContent = modifiedContent.replace( '// @ts-expect-error - fromByteArray Exterior lib', '' );
+              modifiedContent = modifiedContent.replace( 'new TextEncoderLite', 'new TextEncoder.TextEncoderLite' );
+            }
+
+            // NOTE: keep last, so it will be up top
+            insertImport( `import '${getImportPath( 'src/globals.js' )}';` );
           }
 
-          // String handling
+          // Use `self` instead of `window` for WebWorker compatibility
+          // See https://github.com/scenerystack/scenerystack/issues/3
           {
-            // See getStringMap for documentation
-            for ( const stringRepo of repos ) {
-              const prefix = `${pascalCase( stringRepo )}Strings`; // e.g. JoistStrings
-              if ( modifiedContent.includes( `import ${prefix} from` ) ) {
-                const matches = Array.from( modifiedContent.matchAll( new RegExp( `${prefix}(\\.[a-zA-Z_$][a-zA-Z0-9_$]*|\\[\\s*['"][^'"]+['"]\\s*\\])+[^\\.\\[]`, 'g' ) ) );
+            modifiedContent = modifiedContent.replace( /([ (,!])window(\??[., ])/g, '$1self$2' );
 
-                const imports: string[] = [];
-
-                for ( const match of matches.reverse() ) {
-                  // Strip off the last character - it's a character that shouldn't be in a string access
-                  const matchedString = match[ 0 ].slice( 0, match[ 0 ].length - 1 );
-
-                  // Ignore imports
-                  if ( matchedString === `${prefix}.js` ) {
-                    continue;
-                  }
-
-                  const matchedIndex = match.index;
-                  const stringAccess = matchedString
-                      .replace( /StringProperty'\s?].*/, '\' ]' )
-                      .replace( /StringProperty.*/, '' )
-                      .replace( /\[ '/g, '[\'' )
-                      .replace( /' \]/g, '\']' );
-
-                  const depth = 2; // TODO: this is not a great way to do this, coppied from getStringMap
-                  const stringKeyParts = stringAccess.match( /\.[a-zA-Z_$][a-zA-Z0-9_$]*|\[\s*['"][^'"]+['"]\s*\]/g )!.map( token => {
-                    return token.startsWith( '.' ) ? token.slice( 1 ) : token.slice( depth, token.length - depth );
-                  } );
-                  const partialStringKey = stringKeyParts.join( '.' );
-
-                  usedStrings[ stringRepo ] = usedStrings[ stringRepo ] || [];
-                  if ( !usedStrings[ stringRepo ].includes( partialStringKey ) ) {
-                    usedStrings[ stringRepo ].push( partialStringKey );
-                  }
-
-                  const stringModulePath = stringKeyToRelativePath( stringRepo, partialStringKey );
-                  const identifier = stringKeyToIdentifier( stringRepo, partialStringKey );
-
-                  const importString = `import { ${identifier} } from '${getImportPath( `src/${stringModulePath.replace( /\.ts$/, '.js' )}` )}';`;
-
-                  if ( !imports.includes( importString ) ) {
-                    imports.push( importString );
-                  }
-
-                  modifiedContent = modifiedContent.slice( 0, matchedIndex ) + identifier + modifiedContent.slice( matchedIndex + matchedString.length );
-                }
-
-                for ( const importString of imports ) {
-                  insertImport( importString );
-                }
-
-                // We should now have removed all usages (except for the 2 in the import)
-                // Count how many times prefix shows up
-                const prefixUsages = Array.from( modifiedContent.matchAll( new RegExp( prefix, 'g' ) ) ).length;
-                if ( prefixUsages !== 2 ) {
-                  throw new Error( 'Failed to remove all string usages' );
-                }
-
-                // Remove the now-unused import
-                modifiedContent = modifiedContent.replace( new RegExp( `${os.EOL}import ${prefix} from '[^']+';`, 'g' ), '' );
-              }
-            }
+            // Handle Namespace so it works correctly (it was failing in web workers)
+            modifiedContent = modifiedContent.replaceAll( '!globalThis.hasOwnProperty( \'window\' )', '!globalThis.self' );
           }
 
-          writtenFileContents.push( {
-            path: srcPath,
-            contents: modifiedContent
-          } );
-          fs.writeFileSync( destPath, modifiedContent, 'utf8' );
+          // const kindOf = ( node: ts.Node ) => ts.SyntaxKind[ node.kind ];
 
-          const addExportFor = ( name: string, isType: boolean ): void => {
+          if ( removeAssertions ) {
+            const sourceAST = ts.createSourceFile(
+              srcPath,
+              modifiedContent,
+              ts.ScriptTarget.ESNext,
+              true
+            );
 
-            // Skip exports from non-imports files in these repos
-            if ( ( repo === 'alpenglow' || repo === 'scenery' || repo === 'kite' ) && !destPath.includes( 'imports.ts' ) ) {
-              return;
-            }
-
-            // Do not just re-export sherpa
-            // TODO: is there anything we could gain from this though?
-            if ( repo === 'sherpa' ) {
-              return;
-            }
-
-            const originalName = name;
-            let exportedName = name === 'default' ? path.basename( destPath ).replace( /\.[jt]s$/g, '' ) : name;
-
-            if ( repo === 'kite' && exportedName === 'Line' ) {
-              exportedName = 'KiteLine';
-            }
-            if ( repo === 'dot' && exportedName === 'Utils' ) {
-              exportedName = 'DotUtils';
-            }
-            if ( repo === 'dot' && exportedName === 'Rectangle' ) {
-              exportedName = 'DotRectangle';
-            }
-
-            let exportFile = repo;
-
-            if ( repo === 'sun' && destPath.includes( 'Dialog' ) ) {
-              exportFile = 'sim';
-            }
-            if ( repo === 'joist' && [ 'Screen', 'Sim' ].some( s => destPath.includes( s ) ) ) {
-              exportFile = 'sim';
-            }
-            if ( repo === 'perennial-alias' ) {
-              exportFile = 'perennial';
-            }
-
-            // TODO: init (and such)
-
-            const entry = {
-              isType: isType,
-              requiresSim: exportFile === 'sim',
-              originalName: originalName,
-              exportedName: exportedName,
-              path: destPath
+            const isAssertIdentifier = ( node: ts.Node ): boolean => {
+              return ts.isIdentifier( node ) && ( node.text === 'assert' || node.text === 'assertSlow' );
             };
 
-            exportEntries[ exportFile ].push( entry );
-          };
+            const isAssertAmpersands = ( node: ts.Node ): boolean => {
+              return ts.isBinaryExpression( node ) &&
+                     node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken &&
+                     isAssertNode( node.left ); // support assert && something && something-else
+            };
 
-          const exportNames = getExportNames( modifiedContent );
+            const isAssertNode = ( node: ts.Node ): boolean => {
+              return isAssertIdentifier( node ) || isAssertAmpersands( node );
+            };
 
-          for ( const name of exportNames.exports ) {
-            addExportFor( name, false );
+            const isAssertIf = ( node: ts.Node ): boolean => {
+              return ts.isIfStatement( node ) && isAssertNode( node.expression );
+            };
+
+            const assertionNodes: ts.Node[] = [];
+
+            const recur = ( node: ts.Node ) => {
+              if ( isAssertAmpersands( node ) || isAssertIf( node ) ) {
+                assertionNodes.push( node );
+              }
+              // Don't recurse into the children of an assertion (we will strip it)
+              else {
+                for ( const child of node.getChildren() ) {
+                  recur( child );
+                }
+              }
+            };
+            recur( sourceAST.getChildren()[ 0 ] );
+
+            // Strip out assertions
+            for ( const assertionNode of assertionNodes.reverse() ) {
+              const replacement = ts.isExpressionStatement( assertionNode.parent ) ? '' : ( ts.isIfStatement( assertionNode.parent ) && ts.isIfStatement( assertionNode ) ? ' if ( false ) {}' : 'false' );
+
+              // We need to exclude ts-expect-error
+              const needsFullStart = modifiedContent.slice( assertionNode.getFullStart(), assertionNode.getEnd() ).includes( '@ts-expect-error' );
+
+              const start = needsFullStart ? assertionNode.getFullStart() : assertionNode.getStart();
+              const end = assertionNode.getEnd();
+
+              if ( end - start < replacement.length ) {
+                throw new Error( 'cannot maintain source map compatibility' );
+              }
+
+              // Replace with same-length things so source maps will still work
+              const paddedReplacement = _.repeat( ' ', end - start - replacement.length ) + replacement;
+
+              modifiedContent = modifiedContent.slice( 0, start ) + paddedReplacement + modifiedContent.slice( end );
+            }
           }
-          for ( const name of exportNames.typeExports ) {
-            addExportFor( name, true );
+
+          if ( removeNamespacing ) {
+            const namespaceName = repo === 'tandem' ? 'tandemNamespace' : ( repo === 'utterance-queue' ? 'utteranceQueueNamespace' : _.camelCase( repo ) );
+
+            const sourceAST = ts.createSourceFile(
+              srcPath,
+              modifiedContent,
+              ts.ScriptTarget.ESNext,
+              true
+            );
+
+            const mainChildren = sourceAST.getChildren()[ 0 ].getChildren();
+
+            // Note: could traverse tree to see if this is done internally.
+            for ( const node of [ ...mainChildren ].reverse() ) {
+              if (
+                ts.isExpressionStatement( node ) &&
+                ts.isCallExpression( node.expression ) &&
+                ts.isPropertyAccessExpression( node.expression.expression ) &&
+                node.expression.expression.name.getText() === 'register' &&
+                node.expression.expression.expression.getText() === namespaceName &&
+                node.expression.arguments.length >= 2 &&
+                ts.isStringLiteral( node.expression.arguments[ 0 ] )
+              ) {
+                const namespacePattern = `${namespaceName}.${node.expression.arguments[ 0 ].text}`;
+                if ( !excludedNamespaces.includes( namespacePattern ) ) {
+                  removedNamespacePatterns.push( namespacePattern );
+
+                  // Replace with same-length things so source maps will still work
+                  modifiedContent = modifiedContent.slice( 0, node.getStart() ) + _.repeat( ' ', node.getEnd() - node.getStart() ) + modifiedContent.slice( node.getEnd() );
+                }
+              }
+            }
           }
         }
+
+        // String handling
+        {
+          // See getStringMap for documentation
+          for ( const stringRepo of repos ) {
+            const prefix = `${pascalCase( stringRepo )}Strings`; // e.g. JoistStrings
+            if ( modifiedContent.includes( `import ${prefix} from` ) ) {
+              const matches = Array.from( modifiedContent.matchAll( new RegExp( `${prefix}(\\.[a-zA-Z_$][a-zA-Z0-9_$]*|\\[\\s*['"][^'"]+['"]\\s*\\])+[^\\.\\[]`, 'g' ) ) );
+
+              const imports: string[] = [];
+
+              for ( const match of matches.reverse() ) {
+                // Strip off the last character - it's a character that shouldn't be in a string access
+                const matchedString = match[ 0 ].slice( 0, match[ 0 ].length - 1 );
+
+                // Ignore imports
+                if ( matchedString === `${prefix}.js` ) {
+                  continue;
+                }
+
+                const matchedIndex = match.index;
+                const stringAccess = matchedString
+                    .replace( /StringProperty'\s?].*/, '\' ]' )
+                    .replace( /StringProperty.*/, '' )
+                    .replace( /\[ '/g, '[\'' )
+                    .replace( /' \]/g, '\']' );
+
+                const depth = 2; // TODO: this is not a great way to do this, coppied from getStringMap
+                const stringKeyParts = stringAccess.match( /\.[a-zA-Z_$][a-zA-Z0-9_$]*|\[\s*['"][^'"]+['"]\s*\]/g )!.map( token => {
+                  return token.startsWith( '.' ) ? token.slice( 1 ) : token.slice( depth, token.length - depth );
+                } );
+                const partialStringKey = stringKeyParts.join( '.' );
+
+                usedStrings[ stringRepo ] = usedStrings[ stringRepo ] || [];
+                if ( !usedStrings[ stringRepo ].includes( partialStringKey ) ) {
+                  usedStrings[ stringRepo ].push( partialStringKey );
+                }
+
+                const stringModulePath = stringKeyToRelativePath( stringRepo, partialStringKey );
+                const identifier = stringKeyToIdentifier( stringRepo, partialStringKey );
+
+                const importString = `import { ${identifier} } from '${getImportPath( `src/${stringModulePath.replace( /\.ts$/, '.js' )}` )}';`;
+
+                if ( !imports.includes( importString ) ) {
+                  imports.push( importString );
+                }
+
+                modifiedContent = modifiedContent.slice( 0, matchedIndex ) + identifier + modifiedContent.slice( matchedIndex + matchedString.length );
+              }
+
+              for ( const importString of imports ) {
+                insertImport( importString );
+              }
+
+              // We should now have removed all usages (except for the 2 in the import)
+              // Count how many times prefix shows up
+              const prefixUsages = Array.from( modifiedContent.matchAll( new RegExp( prefix, 'g' ) ) ).length;
+              if ( prefixUsages !== 2 ) {
+                throw new Error( 'Failed to remove all string usages' );
+              }
+
+              // Remove the now-unused import
+              modifiedContent = modifiedContent.replace( new RegExp( `${os.EOL}import ${prefix} from '[^']+';`, 'g' ), '' );
+            }
+          }
+        }
+
+        writtenFileContents.push( {
+          path: srcPath,
+          contents: modifiedContent
+        } );
+        if ( writeFile ) {
+          fs.writeFileSync( destPath, modifiedContent, 'utf8' );
+        }
+
+        const addExportFor = ( name: string, isType: boolean ): void => {
+
+          // Skip exports from non-imports files in these repos
+          if ( ( repo === 'alpenglow' || repo === 'scenery' || repo === 'kite' ) && !destPath.includes( 'imports.ts' ) ) {
+            return;
+          }
+
+          // Do not just re-export sherpa
+          // TODO: is there anything we could gain from this though?
+          if ( repo === 'sherpa' ) {
+            return;
+          }
+
+          const originalName = name;
+          let exportedName = name === 'default' ? path.basename( destPath ).replace( /\.[jt]s$/g, '' ) : name;
+
+          if ( repo === 'kite' && exportedName === 'Line' ) {
+            exportedName = 'KiteLine';
+          }
+          if ( repo === 'dot' && exportedName === 'Utils' ) {
+            exportedName = 'DotUtils';
+          }
+          if ( repo === 'dot' && exportedName === 'Rectangle' ) {
+            exportedName = 'DotRectangle';
+          }
+
+          let exportFile = repo;
+
+          if ( repo === 'sun' && destPath.includes( 'Dialog' ) ) {
+            exportFile = 'sim';
+          }
+          if ( repo === 'joist' && [ 'Screen', 'Sim' ].some( s => destPath.includes( s ) ) ) {
+            exportFile = 'sim';
+          }
+          if ( repo === 'perennial-alias' ) {
+            exportFile = 'perennial';
+          }
+          if ( destPath.includes( 'adapted-from-phet' ) && repo === 'brand' ) {
+            exportFile = 'adapted-from-phet';
+          }
+          if ( repo === 'scenerystack' ) {
+            // ENSURE it gets mapped
+            if ( srcPath.includes( 'assert.ts' ) ) {
+              exportFile = 'assert';
+            }
+            else {
+              throw new Error( `${srcPath} in scenerystack does not have explicit mapping` );
+            }
+          }
+
+          // TODO: init (and such)
+
+          const entry = {
+            isType: isType,
+            requiresSim: exportFile === 'sim',
+            originalName: originalName,
+            exportedName: exportedName,
+            path: destPath
+          };
+
+          exportEntries[ exportFile ].push( entry );
+        };
+
+        const exportNames = getExportNames( modifiedContent );
+
+        for ( const name of exportNames.exports ) {
+          addExportFor( name, false );
+        }
+        for ( const name of exportNames.typeExports ) {
+          addExportFor( name, true );
+        }
       }
-    };
-    copyAndModify( `../${repo}`, `./src/${repo}` );
+    }
+  };
+
+  // TODO: how do we ... remove assertions and such? maybe we build a separate dev package?
+  repos.forEach( repo => {
+    copyAndModify( repo, `../${repo}`, `./src/${repo}` );
   } );
+  // Process some scenerystack files that do NOT get copied/modified
+  copyAndModify( 'scenerystack', './src/scenerystack', './src/scenerystack', false );
 
   // Patch up unknown duplicated exports
   {
@@ -1122,7 +1142,7 @@ type NumberLiteral = {
           if ( entries.length ) {
             const exportLine = `export ${isType ? 'type ' : ''}{ ${entries.map( entry => {
               return entry.exportedName === entry.originalName ? entry.exportedName : `${entry.originalName} as ${entry.exportedName}`;
-            } ).join( ', ' )} } from '${modulePath.replace( /^src/, '.' ).replace( /\.ts$/, '.js' )}'`;
+            } ).join( ', ' )} } from '${modulePath.replace( /^src/, '.' ).replace( /\.ts$/, '.js' )}';`;
 
             exportLines.push( exportLine );
           }
@@ -1149,8 +1169,19 @@ type NumberLiteral = {
 
 ${exportLines.join( os.EOL )}`;
 
-      console.log( exportNamespace );
-      console.log( barrelFileContents );
+      // allowlist for now
+      if ( [
+        'adapted-from-phet',
+        'alpenglow',
+        'assert'
+        // 'axon' // PhetioProperty seems to be exporting as... not a type
+      ].includes( exportNamespace ) ) {
+        fs.writeFileSync( `./src/${exportNamespace}.ts`, barrelFileContents, 'utf8' );
+      }
+      else {
+        console.log( exportNamespace );
+        console.log( barrelFileContents );
+      }
     }
   }
 
