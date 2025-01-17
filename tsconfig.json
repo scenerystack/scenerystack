@@ -8,7 +8,7 @@
   "extends": "../perennial-alias/tsconfig/tsconfig-core.json",
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./dist",
+    "outDir": "./dist/prod",
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "sourceMap": true,

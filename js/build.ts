@@ -97,10 +97,10 @@ const copyAndPatch = async ( options?: {
   // TODO: can we get rid of imports for things after assertions/etc. are removed?
 } ) => {
 
-  const removeAssertions = options?.removeAssertions ?? false;
-  const removeNamespacing = options?.removeNamespacing ?? false;
+  const removeAssertions = options?.removeAssertions ?? true;
+  const removeNamespacing = options?.removeNamespacing ?? true;
 
-  console.log( 'copying and patching' );
+  console.log( `copying and patching${removeAssertions ? ' no-assert' : ''}${removeNamespacing ? ' no-namespace' : ''}` );
 
   const wipeDir = ( dirname: string ) => {
     if ( fs.existsSync( `./${dirname}` ) ) {
@@ -455,7 +455,7 @@ export default localeData;` );
                 'chipper.reportContinuousTestResult',
                 'chipper?.reportContinuousTestResult',
                 'phet.log',
-                'phet?.log',
+                'phet?.log'
 
               ].some( str => modifiedContent.includes( str ) ) ) {
                 insertImport( `import '${getImportPath( 'src/chipper/js/browser/initialize-globals.js' )}';` );
@@ -829,27 +829,24 @@ export default ${stringModuleName};
   );
 };
 
-( async () => {
+const conditionalLog = ( string: string ) => {
+  if ( string.trim().length ) {
+    console.log( string );
+  }
+};
+const conditionalError = ( string: string ) => {
+  if ( string.trim().length ) {
+    console.error( string );
+  }
+};
 
-  await copyAndPatch();
+const tscRun = async ( production: boolean ): Promise<void> => {
+  console.log( `running tsc (${production ? 'prod' : 'dev'})` );
 
-  const conditionalLog = ( string: string ) => {
-    if ( string.trim().length ) {
-      console.log( string );
-    }
-  };
-  const conditionalError = ( string: string ) => {
-    if ( string.trim().length ) {
-      console.error( string );
-    }
-  };
-
-  // dependencies.json
-  await writeDependencies();
-
-  // Use tsc to generate the files we need.
-  console.log( 'running tsc' );
-  const tscResult = await execute( 'node', [ '../perennial-alias/node_modules/typescript/bin/tsc', '-b' ], '.', { errors: 'resolve' } );
+  const tscResult = await execute( 'node', [
+    '../perennial-alias/node_modules/typescript/bin/tsc',
+    ...( production ? [] : [ '--project', 'tsconfig.dev.json' ] )
+  ], '.', { errors: 'resolve' } );
 
   conditionalLog( tscResult.stdout );
   conditionalError( tscResult.stderr );
@@ -857,7 +854,9 @@ export default ${stringModuleName};
     console.error( 'tsc failed' );
     process.exit( 1 );
   }
+};
 
+const rollupRun = async () => {
   // Use rollup for bundles
   console.log( 'running rollup' );
   const rollupResult = await execute( 'npx', [ 'rollup', '-c' ], '.', { errors: 'resolve' } );
@@ -868,4 +867,38 @@ export default ${stringModuleName};
     console.error( 'rollup failed' );
     process.exit( 1 );
   }
+};
+
+( async () => {
+
+  // dependencies.json
+  await writeDependencies();
+
+  // copy "production version" into ./src/
+  await copyAndPatch( {
+    removeAssertions: true,
+    removeNamespacing: true
+  } );
+
+  // tsc files into ./dist/prod/
+  await tscRun( true );
+
+  // copy "development version" into ./src/
+  await copyAndPatch( {
+    removeAssertions: false,
+    removeNamespacing: false
+  } );
+
+  // tsc files into ./dist/dev/
+  await tscRun( false );
+
+  // copy "production version" into ./src/ (again, so that it will be the ending version
+  // note: this is repeated, so we can get the "production" version done first for faster testing
+  await copyAndPatch( {
+    removeAssertions: true,
+    removeNamespacing: true
+  } );
+
+  // Use rollup for bundles written to ./dist/
+  await rollupRun();
 } )();

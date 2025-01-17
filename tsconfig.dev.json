@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist/dev",
+
+    // we will swap out src files after build (for production), that would break source maps
+    "sourceMap": false,
+    "declarationMap": false
+  }
+}

@@ -34,46 +34,159 @@
     "dependencies.json"
   ],
   "sideEffects": [
-    "./dist/init.js",
-    "./dist/splash.js",
-    "./dist/assert/js/assert.js",
-    "./dist/babel/babel-metadata.js",
-    "./dist/babel/babel-stringRepos.js",
-    "./dist/babel/babel-strings.js",
-    "./dist/babel/localeData.js",
-    "./dist/chipper/js/browser/initialize-globals.js",
-    "./dist/joist/js/splash.js",
-    "./dist/joist/js/Sim.js",
-    "./dist/query-string-machine/js/QueryStringMachine.js",
-    "./dist/sherpa/lib/game-up-camera-1.0.0.js",
-    "./dist/sherpa/lib/himalaya-1.1.0.js"
+    "./dist/prod/init.js",
+    "./dist/dev/init.js",
+    "./dist/prod/splash.js",
+    "./dist/dev/splash.js",
+    "./dist/prod/assert/js/assert.js",
+    "./dist/dev/assert/js/assert.js",
+    "./dist/prod/babel/babel-metadata.js",
+    "./dist/dev/babel/babel-metadata.js",
+    "./dist/prod/babel/babel-stringRepos.js",
+    "./dist/dev/babel/babel-stringRepos.js",
+    "./dist/prod/babel/babel-strings.js",
+    "./dist/dev/babel/babel-strings.js",
+    "./dist/prod/babel/localeData.js",
+    "./dist/dev/babel/localeData.js",
+    "./dist/prod/chipper/js/browser/initialize-globals.js",
+    "./dist/dev/chipper/js/browser/initialize-globals.js",
+    "./dist/prod/joist/js/splash.js",
+    "./dist/dev/joist/js/splash.js",
+    "./dist/prod/joist/js/Sim.js",
+    "./dist/dev/joist/js/Sim.js",
+    "./dist/prod/query-string-machine/js/QueryStringMachine.js",
+    "./dist/dev/query-string-machine/js/QueryStringMachine.js",
+    "./dist/prod/sherpa/lib/game-up-camera-1.0.0.js",
+    "./dist/dev/sherpa/lib/game-up-camera-1.0.0.js",
+    "./dist/prod/sherpa/lib/himalaya-1.1.0.js"
+    "./dist/dev/sherpa/lib/himalaya-1.1.0.js"
   ],
   "exports": {
-    ".": "./dist/index.js",
-    "./adapted-from-phet": "./dist/adapted-from-phet.js",
-    "./alpenglow": "./dist/alpenglow.js",
-    "./assert": "./dist/assert.js",
-    "./axon": "./dist/axon.js",
-    "./brand": "./dist/brand.js",
-    "./chipper": "./dist/chipper.js",
-    "./dot": "./dist/dot.js",
-    "./init": "./dist/init.js",
-    "./joist": "./dist/joist.js",
-    "./kite": "./dist/kite.js",
-    "./mobius": "./dist/mobius.js",
-    "./perennial": "./dist/perennial.js",
-    "./phet-core": "./dist/phet-core.js",
-    "./phetcommon": "./dist/phetcommon.js",
-    "./query-string-machine": "./dist/query-string-machine.js",
-    "./scenery": "./dist/scenery.js",
-    "./scenery-phet": "./dist/scenery-phet.js",
-    "./sim": "./dist/sim.js",
-    "./splash": "./dist/splash.js",
-    "./sun": "./dist/sun.js",
-    "./tandem": "./dist/tandem.js",
-    "./tappi": "./dist/tappi.js",
-    "./twixt": "./dist/twixt.js",
-    "./vegas": "./dist/vegas.js"
+    ".": {
+      "development": "./dist/dev/index.js",
+      "import": "./dist/prod/index.js",
+      "default": "./dist/prod/index.js"
+    },
+    "./adapted-from-phet": {
+      "development": "./dist/dev/adapted-from-phet.js",
+      "import": "./dist/prod/adapted-from-phet.js",
+      "default": "./dist/prod/adapted-from-phet.js"
+    },
+    "./alpenglow": {
+      "development": "./dist/dev/alpenglow.js",
+      "import": "./dist/prod/alpenglow.js",
+      "default": "./dist/prod/alpenglow.js"
+    },
+    "./assert": {
+      "development": "./dist/dev/assert.js",
+      "import": "./dist/prod/assert.js",
+      "default": "./dist/prod/assert.js"
+    },
+    "./axon": {
+      "development": "./dist/dev/axon.js",
+      "import": "./dist/prod/axon.js",
+      "default": "./dist/prod/axon.js"
+    },
+    "./brand": {
+      "development": "./dist/dev/brand.js",
+      "import": "./dist/prod/brand.js",
+      "default": "./dist/prod/brand.js"
+    },
+    "./chipper": {
+      "development": "./dist/dev/chipper.js",
+      "import": "./dist/prod/chipper.js",
+      "default": "./dist/prod/chipper.js"
+    },
+    "./dot": {
+      "development": "./dist/dev/dot.js",
+      "import": "./dist/prod/dot.js",
+      "default": "./dist/prod/dot.js"
+    },
+    "./init": {
+      "development": "./dist/dev/init.js",
+      "import": "./dist/prod/init.js",
+      "default": "./dist/prod/init.js"
+    },
+    "./joist": {
+      "development": "./dist/dev/joist.js",
+      "import": "./dist/prod/joist.js",
+      "default": "./dist/prod/joist.js"
+    },
+    "./kite": {
+      "development": "./dist/dev/kite.js",
+      "import": "./dist/prod/kite.js",
+      "default": "./dist/prod/kite.js"
+    },
+    "./mobius": {
+      "development": "./dist/dev/mobius.js",
+      "import": "./dist/prod/mobius.js",
+      "default": "./dist/prod/mobius.js"
+    },
+    "./perennial": {
+      "development": "./dist/dev/perennial.js",
+      "import": "./dist/prod/perennial.js",
+      "default": "./dist/prod/perennial.js"
+    },
+    "./phet-core": {
+      "development": "./dist/dev/phet-core.js",
+      "import": "./dist/prod/phet-core.js",
+      "default": "./dist/prod/phet-core.js"
+    },
+    "./phetcommon": {
+      "development": "./dist/dev/phetcommon.js",
+      "import": "./dist/prod/phetcommon.js",
+      "default": "./dist/prod/phetcommon.js"
+    },
+    "./query-string-machine": {
+      "development": "./dist/dev/query-string-machine.js",
+      "import": "./dist/prod/query-string-machine.js",
+      "default": "./dist/prod/query-string-machine.js"
+    },
+    "./scenery": {
+      "development": "./dist/dev/scenery.js",
+      "import": "./dist/prod/scenery.js",
+      "default": "./dist/prod/scenery.js"
+    },
+    "./scenery-phet": {
+      "development": "./dist/dev/scenery-phet.js",
+      "import": "./dist/prod/scenery-phet.js",
+      "default": "./dist/prod/scenery-phet.js"
+    },
+    "./sim": {
+      "development": "./dist/dev/sim.js",
+      "import": "./dist/prod/sim.js",
+      "default": "./dist/prod/sim.js"
+    },
+    "./splash": {
+      "development": "./dist/dev/splash.js",
+      "import": "./dist/prod/splash.js",
+      "default": "./dist/prod/splash.js"
+    },
+    "./sun": {
+      "development": "./dist/dev/sun.js",
+      "import": "./dist/prod/sun.js",
+      "default": "./dist/prod/sun.js"
+    },
+    "./tandem": {
+      "development": "./dist/dev/tandem.js",
+      "import": "./dist/prod/tandem.js",
+      "default": "./dist/prod/tandem.js"
+    },
+    "./tappi": {
+      "development": "./dist/dev/tappi.js",
+      "import": "./dist/prod/tappi.js",
+      "default": "./dist/prod/tappi.js"
+    },
+    "./twixt": {
+      "development": "./dist/dev/twixt.js",
+      "import": "./dist/prod/twixt.js",
+      "default": "./dist/prod/twixt.js"
+    },
+    "./vegas": {
+      "development": "./dist/dev/vegas.js",
+      "import": "./dist/prod/vegas.js",
+      "default": "./dist/prod/vegas.js"
+    }
   },
   "dependencies": {
     "base64-js": "^1.5.1",

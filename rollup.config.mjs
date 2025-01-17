@@ -13,7 +13,7 @@ import terser from '@rollup/plugin-terser';
 export default [ 'esm', 'umd' ].map( format => {
   return [ false, true ].map( minify => {
     return {
-      input: 'dist/standalone.js',
+      input: `dist/${minify ? 'prod' : 'dev'}/standalone.js`,
       output: {
         file: `dist/scenerystack.${format}${minify ? '.min' : ''}.js`,
         format: format,
