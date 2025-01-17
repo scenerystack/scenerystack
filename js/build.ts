@@ -123,12 +123,12 @@ const getExportNames = ( js: string ): { exports: string[]; typeExports: string[
       else if ( ts.isVariableStatement( node ) ) {
         node.declarationList.declarations.forEach( declaration => {
           if ( ts.isIdentifier( declaration.name ) ) {
-            exports.push( declaration.name.text );
+            array.push( declaration.name.text );
           }
         } );
       }
       else if ( node.name ) {
-        exports.push( node.name.text );
+        array.push( node.name.text );
       }
     }
 
@@ -1076,7 +1076,25 @@ type NumberLiteral = {
       }
 
       // TODO: write?
-      // TODO: some "types" not being detected!!! ValueChangeSoundPlayerOptions is example
+      // TODO: scenery missing?
+
+      const barrelFileContents = `// Copyright ${new Date().getFullYear() + ''}, University of Colorado Boulder
+
+/* eslint-disable */
+/* @formatter:off */
+
+/**
+ * "Barrel" file for ${exportNamespace}, so that we can export all of the API of the repo.
+ *
+ * Auto-generated from scenerystack build
+ *
+ * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ */
+
+${exportLines.join( os.EOL )}`;
+
+      console.log( exportNamespace );
+      console.log( barrelFileContents );
     }
   }
 
