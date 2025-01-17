@@ -27,63 +27,36 @@ import execute from '../../perennial-alias/js/common/execute.js';
 import _ from 'lodash';
 import pascalCase from '../../chipper/js/common/pascalCase.js';
 
-( async () => {
-  const wipeDir = ( dirname: string ) => {
-    if ( fs.existsSync( `./${dirname}` ) ) {
-      fs.rmSync( `./${dirname}`, {
-        recursive: true
-      } );
-    }
+const repos = [
+  // NOTE: repos also used for cloned checkout
+  'alpenglow',
+  'assert',
+  'axon',
+  'bamboo',
+  'brand',
+  'chipper',
+  'dot',
+  'joist',
+  'kite',
+  'mobius',
+  'nitroglycerin',
+  'perennial-alias',
+  'phet-core',
+  'phetcommon',
+  'query-string-machine',
+  'scenery-phet',
+  'scenery',
+  'sherpa',
+  'sun',
+  'tambo',
+  'tandem',
+  'tappi',
+  'twixt',
+  'utterance-queue',
+  'vegas'
+];
 
-    fs.mkdirSync( `./${dirname}`, { recursive: true } );
-  };
-
-  wipeDir( 'third-party-licenses' );
-
-  const repos = [
-    // NOTE: repos also used for cloned checkout
-    'alpenglow',
-    'assert',
-    'axon',
-    'bamboo',
-    'brand',
-    'chipper',
-    'dot',
-    'joist',
-    'kite',
-    'mobius',
-    'nitroglycerin',
-    'perennial-alias',
-    'phet-core',
-    'phetcommon',
-    'query-string-machine',
-    'scenery-phet',
-    'scenery',
-    'sherpa',
-    'sun',
-    'tambo',
-    'tandem',
-    'tappi',
-    'twixt',
-    'utterance-queue',
-    'vegas'
-  ];
-
-  repos.forEach( repo => {
-    wipeDir( `src/${repo}` );
-  } );
-
-  const localeData = JSON.parse( fs.readFileSync( '../babel/localeData.json', 'utf8' ) );
-
-  // TODO: expose these on the global namespace? export them?
-  const stringKeyToIdentifier = ( repo: string, stringKey: string ): string => {
-    return `string_${repo}_${stringKey}_StringProperty`.replaceAll( /[^a-zA-Z0-9_]/g, '_' );
-  };
-
-  const stringKeyToRelativePath = ( repo: string, stringKey: string ): string => {
-    return `${repo}/js/strings/${stringKey.replaceAll( '.', '/' )}.ts`;
-  };
-
+const writeDependencies = async () => {
   // dependencies.json
   {
     const dependenciesJSON: Record<string, string | { sha: string | null, branch: string | null }> = {
@@ -112,6 +85,49 @@ import pascalCase from '../../chipper/js/common/pascalCase.js';
 
     fs.writeFileSync( './dependencies.json', JSON.stringify( dependenciesJSON, null, 2 ) );
   }
+};
+
+const copyAndPatch = async ( options?: {
+  // TODO: because of performance and size
+  removeAssertions?: boolean;
+
+  // TODO: for innate tree-shakeability (e.g. rollup/vite)
+  removeNamespacing?: boolean;
+
+  // TODO: can we get rid of imports for things after assertions/etc. are removed?
+} ) => {
+
+  const removeAssertions = options?.removeAssertions ?? false;
+  const removeNamespacing = options?.removeNamespacing ?? false;
+
+  console.log( 'copying and patching' );
+
+  const wipeDir = ( dirname: string ) => {
+    if ( fs.existsSync( `./${dirname}` ) ) {
+      fs.rmSync( `./${dirname}`, {
+        recursive: true
+      } );
+    }
+
+    fs.mkdirSync( `./${dirname}`, { recursive: true } );
+  };
+
+  wipeDir( 'third-party-licenses' );
+
+  repos.forEach( repo => {
+    wipeDir( `src/${repo}` );
+  } );
+
+  const localeData = JSON.parse( fs.readFileSync( '../babel/localeData.json', 'utf8' ) );
+
+  // TODO: expose these on the global namespace? export them?
+  const stringKeyToIdentifier = ( repo: string, stringKey: string ): string => {
+    return `string_${repo}_${stringKey}_StringProperty`.replaceAll( /[^a-zA-Z0-9_]/g, '_' );
+  };
+
+  const stringKeyToRelativePath = ( repo: string, stringKey: string ): string => {
+    return `${repo}/js/strings/${stringKey.replaceAll( '.', '/' )}.ts`;
+  };
 
   // babel-strings.js
   {
@@ -381,7 +397,7 @@ export default localeData;` );
           }
         }
         else if ( suffixes.some( suffix => name.endsWith( suffix ) ) ) {
-          console.log( `including ${srcPath}` );
+          // console.log( `including ${srcPath}` );
 
           // Read, modify, and write the file if it matches the filter
           const content = fs.readFileSync( srcPath, 'utf8' );
@@ -685,7 +701,7 @@ export const ${stringKeyToIdentifier( stringRepo, stringKey )} = new LocalizedSt
   for ( const stringModulePath of stringModulePaths ) {
     let content;
 
-    console.log( `rewriting ${stringModulePath}` );
+    // console.log( `rewriting ${stringModulePath}` );
 
     const repo = stringModulePath.split( '/' )[ 1 ];
     const namespace = _.camelCase( repo );
@@ -786,17 +802,15 @@ export default ${stringModuleName};
   // library seems to go absolutely haywire.
   const patch = ( file: string, before: string, after: string ) => {
     const qsm = fs.readFileSync( file, 'utf-8' );
+    if ( !qsm.includes( before ) ) {
+      console.error( `could not find ${before} in ${file}` );
+    }
     fs.writeFileSync( file, qsm.replace( before, after ) );
   };
   patch(
     './src/query-string-machine/js/QueryStringMachine.js',
     `}( this, () => {`,
     `}( self, () => {`
-  );
-  patch(
-    './src/query-string-machine/js/QueryStringMachine.js',
-    `module.exports = factory();`,
-    `self.QueryStringMachine = factory();`
   );
   patch(
     './src/sherpa/lib/himalaya-1.1.0.js',
@@ -813,6 +827,11 @@ export default ${stringModuleName};
     `// @ts-expect-error - we should get a string from this`,
     ``
   );
+};
+
+( async () => {
+
+  await copyAndPatch();
 
   const conditionalLog = ( string: string ) => {
     if ( string.trim().length ) {
@@ -824,6 +843,9 @@ export default ${stringModuleName};
       console.error( string );
     }
   };
+
+  // dependencies.json
+  await writeDependencies();
 
   // Use tsc to generate the files we need.
   console.log( 'running tsc' );
