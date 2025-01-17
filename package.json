@@ -33,6 +33,21 @@
     "third-party-licenses",
     "dependencies.json"
   ],
+  "sideEffects": [
+    "./dist/init.js",
+    "./dist/splash.js",
+    "./dist/assert/js/assert.js",
+    "./dist/babel/babel-metadata.js",
+    "./dist/babel/babel-stringRepos.js",
+    "./dist/babel/babel-strings.js",
+    "./dist/babel/localeData.js",
+    "./dist/chipper/js/browser/initialize-globals.js",
+    "./dist/joist/js/splash.js",
+    "./dist/joist/js/Sim.js",
+    "./dist/query-string-machine/js/QueryStringMachine.js",
+    "./dist/sherpa/lib/game-up-camera-1.0.0.js",
+    "./dist/sherpa/lib/himalaya-1.1.0.js"
+  ],
   "exports": {
     ".": "./dist/index.js",
     "./adapted-from-phet": "./dist/adapted-from-phet.js",
