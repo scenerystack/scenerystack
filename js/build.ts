@@ -59,6 +59,21 @@ const repos = [
   'vegas'
 ];
 
+// We won't remove these namespaces, because they seem to be used internally
+const excludedNamespaces = [
+  // noted circularity
+  'dot.Quaternion',
+
+  // used for assignment
+  'scenery.scratchCanvas',
+  'scenery.scratchContext',
+  'kite.svgPath',
+
+  // unclassified
+  'brand.Brand',
+  'joist.ScreenshotGenerator'
+];
+
 const writeDependencies = async () => {
   // dependencies.json
   {
@@ -227,6 +242,8 @@ export default localeData;` );
   const licensePaths: string[] = [];
   const usedStrings: Record<string, string[]> = {};
   const stringModulePaths: string[] = [];
+  const writtenFileContents: { path: string; contents: string }[] = [];
+  const removedNamespacePatterns: string[] = [];
 
   // TODO: how do we ... remove assertions and such? maybe we build a separate dev package?
   repos.forEach( repo => {
@@ -365,6 +382,7 @@ export default localeData;` );
           'sun/js/sun-tests.',
           'tandem/js/tandem-tests.',
           'twixt/js/twixt-tests.',
+          'dot/js/UtilsTests.',
 
           // Unneeded mains
           'alpenglow/js/main.',
@@ -617,7 +635,35 @@ export default localeData;` );
             }
 
             if ( removeNamespacing ) {
-              // TODO
+              const namespaceName = repo === 'tandem' ? 'tandemNamespace' : ( repo === 'utterance-queue' ? 'utteranceQueueNamespace' : _.camelCase( repo ) );
+
+              const sourceAST = ts.createSourceFile(
+                srcPath,
+                modifiedContent,
+                ts.ScriptTarget.ESNext,
+                true
+              );
+
+              const mainChildren = sourceAST.getChildren()[ 0 ].getChildren();
+
+              // Note: could traverse tree to see if this is done internally.
+              for ( const node of [ ...mainChildren ].reverse() ) {
+                if (
+                  ts.isExpressionStatement( node ) &&
+                  ts.isCallExpression( node.expression ) &&
+                  ts.isPropertyAccessExpression( node.expression.expression ) &&
+                  node.expression.expression.name.getText() === 'register' &&
+                  node.expression.expression.expression.getText() === namespaceName &&
+                  node.expression.arguments.length >= 2 &&
+                  ts.isStringLiteral( node.expression.arguments[ 0 ] )
+                ) {
+                  const namespacePattern = `${namespaceName}.${node.expression.arguments[ 0 ].text}`;
+                  if ( !excludedNamespaces.includes( namespacePattern ) ) {
+                    removedNamespacePatterns.push( namespacePattern );
+                    modifiedContent = modifiedContent.slice( 0, node.getStart() ) + modifiedContent.slice( node.getEnd() );
+                  }
+                }
+              }
             }
           }
 
@@ -687,12 +733,51 @@ export default localeData;` );
             }
           }
 
+          writtenFileContents.push( {
+            path: srcPath,
+            contents: modifiedContent
+          } );
           fs.writeFileSync( destPath, modifiedContent, 'utf8' );
         }
       }
     };
     copyAndModify( `../${repo}`, `./src/${repo}` );
   } );
+
+  // Sanity checks for namespace removals
+  {
+    for ( const fileContent of writtenFileContents ) {
+      const sourceAST = ts.createSourceFile(
+        'fake.ts',
+        fileContent.contents,
+        ts.ScriptTarget.ESNext,
+        true
+      );
+
+      const recur = ( node: ts.Node ): void => {
+        if (
+          ts.isPropertyAccessExpression( node ) &&
+          ts.isIdentifier( node.name )
+        ) {
+          const name = node.name.getText();
+          const fullText = node.getText();
+
+          for ( const pattern of removedNamespacePatterns ) {
+            const parts = pattern.split( '.' );
+
+            if ( name === parts[ 1 ] && fullText.includes( pattern ) ) {
+              throw new Error( `Namespace pattern used: ${pattern} in ${fileContent.path}` );
+            }
+          }
+        }
+
+        for ( const child of node.getChildren() ) {
+          recur( child );
+        }
+      };
+      recur( sourceAST.getChildren()[ 0 ] );
+    }
+  }
 
   // Create string modules
   for ( const stringRepo of Object.keys( usedStrings ).sort() ) {
@@ -947,7 +1032,7 @@ const rollupRun = async () => {
   // copy "development version" into ./src/
   await copyAndPatch( {
     removeAssertions: false,
-    removeNamespacing: false
+    removeNamespacing: true
   } );
 
   // tsc files into ./dist/dev/
