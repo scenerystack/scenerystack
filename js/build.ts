@@ -517,7 +517,7 @@ export default localeData;` );
 
               if ( modifiedContent.includes( 'import { Pattern } from \'@fluent/bundle\';' ) ) {
                 modifiedContent = modifiedContent.replace( 'import { Pattern } from \'@fluent/bundle\';', '' );
-                modifiedContent = modifiedContent.replace( 'export type { Pattern };', `export type Pattern = string | ComplexPattern;
+                modifiedContent = modifiedContent.replace( 'export type { Pattern as FluentPattern };', `export type FluentPattern = string | ComplexPattern;
 type ComplexPattern = Array<PatternElement>;
 type PatternElement = string | Expression;
 type Expression = SelectExpression | VariableReference | TermReference | MessageReference | FunctionReference | Literal;
@@ -1087,7 +1087,7 @@ const rollupRun = async () => {
   // copy "development version" into ./src/
   await copyAndPatch( {
     removeAssertions: false,
-    removeNamespacing: true
+    removeNamespacing: false
   } );
 
   // tsc files into ./dist/dev/
