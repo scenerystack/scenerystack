@@ -344,11 +344,11 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
   };
 
   const isNodeStatic = ( type: ts.Node & { modifiers?: ts.NodeArray<ts.ModifierLike> } ): boolean => {
-    return type.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.StaticKeyword ) ?? false;;
+    return type.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.StaticKeyword ) ?? false;
   };
 
   const isNodeReadonly = ( type: ts.Node & { modifiers?: ts.NodeArray<ts.ModifierLike> } ): boolean => {
-    return type.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.ReadonlyKeyword ) ?? false;;
+    return type.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.ReadonlyKeyword ) ?? false;
   };
 
   const isNameExcluded = ( name: string ): boolean => {

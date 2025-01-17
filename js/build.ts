@@ -1,5 +1,11 @@
 // Copyright 2024, University of Colorado Boulder
 
+// Because it doesn't like scenerystack URLs
+/* eslint-disable phet/todo-should-have-issue */
+
+// Because we can't use IntentionalAny
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Experimental build of scenery stack
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
@@ -18,8 +24,6 @@
  *
  * TODO: we should be able to split this file into modules
  */
-
-/* eslint-disable */
 
 import fs from 'fs';
 import os from 'os';
@@ -78,7 +82,7 @@ const excludedNamespaces = [
 const writeDependencies = async () => {
   // dependencies.json
   {
-    const dependenciesJSON: Record<string, string | { sha: string | null, branch: string | null }> = {
+    const dependenciesJSON: Record<string, string | { sha: string | null; branch: string | null }> = {
       comment: `# ${new Date().toString()}`
     };
 
@@ -157,16 +161,16 @@ const copyAndPatch = async ( options?: {
       'vegas'
     ];
 
-    const stringReposInfo: { repo: string, requirejsNamespace: string }[] = [];
+    const stringReposInfo: { repo: string; requirejsNamespace: string }[] = [];
     for ( const repo of stringRepos ) {
       const requireJSNamespace = JSON.parse( fs.readFileSync( `../${repo}/package.json`, 'utf8' ) ).phet.requirejsNamespace;
 
-      stringReposInfo.push( { repo, requirejsNamespace: requireJSNamespace } );
+      stringReposInfo.push( { repo: repo, requirejsNamespace: requireJSNamespace } );
     }
 
     fs.mkdirSync( './src/babel', { recursive: true } );
 
-    const emptyStringMap: Record<string, {}> = {};
+    const emptyStringMap: Record<string, any> = {};
     for ( const locale of Object.keys( localeData ) ) {
       emptyStringMap[ locale ] = {};
     }
@@ -212,7 +216,6 @@ export default localeData;` );
   ];
 
   const buildJSON = JSON.parse( fs.readFileSync( '../chipper/build.json', 'utf8' ) );
-  const licenseJSON = JSON.parse( fs.readFileSync( '../sherpa/lib/license.json', 'utf8' ) );
 
   const requiredLibs = _.uniq( [
     ...Object.values( webpackGlobalLibraries ),
@@ -220,7 +223,7 @@ export default localeData;` );
     'sherpa/lib/big-6.2.1.js', // hah, dot Utils...
     'sherpa/lib/font-awesome-4.5.0', // manual inclusion of fontawesome-4 license
     'sherpa/lib/game-up-camera-1.0.0.js'
-  ].filter( str => str.includes( 'sherpa' ) ).map( str => path.basename ( str ) ) ).filter( file => {
+  ].filter( str => str.includes( 'sherpa' ) ).map( str => path.basename( str ) ) ).filter( file => {
     // package.json dependencies
     if ( [
       'paper-js',
@@ -497,13 +500,13 @@ export default localeData;` );
 
               // Add lodash import if it is not imported
               if ( modifiedContent.includes( '_.' ) && !modifiedContent.includes( 'import _ ' ) ) {
-                insertImport( `import _ from 'lodash';` );
+                insertImport( 'import _ from \'lodash\';' );
               }
 
               // Replace lodash sherpa import
               const lodashImportRegex = /import _ from '[^'\n]*sherpa\/js\/lodash\.js';/g;
               if ( modifiedContent.match( lodashImportRegex ) ) {
-                modifiedContent = modifiedContent.replace( lodashImportRegex, `import _ from 'lodash';` );
+                modifiedContent = modifiedContent.replace( lodashImportRegex, 'import _ from \'lodash\';' );
               }
 
               // Replace fluent sherpa imports
@@ -512,7 +515,7 @@ export default localeData;` );
               // output: 'fluent-bundle'
               const fluentImportRegex = /import (.+) from '[^'\n]*sherpa\/lib\/fluent\/fluent-(\w+)-[^'\n]*';/g;
               while ( modifiedContent.match( fluentImportRegex ) ) {
-                modifiedContent = modifiedContent.replace( fluentImportRegex, `import $1 from '@fluent/$2';` );
+                modifiedContent = modifiedContent.replace( fluentImportRegex, 'import $1 from \'@fluent/$2\';' );
               }
 
               if ( modifiedContent.includes( 'import { Pattern } from \'@fluent/bundle\';' ) ) {
@@ -570,22 +573,22 @@ type NumberLiteral = {
               }
 
               if ( modifiedContent.includes( '$(' ) ) {
-                insertImport( `import $ from 'jquery';` );
+                insertImport( 'import $ from \'jquery\';' );
               }
               if ( modifiedContent.includes( 'paper.' ) ) {
-                insertImport( `import paper from 'paper';` );
+                insertImport( 'import paper from \'paper\';' );
               }
               if ( modifiedContent.includes( 'he.decode' ) ) {
-                insertImport( `import he from 'he';` );
+                insertImport( 'import he from \'he\';' );
               }
               if ( modifiedContent.includes( 'Math.seedrandom' ) ) {
-                insertImport( `import 'seedrandom';` );
+                insertImport( 'import \'seedrandom\';' );
 
                 modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error\s+assert && assert\( Math\.seedrandom/g, 'assert && assert( Math.seedrandom' );
                 modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error\s+this\.seedrandom = Math\.seedrandom/g, 'this.seedrandom = Math.seedrandom' );
               }
               if ( modifiedContent.includes( 'window.saveAs( blob, filename )' ) ) {
-                insertImport( `import saveAs from 'file-saver';` );
+                insertImport( 'import saveAs from \'file-saver\';' );
 
                 modifiedContent = modifiedContent.replaceAll( /\/\/ @ts-expect-error when typescript knows anything about window\. \. \.\.\s+window\.saveAs\( blob, filename \);/g, 'saveAs( blob, filename );' );
 
@@ -594,7 +597,7 @@ type NumberLiteral = {
 
               }
               if ( modifiedContent.match( /THREE[^:]/g ) ) {
-                insertImport( `import * as THREE from 'three';` );
+                insertImport( 'import * as THREE from \'three\';' );
 
                 if ( modifiedContent.includes( '.needsUpdate = true;' ) ) {
                   modifiedContent = modifiedContent.replaceAll( 'this.attributes.position.needsUpdate = true;', '// @ts-expect-error\nthis.attributes.position.needsUpdate = true;' );
@@ -602,21 +605,21 @@ type NumberLiteral = {
                 }
               }
               if ( modifiedContent.includes( 'LineBreaker' ) ) {
-                insertImport( `import { LineBreaker } from 'linebreak-ts';` );
+                insertImport( 'import { LineBreaker } from \'linebreak-ts\';' );
 
                 modifiedContent = modifiedContent.replace( 'lineBreaker[ Symbol.iterator ]', '// @ts-expect-error\nlineBreaker[ Symbol.iterator ]' );
                 modifiedContent = modifiedContent.replace( 'for ( const brk of lineBreaker ) {', '// @ts-expect-error\nfor ( const brk of lineBreaker ) {' );
               }
               if ( modifiedContent.includes( 'FlatQueue' ) ) {
-                insertImport( `import FlatQueue from 'flatqueue';` );
+                insertImport( 'import FlatQueue from \'flatqueue\';' );
 
                 modifiedContent = modifiedContent.replaceAll( 'new window.FlatQueue()', 'new FlatQueue()' );
               }
               if ( modifiedContent.includes( 'fromByteArray(' ) ) {
-                insertImport( `import base64js from 'base64-js';const fromByteArray = base64js.fromByteArray;` );
+                insertImport( 'import base64js from \'base64-js\';const fromByteArray = base64js.fromByteArray;' );
               }
               if ( modifiedContent.includes( 'TextEncoderLite' ) ) {
-                insertImport( `import TextEncoder from 'text-encoder-lite';` );
+                insertImport( 'import TextEncoder from \'text-encoder-lite\';' );
 
                 modifiedContent = modifiedContent.replace( '// @ts-expect-error - fromByteArray Exterior lib', '' );
                 modifiedContent = modifiedContent.replace( 'new TextEncoderLite', 'new TextEncoder.TextEncoderLite' );
@@ -629,13 +632,13 @@ type NumberLiteral = {
             // Use `self` instead of `window` for WebWorker compatibility
             // See https://github.com/scenerystack/scenerystack/issues/3
             {
-              modifiedContent = modifiedContent.replace( /([ \(,!])window(\??[\., ])/g, '$1self$2' );
+              modifiedContent = modifiedContent.replace( /([ (,!])window(\??[., ])/g, '$1self$2' );
 
               // Handle Namespace so it works correctly (it was failing in web workers)
               modifiedContent = modifiedContent.replaceAll( '!globalThis.hasOwnProperty( \'window\' )', '!globalThis.self' );
             }
 
-            const kindOf = ( node: ts.Node ) => ts.SyntaxKind[ node.kind ];
+            // const kindOf = ( node: ts.Node ) => ts.SyntaxKind[ node.kind ];
 
             if ( removeAssertions ) {
               const sourceAST = ts.createSourceFile(
@@ -652,7 +655,7 @@ type NumberLiteral = {
               const isAssertAmpersands = ( node: ts.Node ): boolean => {
                 return ts.isBinaryExpression( node ) &&
                        node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken &&
-                       isAssertNode( node.left ) // support assert && something && something-else
+                       isAssertNode( node.left ); // support assert && something && something-else
               };
 
               const isAssertNode = ( node: ts.Node ): boolean => {
@@ -1010,23 +1013,23 @@ export default ${stringModuleName};
   };
   patch(
     './src/query-string-machine/js/QueryStringMachine.js',
-    `}( this, () => {`,
-    `}( self, () => {`
+    '}( this, () => {',
+    '}( self, () => {'
   );
   patch(
     './src/sherpa/lib/himalaya-1.1.0.js',
-    `module.exports=f()`,
-    `self.himalaya=f()`
+    'module.exports=f()',
+    'self.himalaya=f()'
   );
   patch(
     './src/sherpa/lib/big-6.2.1.js',
-    `export var Big = _Big_();`,
-    `/**\n * @type Class\n */\nexport var Big = _Big_();`
+    'export var Big = _Big_();',
+    '/**\n * @type Class\n */\nexport var Big = _Big_();'
   );
   patch(
     './src/scenery/js/nodes/RichText.ts',
-    `// @ts-expect-error - we should get a string from this`,
-    ``
+    '// @ts-expect-error - we should get a string from this',
+    ''
   );
 };
 
@@ -1102,4 +1105,7 @@ const rollupRun = async () => {
 
   // Use rollup for bundles written to ./dist/
   await rollupRun();
-} )();
+} )().catch( e => {
+  console.error( e );
+  process.exit( 1 );
+} );

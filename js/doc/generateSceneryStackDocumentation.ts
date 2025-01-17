@@ -324,7 +324,7 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
     else if ( KEYWORD_LIST.includes( name ) ) {
       return `<span style="color: hsla(calc(var(--md-hue) + 180deg),80%,40%,1);">${string}</span>`;
       // TODO: can we get this working with accent colors that are more built-in?
-      return `<!--<span style="color: var(&#45;&#45;md-accent-fg-color);">${string}</span>-->`;
+      // return `<!--<span style="color: var(&#45;&#45;md-accent-fg-color);">${string}</span>-->`;
     }
     else {
       return string;
