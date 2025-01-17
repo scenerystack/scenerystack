@@ -68,6 +68,7 @@ const excludedNamespaces = [
   'scenery.scratchCanvas',
   'scenery.scratchContext',
   'kite.svgPath',
+  'kite.Edge',
 
   // unclassified
   'brand.Brand',
@@ -509,9 +510,63 @@ export default localeData;` );
               // e.g.
               // input: '../../../sherpa/lib/fluent/fluent-bundle-0.18.0/src/bundle.js';
               // output: 'fluent-bundle'
-              const fluentImportRegex = /import (.+) from '[^'\n]*sherpa\/lib\/fluent-(\w+)-\/[^'\n]*';/g;
+              const fluentImportRegex = /import (.+) from '[^'\n]*sherpa\/lib\/fluent\/fluent-(\w+)-[^'\n]*';/g;
               while ( modifiedContent.match( fluentImportRegex ) ) {
-                modifiedContent = modifiedContent.replace( fluentImportRegex, `import $1 from 'fluent-$2';` );
+                modifiedContent = modifiedContent.replace( fluentImportRegex, `import $1 from '@fluent/$2';` );
+              }
+
+              if ( modifiedContent.includes( 'import { Pattern } from \'@fluent/bundle\';' ) ) {
+                modifiedContent = modifiedContent.replace( 'import { Pattern } from \'@fluent/bundle\';', '' );
+                modifiedContent = modifiedContent.replace( 'export type { Pattern };', `export type Pattern = string | ComplexPattern;
+type ComplexPattern = Array<PatternElement>;
+type PatternElement = string | Expression;
+type Expression = SelectExpression | VariableReference | TermReference | MessageReference | FunctionReference | Literal;
+type SelectExpression = {
+    type: "select";
+    selector: Expression;
+    variants: Array<Variant>;
+    star: number;
+};
+type VariableReference = {
+    type: "var";
+    name: string;
+};
+type TermReference = {
+    type: "term";
+    name: string;
+    attr: string | null;
+    args: Array<Expression | NamedArgument>;
+};
+type MessageReference = {
+    type: "mesg";
+    name: string;
+    attr: string | null;
+};
+type FunctionReference = {
+    type: "func";
+    name: string;
+    args: Array<Expression | NamedArgument>;
+};
+type Variant = {
+    key: Literal;
+    value: Pattern;
+};
+type NamedArgument = {
+    type: "narg";
+    name: string;
+    value: Literal;
+};
+type Literal = StringLiteral | NumberLiteral;
+type StringLiteral = {
+    type: "str";
+    value: string;
+};
+type NumberLiteral = {
+    type: "num";
+    value: number;
+    precision: number;
+};
+` );
               }
 
               if ( modifiedContent.includes( '$(' ) ) {
