@@ -30,6 +30,17 @@ src/vegas/
 src/adapted-from-phet.ts
 src/alpenglow.ts
 src/assert.ts
+src/axon.ts
+src/bamboo.ts
+
+src/nitroglycerin.ts
+
+src/tambo.ts
+
+src/tappi.ts
+src/twixt.ts
+src/utterance-queue.ts
+src/vegas.ts
 
 third-party-licenses/
 dependencies.json

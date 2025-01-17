@@ -42,7 +42,7 @@ import execute from '../../perennial-alias/js/common/execute.js';
 import _ from 'lodash';
 import pascalCase from '../../chipper/js/common/pascalCase.js';
 import ts from 'typescript';
-import { hasDefaultExportModifier, hasExportModifier } from './typescript/modifiers.js';
+import { getExportNames } from './typescript/getExportNames.js';
 
 const repos = [
   // NOTE: repos also used for cloned checkout
@@ -88,86 +88,6 @@ const excludedNamespaces = [
   'brand.Brand',
   'joist.ScreenshotGenerator'
 ];
-
-const getExportNames = ( js: string ): { exports: string[]; typeExports: string[] } => {
-  const sourceFile = ts.createSourceFile(
-    'module.ts',
-    js,
-    ts.ScriptTarget.Latest,
-    true
-  );
-
-  const exports: string[] = [];
-  const typeExports: string[] = [];
-
-  const visit = ( node: ts.Node ) => {
-    if ( ts.isExportAssignment( node ) ) {
-      exports.push( 'default' );
-    }
-
-    // TODO: check enum
-    // TODO: check type
-    // TODO: check interface
-    // TODO: check a few other things
-
-    if (
-      ( ts.isVariableStatement( node ) || ts.isFunctionDeclaration( node ) ||
-        ts.isClassDeclaration( node ) || ts.isEnumDeclaration( node ) ||
-        ts.isTypeAliasDeclaration( node ) || ts.isInterfaceDeclaration( node ) ) && hasExportModifier( node )
-    ) {
-      const array = ts.isTypeAliasDeclaration( node ) || ts.isInterfaceDeclaration( node ) ? typeExports : exports;
-
-      if ( hasDefaultExportModifier( node ) ) {
-        array.push( 'default' );
-      }
-      else if ( ts.isVariableStatement( node ) ) {
-        node.declarationList.declarations.forEach( declaration => {
-          if ( ts.isIdentifier( declaration.name ) ) {
-            array.push( declaration.name.text );
-          }
-        } );
-      }
-      else if ( node.name ) {
-        array.push( node.name.text );
-      }
-    }
-
-    const getGeneralNameArray = ( originalName: string ): string[] => {
-      return ( sourceFile.getChildren()[ 0 ].getChildren().some( child => {
-        return ts.isTypeAliasDeclaration( child ) && child.name.text === originalName;
-      } ) ) ? typeExports : exports;
-    };
-
-    if ( ts.isExportDeclaration( node ) ) {
-      const exportClause = node.exportClause;
-      if ( exportClause && ts.isNamedExports( exportClause ) ) {
-        exportClause.elements.forEach( specifier => {
-          const exportedName = specifier.name.text;
-          const originalName = specifier.propertyName?.text || exportedName;
-
-          const array = node.isTypeOnly ? typeExports : getGeneralNameArray( originalName );
-
-          // alias?
-          if ( exportedName === 'default' ) {
-            array.push( 'default' );
-          }
-          else {
-            array.push( exportedName );
-          }
-        } );
-      }
-    }
-
-    ts.forEachChild( node, visit );
-  };
-
-  ts.forEachChild( sourceFile, visit );
-
-  return {
-    exports: exports,
-    typeExports: typeExports
-  };
-};
 
 const writeDependencies = async () => {
   // dependencies.json
@@ -508,6 +428,8 @@ export default localeData;` );
 
         // Tests
         'axon/js/axon-tests.',
+        'bamboo/js/bamboo-tests.',
+        'bamboo/js/*Tests.ts',
         'dot/js/dot-tests.',
         'joist/js/joist-tests.',
         'kite/js/kite-tests.',
@@ -525,6 +447,7 @@ export default localeData;` );
         // Unneeded mains
         'alpenglow/js/main.',
         'axon/js/main.',
+        'bamboo/js/main.',
         'dot/js/dot-main.',
         'dot/js/main.',
         'joist/js/main.',
@@ -1169,12 +1092,46 @@ type NumberLiteral = {
 
 ${exportLines.join( os.EOL )}`;
 
+      /*
+    brand: [],
+    chipper: [],
+    dot: [],
+    init: [],
+    joist: [],
+    kite: [],
+    mobius: [],
+    perennial: [],
+    'phet-core': [],
+    phetcommon: [],
+    'query-string-machine': [],
+    scenery: [],
+    'scenery-phet': [],
+    sim: [],
+    splash: [],
+    sun: [],
+    tandem: [],
+       */
+
       // allowlist for now
       if ( [
         'adapted-from-phet',
         'alpenglow',
-        'assert'
-        // 'axon' // PhetioProperty seems to be exporting as... not a type
+        'assert',
+        'axon',
+        'bamboo',
+
+
+        'nitroglycerin',
+
+
+        'tambo',
+
+        // TODO
+
+        'tappi',
+        'twixt',
+        'utterance-queue',
+        'vegas'
       ].includes( exportNamespace ) ) {
         fs.writeFileSync( `./src/${exportNamespace}.ts`, barrelFileContents, 'utf8' );
       }

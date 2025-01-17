@@ -1,12 +1,12 @@
 // Copyright 2025, University of Colorado Boulder
 
-import ts, { HasModifiers } from 'typescript';
-
 /**
  * Whether a given TS node has certain modifiers
  *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
+
+import ts, { HasModifiers } from 'typescript';
 
 export const hasExportModifier = ( node: HasModifiers ): boolean => {
   return !!node.modifiers && node.modifiers.some( modifier => modifier.kind === ts.SyntaxKind.ExportKeyword );

@@ -33,6 +33,7 @@
     "src/alpenglow.ts",
     "src/assert.ts",
     "src/axon.ts",
+    "src/bamboo.ts",
     "src/brand.ts",
     "src/chipper.ts",
     "src/dot.ts",
@@ -40,6 +41,7 @@
     "src/joist.ts",
     "src/kite.ts",
     "src/mobius.ts",
+    "src/nitroglycerin.ts",
     "src/perennial.ts",
     "src/phet-core.ts",
     "src/phetcommon.ts",
@@ -49,9 +51,11 @@
     "src/sim.ts",
     "src/splash.ts",
     "src/sun.ts",
+    "src/tambo.ts",
     "src/tandem.ts",
     "src/tappi.ts",
     "src/twixt.ts",
+    "src/utterance-queue.ts",
     "src/vegas.ts",
 
     /* standalone entry point */
@@ -227,7 +231,7 @@
     "src/vegas/js/vegasQueryParameters.*",
     "src/vegas/js/strings/**/*",
 
-    /* tappi allowlist */
+    /* tappi allowlist */ // TODO: allow more!
     "src/tappi/js/tappi.*",
     "src/tappi/js/tracking/VibrationTestEvent.*",
     "src/tappi/js/tracking/VibrationTestEventRecorder.*",
@@ -238,6 +242,7 @@
     "src/tappi/js/VibrationManageriOS.*",
     "src/tappi/js/VibrationPatterns.*",
     "src/tappi/js/vibrationManager.*",
+    "src/tappi/js/TappiStrings.*",
 
     /* Sherpa allowlist */
     "src/sherpa/lib/himalaya-1.1.0.js",
@@ -253,6 +258,8 @@
     /* Images */
     "src/joist/images/**/*",
     "src/scenery-phet/images/**/*",
+    "src/tambo/images/**/*",
+    "src/vegas/images/**/*",
   ],
   "exclude": [
     /* Tests */

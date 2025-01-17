@@ -87,6 +87,11 @@
       "import": "./dist/prod/axon.js",
       "default": "./dist/prod/axon.js"
     },
+    "./bamboo": {
+      "development": "./dist/dev/bamboo.js",
+      "import": "./dist/prod/bamboo.js",
+      "default": "./dist/prod/bamboo.js"
+    },
     "./brand": {
       "development": "./dist/dev/brand.js",
       "import": "./dist/prod/brand.js",
@@ -121,6 +126,11 @@
       "development": "./dist/dev/mobius.js",
       "import": "./dist/prod/mobius.js",
       "default": "./dist/prod/mobius.js"
+    },
+    "./nitroglycerin": {
+      "development": "./dist/dev/nitroglycerin.js",
+      "import": "./dist/prod/nitroglycerin.js",
+      "default": "./dist/prod/nitroglycerin.js"
     },
     "./perennial": {
       "development": "./dist/dev/perennial.js",
@@ -172,6 +182,11 @@
       "import": "./dist/prod/tandem.js",
       "default": "./dist/prod/tandem.js"
     },
+    "./tambo": {
+      "development": "./dist/dev/tambo.js",
+      "import": "./dist/prod/tambo.js",
+      "default": "./dist/prod/tambo.js"
+    },
     "./tappi": {
       "development": "./dist/dev/tappi.js",
       "import": "./dist/prod/tappi.js",
@@ -181,6 +196,11 @@
       "development": "./dist/dev/twixt.js",
       "import": "./dist/prod/twixt.js",
       "default": "./dist/prod/twixt.js"
+    },
+    "./utterance-queue": {
+      "development": "./dist/dev/utterance-queue.js",
+      "import": "./dist/prod/utterance-queue.js",
+      "default": "./dist/prod/utterance-queue.js"
     },
     "./vegas": {
       "development": "./dist/dev/vegas.js",
