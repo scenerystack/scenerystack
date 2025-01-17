@@ -15,6 +15,8 @@
  * `npm pack --dry-run` (to see what files will be included)
  * `npm version patch` (or minor/major)
  * `npm publish` (once ready)
+ *
+ * TODO: we should be able to split this file into modules
  */
 
 /* eslint-disable */
@@ -26,6 +28,7 @@ import webpackGlobalLibraries from '../../chipper/js/common/webpackGlobalLibrari
 import execute from '../../perennial-alias/js/common/execute.js';
 import _ from 'lodash';
 import pascalCase from '../../chipper/js/common/pascalCase.js';
+import ts from 'typescript';
 
 const repos = [
   // NOTE: repos also used for cloned checkout
@@ -557,6 +560,64 @@ export default localeData;` );
 
               // Handle Namespace so it works correctly (it was failing in web workers)
               modifiedContent = modifiedContent.replaceAll( '!globalThis.hasOwnProperty( \'window\' )', '!globalThis.self' );
+            }
+
+            const kindOf = ( node: ts.Node ) => ts.SyntaxKind[ node.kind ];
+
+            if ( removeAssertions ) {
+              const sourceAST = ts.createSourceFile(
+                srcPath,
+                modifiedContent,
+                ts.ScriptTarget.ESNext,
+                true
+              );
+
+              const isAssertIdentifier = ( node: ts.Node ): boolean => {
+                return ts.isIdentifier( node ) && ( node.text === 'assert' || node.text === 'assertSlow' );
+              };
+
+              const isAssertAmpersands = ( node: ts.Node ): boolean => {
+                return ts.isBinaryExpression( node ) &&
+                       node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken &&
+                       isAssertNode( node.left ) // support assert && something && something-else
+              };
+
+              const isAssertNode = ( node: ts.Node ): boolean => {
+                return isAssertIdentifier( node ) || isAssertAmpersands( node );
+              };
+
+              const isAssertIf = ( node: ts.Node ): boolean => {
+                return ts.isIfStatement( node ) && isAssertNode( node.expression );
+              };
+
+              const assertionNodes: ts.Node[] = [];
+
+              const recur = ( node: ts.Node ) => {
+                if ( isAssertAmpersands( node ) || isAssertIf( node ) ) {
+                  assertionNodes.push( node );
+                }
+                // Don't recurse into the children of an assertion (we will strip it)
+                else {
+                  for ( const child of node.getChildren() ) {
+                    recur( child );
+                  }
+                }
+              };
+              recur( sourceAST.getChildren()[ 0 ] );
+
+              // Strip out assertions
+              for ( const assertionNode of assertionNodes.reverse() ) {
+                const replacement = ts.isExpressionStatement( assertionNode.parent ) ? '' : ( ts.isIfStatement( assertionNode.parent ) && ts.isIfStatement( assertionNode ) ? ' if ( false ) {}' : 'false' );
+
+                // We need to exclude ts-expect-error
+                const needsFullStart = modifiedContent.slice( assertionNode.getFullStart(), assertionNode.getEnd() ).includes( '@ts-expect-error' );
+
+                modifiedContent = modifiedContent.slice( 0, needsFullStart ? assertionNode.getFullStart() : assertionNode.getStart() ) + replacement + modifiedContent.slice( assertionNode.getEnd() );
+              }
+            }
+
+            if ( removeNamespacing ) {
+              // TODO
             }
           }
 
