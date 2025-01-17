@@ -42,6 +42,7 @@ import execute from '../../perennial-alias/js/common/execute.js';
 import _ from 'lodash';
 import pascalCase from '../../chipper/js/common/pascalCase.js';
 import ts from 'typescript';
+import { hasDefaultExportModifier, hasExportModifier } from './typescript/modifiers.js';
 
 const repos = [
   // NOTE: repos also used for cloned checkout
@@ -87,6 +88,86 @@ const excludedNamespaces = [
   'brand.Brand',
   'joist.ScreenshotGenerator'
 ];
+
+const getExportNames = ( js: string ): { exports: string[]; typeExports: string[] } => {
+  const sourceFile = ts.createSourceFile(
+    'module.ts',
+    js,
+    ts.ScriptTarget.Latest,
+    true
+  );
+
+  const exports: string[] = [];
+  const typeExports: string[] = [];
+
+  const visit = ( node: ts.Node ) => {
+    if ( ts.isExportAssignment( node ) ) {
+      exports.push( 'default' );
+    }
+
+    // TODO: check enum
+    // TODO: check type
+    // TODO: check interface
+    // TODO: check a few other things
+
+    if (
+      ( ts.isVariableStatement( node ) || ts.isFunctionDeclaration( node ) ||
+        ts.isClassDeclaration( node ) || ts.isEnumDeclaration( node ) ||
+        ts.isTypeAliasDeclaration( node ) || ts.isInterfaceDeclaration( node ) ) && hasExportModifier( node )
+    ) {
+      const array = ts.isTypeAliasDeclaration( node ) || ts.isInterfaceDeclaration( node ) ? typeExports : exports;
+
+      if ( hasDefaultExportModifier( node ) ) {
+        array.push( 'default' );
+      }
+      else if ( ts.isVariableStatement( node ) ) {
+        node.declarationList.declarations.forEach( declaration => {
+          if ( ts.isIdentifier( declaration.name ) ) {
+            exports.push( declaration.name.text );
+          }
+        } );
+      }
+      else if ( node.name ) {
+        exports.push( node.name.text );
+      }
+    }
+
+    const getGeneralNameArray = ( originalName: string ): string[] => {
+      return ( sourceFile.getChildren()[ 0 ].getChildren().some( child => {
+        return ts.isTypeAliasDeclaration( child ) && child.name.text === originalName;
+      } ) ) ? typeExports : exports;
+    };
+
+    if ( ts.isExportDeclaration( node ) ) {
+      const exportClause = node.exportClause;
+      if ( exportClause && ts.isNamedExports( exportClause ) ) {
+        exportClause.elements.forEach( specifier => {
+          const exportedName = specifier.name.text;
+          const originalName = specifier.propertyName?.text || exportedName;
+
+          const array = getGeneralNameArray( originalName );
+
+          // alias?
+          if ( exportedName === 'default' ) {
+            array.push( 'default' );
+          }
+          else {
+            array.push( exportedName );
+          }
+        } );
+      }
+    }
+
+    ts.forEachChild( node, visit );
+  };
+
+  ts.forEachChild( sourceFile, visit );
+
+  return {
+    exports: exports,
+    typeExports: typeExports
+  };
+};
 
 const writeDependencies = async () => {
   // dependencies.json
@@ -252,11 +333,46 @@ export default localeData;` );
     return true;
   } );
 
+  type ExportEntry = { isType: boolean; originalName: string; exportedName: string; path: string };
+
   const licensePaths: string[] = [];
   const usedStrings: Record<string, string[]> = {};
   const stringModulePaths: string[] = [];
   const writtenFileContents: { path: string; contents: string }[] = [];
   const removedNamespacePatterns: string[] = [];
+  const exportEntries: Record<string, ExportEntry[]> = {
+
+    // Our main export points are listed below.
+
+    'adapted-from-phet': [],
+    alpenglow: [],
+    assert: [],
+    axon: [],
+    bamboo: [], // TODO: populate this
+    brand: [],
+    chipper: [],
+    dot: [],
+    init: [],
+    joist: [],
+    kite: [],
+    mobius: [],
+    nitroglycerin: [], // TODO: populate this
+    perennial: [],
+    'phet-core': [],
+    phetcommon: [],
+    'query-string-machine': [],
+    scenery: [],
+    'scenery-phet': [],
+    sim: [],
+    splash: [],
+    sun: [],
+    tambo: [], // TODO: populate this
+    tandem: [],
+    tappi: [],
+    twixt: [],
+    'utterance-queue': [], // TODO: populate this
+    vegas: []
+  };
 
   // TODO: how do we ... remove assertions and such? maybe we build a separate dev package?
   repos.forEach( repo => {
@@ -396,6 +512,8 @@ export default localeData;` );
           'tandem/js/tandem-tests.',
           'twixt/js/twixt-tests.',
           'dot/js/UtilsTests.',
+          'chipper/js/browser/sim-tests',
+          'phet-core/js/qunitStartWithoutPhetioTests.',
 
           // Unneeded mains
           'alpenglow/js/main.',
@@ -817,11 +935,150 @@ type NumberLiteral = {
             contents: modifiedContent
           } );
           fs.writeFileSync( destPath, modifiedContent, 'utf8' );
+
+          const addExportFor = ( name: string, isType: boolean ): void => {
+
+            // Skip exports from non-imports files in these repos
+            if ( ( repo === 'alpenglow' || repo === 'scenery' || repo === 'kite' ) && !destPath.includes( 'imports.ts' ) ) {
+              return;
+            }
+
+            // Do not just re-export sherpa
+            // TODO: is there anything we could gain from this though?
+            if ( repo === 'sherpa' ) {
+              return;
+            }
+
+            const originalName = name;
+            let exportedName = name === 'default' ? path.basename( destPath ).replace( /\.[jt]s$/g, '' ) : name;
+
+            if ( repo === 'kite' && exportedName === 'Line' ) {
+              exportedName = 'KiteLine';
+            }
+            if ( repo === 'dot' && exportedName === 'Utils' ) {
+              exportedName = 'DotUtils';
+            }
+            if ( repo === 'dot' && exportedName === 'Rectangle' ) {
+              exportedName = 'DotRectangle';
+            }
+
+            let exportFile = repo;
+
+            if ( repo === 'sun' && destPath.includes( 'Dialog' ) ) {
+              exportFile = 'sim';
+            }
+            if ( repo === 'mobius' && destPath.includes( 'MobiusScreenView' ) ) {
+              exportFile = 'sim';
+            }
+            if ( repo === 'joist' && [ 'Screen', 'Sim' ].some( s => destPath.includes( s ) ) ) {
+              exportFile = 'sim';
+            }
+            if ( repo === 'perennial-alias' ) {
+              exportFile = 'perennial';
+            }
+
+            // TODO: init (and such)
+
+            const entry = {
+              isType: isType,
+              originalName: originalName,
+              exportedName: exportedName,
+              path: destPath
+            };
+
+            exportEntries[ exportFile ].push( entry );
+          };
+
+          const exportNames = getExportNames( modifiedContent );
+
+          for ( const name of exportNames.exports ) {
+            addExportFor( name, false );
+          }
+          for ( const name of exportNames.typeExports ) {
+            addExportFor( name, true );
+          }
         }
       }
     };
     copyAndModify( `../${repo}`, `./src/${repo}` );
   } );
+
+  // Patch up unknown duplicated exports
+  {
+    // ReadOnlyProperty exports PropertyOptions, which is then re-exported by Property
+    {
+      const readOnlyPropertyOptionsExport = exportEntries.axon.find( e => e.exportedName === 'PropertyOptions' && e.path.includes( 'ReadOnlyProperty' ) );
+      const duplicatePropertyExport = exportEntries.axon.find( e => e.exportedName === 'PropertyOptions' && !e.path.includes( 'ReadOnlyProperty' ) );
+
+      if ( readOnlyPropertyOptionsExport && duplicatePropertyExport ) {
+        exportEntries.axon.splice( exportEntries.axon.indexOf( duplicatePropertyExport ), 1 );
+      }
+    }
+
+    const fixNamedAndDefaultExport = ( entries: ExportEntry[], name: string ): void => {
+      const rangedPropertyExport = entries.find( e => e.exportedName === name && e.originalName === name );
+      const rangedPropertyDefaultExport = entries.find( e => e.exportedName === name && e.originalName === 'default' );
+
+      if ( rangedPropertyExport && rangedPropertyDefaultExport ) {
+        entries.splice( entries.indexOf( rangedPropertyExport ), 1 );
+      }
+    };
+
+    // TRangedProperty exports as a name AND default. Leave the default export
+    fixNamedAndDefaultExport( exportEntries.axon, 'TRangedProperty' );
+    fixNamedAndDefaultExport( exportEntries.joist, 'concreteRegionAndCultureProperty' );
+  }
+
+  // Sanity checks for export name conflicts
+  {
+    const flattenedExportEntries = _.flatten( Object.values( exportEntries ) );
+
+    const globalNameSet = new Set<string>();
+    for ( const exportFile of Object.keys( exportEntries ) ) {
+      const entries = exportEntries[ exportFile ];
+
+      for ( const entry of entries ) {
+        if ( globalNameSet.has( entry.exportedName ) ) {
+          const entries = flattenedExportEntries.filter( e => e.exportedName === entry.exportedName );
+
+          throw new Error( `duplicate export for ${entry.exportedName}: ${JSON.stringify( entries, null, 2 )}` );
+        }
+        globalNameSet.add( entry.exportedName );
+      }
+    }
+  }
+
+  // Create barrel files
+  {
+    for ( const exportNamespace of Object.keys( exportEntries ) ) {
+      const entries = exportEntries[ exportNamespace ];
+
+      const exportLines: string[] = [];
+
+      const modulePaths = _.uniq( entries.map( entry => entry.path ) ).sort();
+
+      for ( const modulePath of modulePaths ) {
+        const matchingEntries = entries.filter( entry => entry.path === modulePath );
+
+        const addLine = ( entries: ExportEntry[], isType: boolean ): void => {
+          if ( entries.length ) {
+            const exportLine = `export ${isType ? 'type ' : ''}{ ${entries.map( entry => {
+              return entry.exportedName === entry.originalName ? entry.exportedName : `${entry.originalName} as ${entry.exportedName}`;
+            } ).join( ', ' )} } from '${modulePath.replace( /^src/, '.' ).replace( /\.ts$/, '.js' )}'`;
+
+            exportLines.push( exportLine );
+
+            console.log( exportLine );
+          }
+        };
+        addLine( matchingEntries.filter( entry => !entry.isType ), false );
+        addLine( matchingEntries.filter( entry => entry.isType ), true );
+      }
+
+      // TODO: write?
+      // TODO: some "types" not being detected!!! ValueChangeSoundPlayerOptions is example
+    }
+  }
 
   // Sanity checks for namespace removals
   {

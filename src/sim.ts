@@ -18,6 +18,8 @@ export { default as ScreenView } from './joist/js/ScreenView.js';
 export type { ScreenViewOptions } from './joist/js/ScreenView.js';
 export { default as Sim } from './joist/js/Sim.js';
 export type { SimOptions } from './joist/js/Sim.js';
+export { default as MobiusScreenView } from './mobius/js/MobiusScreenView.js';
+export type { MobiusScreenViewOptions, THREEModelViewTransform } from './mobius/js/MobiusScreenView.js';
 
 export const onReadyToLaunch = ( callback: () => void ): void => {
   const unlockLaunch = asyncLoader.createLock( { name: 'launch' } );

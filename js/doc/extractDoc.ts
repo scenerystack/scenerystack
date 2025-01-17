@@ -31,6 +31,7 @@
 
 import ts from 'typescript';
 import _ from 'lodash';
+import { hasExportModifier, hasDefaultExportModifier, hasPrivateModifier, hasStaticModifier, hasReadonlyModifier, hasProtectedModifier } from '../typescript/modifiers.js';
 
 export type Documentation = {
   repo: string;
@@ -135,8 +136,6 @@ export type ExportDocumentation = {
   object: ExportableType;
 };
 
-type HasModifiers = ts.ParameterDeclaration | ts.PropertyDeclaration | ts.FunctionDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration | ts.IndexSignatureDeclaration | ts.ClassDeclaration | ts.ClassExpression | ts.InterfaceDeclaration | ts.TypeAliasDeclaration | ts.EnumDeclaration | ts.ModuleDeclaration | ts.ImportEqualsDeclaration | ts.ImportDeclaration | ts.ExportDeclaration | ts.ExportAssignment;
-
 export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?: ts.SourceFile ): Documentation => {
   const sourceAST = sourceFile ? sourceFile : ts.createSourceFile(
     sourcePath,
@@ -151,14 +150,6 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
   let debug = '';
 
   const kindOf = ( node: ts.Node ) => ts.SyntaxKind[ node.kind ];
-
-  const hasExportModifier = ( node: HasModifiers ): boolean => {
-    return !!node.modifiers && node.modifiers.some( modifier => modifier.kind === ts.SyntaxKind.ExportKeyword );
-  };
-
-  const hasDefaultExportModifier = ( node: HasModifiers ): boolean => {
-    return hasExportModifier( node ) && !!node.modifiers && node.modifiers.some( modifier => modifier.kind === ts.SyntaxKind.DefaultKeyword );
-  };
 
   const getLeadingComments = ( node: ts.Node ): string[] => {
     const comments = ts.getLeadingCommentRanges( sourceCode, node.pos );
@@ -335,22 +326,6 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     return returnTypeString;
   };
 
-  const isNodePrivate = ( type: ts.Node & { modifiers?: ts.NodeArray<ts.ModifierLike> } ): boolean => {
-    return type.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.PrivateKeyword ) ?? false;
-  };
-
-  const isNodeProtected = ( type: ts.Node & { modifiers?: ts.NodeArray<ts.ModifierLike> } ): boolean => {
-    return type.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.ProtectedKeyword ) ?? false;
-  };
-
-  const isNodeStatic = ( type: ts.Node & { modifiers?: ts.NodeArray<ts.ModifierLike> } ): boolean => {
-    return type.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.StaticKeyword ) ?? false;
-  };
-
-  const isNodeReadonly = ( type: ts.Node & { modifiers?: ts.NodeArray<ts.ModifierLike> } ): boolean => {
-    return type.modifiers?.some( modifier => modifier.kind === ts.SyntaxKind.ReadonlyKeyword ) ?? false;
-  };
-
   const isNameExcluded = ( name: string ): boolean => {
     return name.startsWith( '_' );
   };
@@ -454,7 +429,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
             if (
               isNameExcluded( name ) ||
               isCommentExcluded( memberComment ) ||
-              isNodePrivate( member )
+              hasPrivateModifier( member )
             ) {
               continue;
             }
@@ -474,12 +449,12 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
               typeString = 'any';
             }
 
-            ( isNodeStatic( member ) ? staticProperties : properties ).push( {
+            ( hasStaticModifier( member ) ? staticProperties : properties ).push( {
               type: 'classProperty',
               name: name,
               comment: memberComment,
-              isReadonly: isNodeReadonly( member ),
-              isProtected: isNodeProtected( member ),
+              isReadonly: hasReadonlyModifier( member ),
+              isProtected: hasProtectedModifier( member ),
               typeString: typeString
             } );
           }
@@ -490,16 +465,16 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
             if (
               isNameExcluded( name ) ||
               isCommentExcluded( memberComment ) ||
-              isNodePrivate( member )
+              hasPrivateModifier( member )
             ) {
               continue;
             }
 
-            ( isNodeStatic( member ) ? staticMethods : methods ).push( {
+            ( hasStaticModifier( member ) ? staticMethods : methods ).push( {
               type: 'classMethod',
               name: name,
               comment: memberComment,
-              isProtected: isNodeProtected( member ),
+              isProtected: hasProtectedModifier( member ),
               parameters: getFunctionParameters( member ),
               returnTypeString: getFunctionReturnTypeString( member )
             } );

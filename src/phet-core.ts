@@ -51,7 +51,7 @@ export { default as phetCore } from './phet-core/js/phetCore.js';
 export { default as PhysicalConstants } from './phet-core/js/PhysicalConstants.js';
 export { default as platform } from './phet-core/js/platform.js';
 export { default as Pool } from './phet-core/js/Pool.js';
-export type { PoolableOptions, TPoolable, PossiblyRequiredParameterSpread } from './phet-core/js/Pool.js';
+export type { PoolOptions, TPoolable, PossiblyRequiredParameterSpread } from './phet-core/js/Pool.js';
 export { default as Poolable } from './phet-core/js/Poolable.js';
 export { default as required } from './phet-core/js/required.js';
 export { default as stripEmbeddingMarks } from './phet-core/js/stripEmbeddingMarks.js';
