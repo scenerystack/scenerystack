@@ -942,8 +942,6 @@ type NumberLiteral = {
             }
           }
 
-          // TODO: init (and such)
-
           const entry = {
             isType: isType,
             requiresSim: exportFile === 'sim',
