@@ -21,6 +21,7 @@ import execute from '../../../perennial-alias/js/common/execute.js';
 // NOTE: This is the order of entry points in documentation
 const entryPoints = [
   'scenery',
+  'axon',
   'sun',
   'phet-core',
   'dot',
@@ -28,24 +29,27 @@ const entryPoints = [
   'sim',
   'scenery-phet',
 
-  // TODO: add missing entry points
+  // now alphabetical?
 
   'adapted-from-phet',
   'alpenglow',
-  // 'assert', // TODO: add back in
-  'axon',
+  'assert',
+  'bamboo',
   'brand',
   'chipper',
-  // 'init', // TODO: add back in
+  'init',
   'joist',
   'mobius',
+  'nitroglycerin',
   'perennial',
   'phetcommon',
-  // 'query-string-machine', // TODO: add back in
-  // 'splash', // TODO: add back in
+  'query-string-machine',
+  'splash',
+  'tambo',
   'tandem',
   'tappi',
   'twixt',
+  'utterance-queue',
   'vegas'
 ] as const;
 

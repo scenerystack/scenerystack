@@ -6,4 +6,4 @@
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 
-import './joist/js/splash.js';
+export { default as splash } from  './scenerystack/splash.js';

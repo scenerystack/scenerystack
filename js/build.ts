@@ -828,6 +828,9 @@ type NumberLiteral = {
             else if ( srcPath.includes( 'init.ts' ) ) {
               exportFile = 'init';
             }
+            else if ( srcPath.includes( 'splash.ts' ) ) {
+              exportFile = 'splash';
+            }
             else {
               throw new Error( `${srcPath} in scenerystack does not have explicit mapping` );
             }
