@@ -344,6 +344,8 @@ export default localeData;` );
         'brand/phet',
         'brand/phet-io',
         'chipper/data',
+        'chipper/js/common',
+        'chipper/js/data',
         'chipper/js/grunt',
         'chipper/js/phet-io',
         'chipper/js/scripts',
@@ -443,6 +445,8 @@ export default localeData;` );
         'dot/js/UtilsTests.',
         'chipper/js/browser/sim-tests',
         'phet-core/js/qunitStartWithoutPhetioTests.',
+        'query-string-machine-tests.',
+        'QueryStringMachineTests.',
 
         // Unneeded mains
         'alpenglow/js/main.',
@@ -609,7 +613,7 @@ type FunctionReference = {
 };
 type Variant = {
   key: Literal;
-  value: Pattern;
+  value: FluentPattern;
 };
 type NamedArgument = {
   type: "narg";
@@ -916,6 +920,12 @@ type NumberLiteral = {
             else if ( srcPath.includes( 'onReadyToLaunch.ts' ) ) {
               exportFile = 'sim';
             }
+            else if ( srcPath.includes( 'QueryStringMachine.ts' ) ) {
+              exportFile = 'query-string-machine';
+            }
+            else if ( srcPath.includes( 'init.ts' ) ) {
+              exportFile = 'init';
+            }
             else {
               throw new Error( `${srcPath} in scenerystack does not have explicit mapping` );
             }
@@ -1102,18 +1112,18 @@ ${exportLines.join( os.EOL )}`;
         'assert',
         'axon',
         'bamboo',
-        // 'brand', // TODO
+        'brand',
         // 'chipper', // TODO
         'dot',
-        // 'init', // TODO
+        'init',
         'joist',
         'kite',
         'mobius',
         'nitroglycerin',
         // 'perennial', // TODO
         'phet-core',
-        // 'phetcommon', // TODO
-        // 'query-string-machine', // TODO
+        'phetcommon',
+        'query-string-machine',
         'scenery',
         'scenery-phet',
         'sim',

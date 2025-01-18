@@ -70,14 +70,18 @@
     "src/globals.ts",
 
     "src/alpenglow/js/**/*",
+    "src/assert/js/**/*",
     "src/axon/js/**/*",
     "src/bamboo/js/**/*",
+    "src/chipper/js/**/*",
     "src/dot/js/**/*",
     "src/joist/js/**/*",
     "src/kite/js/**/*",
     "src/mobius/js/**/*",
     "src/nitroglycerin/js/**/*",
     "src/phet-core/js/**/*",
+    "src/phetcommon/js/**/*",
+    "src/query-string-machine/js/**/*",
     "src/scenery/js/**/*",
     "src/scenery-phet/js/**/*",
     "src/sun/js/**/*",
@@ -89,10 +93,6 @@
     "src/vegas/js/**/*",
 
     /* preloads */
-    "src/assert/js/assert.*",
-    "src/joist/js/splash.*",
-    "src/query-string-machine/js/QueryStringMachine.*",
-    "src/tandem/js/PhetioIDUtils.*",
     "src/chipper/js/browser/initialize-globals.*",
 
     /* string data */
@@ -110,20 +110,12 @@
     "src/brand/adapted-from-phet/images/splash_svg.*",
     "src/brand/js/strings/**/*",
 
-    /* Chipper allowlist */
-    "src/chipper/js/browser/chipper.*",
-    "src/chipper/js/browser/LocalizedString.ts",
-    "src/chipper/js/browser/LocalizedStringProperty.ts",
-    "src/chipper/js/browser/getStringModule.ts",
-    "src/chipper/js/browser/MipmapElement.*",
-
-    /* Phetcommon allowlist */
-    "src/phetcommon/js/phetcommon.*", // namespace
-    "src/phetcommon/js/util/StringUtils.*",
-    "src/phetcommon/js/view/ModelViewTransform2.ts",
-    "src/phetcommon/js/model/Bucket.ts",
-    "src/phetcommon/js/model/Fraction.ts",
-    "src/phetcommon/js/model/SphereBucket.ts",
+//    /* Chipper allowlist */
+//    "src/chipper/js/browser/chipper.*",
+//    "src/chipper/js/browser/LocalizedString.ts",
+//    "src/chipper/js/browser/LocalizedStringProperty.ts",
+//    "src/chipper/js/browser/getStringModule.ts",
+//    "src/chipper/js/browser/MipmapElement.*",
 
     /* perennial-alias allowlist */
     "src/perennial-alias/js/browser-and-node/affirm.ts",

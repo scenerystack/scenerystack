@@ -32,20 +32,22 @@ src/alpenglow.ts
 src/assert.ts
 src/axon.ts
 src/bamboo.ts
+src/brand.ts
 
 src/dot.ts
 
+src/init.ts
 src/joist.ts
 src/kite.ts
 src/mobius.ts
 src/nitroglycerin.ts
 
 src/phet-core.ts
-
+src/phetcommon.ts
+src/query-string-machine.ts
 src/scenery.ts
 src/scenery-phet.ts
 src/sim.ts
-
 src/sun.ts
 src/tambo.ts
 src/tandem.ts
