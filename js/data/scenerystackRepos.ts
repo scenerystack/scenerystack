@@ -25,7 +25,6 @@ export const scenerystackRepos = [
   'query-string-machine',
   'scenery-phet',
   'scenery',
-  'sherpa',
   'sun',
   'tambo',
   'tandem',

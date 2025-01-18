@@ -37,7 +37,6 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import webpackGlobalLibraries from '../../chipper/js/common/webpackGlobalLibraries.js';
 import execute from '../../perennial-alias/js/common/execute.js';
 import _ from 'lodash';
 import pascalCase from '../../chipper/js/common/pascalCase.js';
@@ -73,8 +72,6 @@ const copyAndPatch = async ( options?: {
 
     fs.mkdirSync( `./${dirname}`, { recursive: true } );
   };
-
-  wipeDir( 'third-party-licenses' );
 
   repos.forEach( repo => {
     wipeDir( `src/${repo}` );
@@ -154,33 +151,6 @@ export default localeData;` );
     '.mjs'
   ];
 
-  const buildJSON = JSON.parse( fs.readFileSync( '../chipper/build.json', 'utf8' ) );
-
-  const requiredLibs = _.uniq( [
-    ...Object.values( webpackGlobalLibraries ),
-    ...buildJSON.common.preload,
-    'sherpa/lib/font-awesome-4.5.0', // manual inclusion of fontawesome-4 license
-    'sherpa/lib/game-up-camera-1.0.0.js'
-  ].filter( str => str.includes( 'sherpa' ) ).map( str => path.basename( str ) ) ).filter( file => {
-    // package.json dependencies
-    if ( [
-      'paper-js',
-      'lodash',
-      'jquery',
-      'he-',
-      'flatqueue',
-      'linebreak',
-      'base64',
-      'FileSaver',
-      'seedrandom',
-      'TextEncoderLite'
-    ].some( search => file.includes( search ) ) ) {
-      return false;
-    }
-
-    return true;
-  } );
-
   type ExportEntry = {
     isType: boolean;
     requiresSim: boolean; // will it fail if run in a non-simulation context
@@ -189,7 +159,6 @@ export default localeData;` );
     path: string;
   };
 
-  const licensePaths: string[] = [];
   const usedStrings: Record<string, string[]> = {};
   const stringModulePaths: string[] = [];
   const writtenFileContents: { path: string; contents: string }[] = [];
@@ -236,30 +205,6 @@ export default localeData;` );
       const destPath = path.join( destDir, entry.name );
 
       const name = path.basename( srcPath );
-
-      // We have to handle LICENSE setup somewhat differently here!
-      if ( repo === 'sherpa' ) {
-
-        if ( entry.isDirectory() ) {
-          // TODO: BAD LICENSE fontawesome-5
-          if ( !name.includes( 'sherpa' ) && name !== 'lib' && name !== 'licenses' && name !== 'js' && name !== 'fontawesome-4' && name !== 'fontawesome-5' && name !== 'brands' ) {
-            continue;
-          }
-        }
-        else {
-          if ( srcPath.includes( `lib${path.sep}` ) ) {
-            if ( !requiredLibs.includes( name ) ) {
-              continue;
-            }
-          }
-
-          if ( srcPath.includes( `licenses${path.sep}` ) ) {
-            if ( requiredLibs.includes( name.slice( 0, -( '.txt'.length ) ) ) ) {
-              licensePaths.push( srcPath );
-            }
-          }
-        }
-      }
 
       if ( srcPath.includes( `alpenglow${path.sep}doc` ) ) {
         continue;
@@ -329,9 +274,6 @@ export default localeData;` );
         'tappi/js/demo/patterns/view/PatternsScreenView',
         'tappi/js/view/VibrationChart',
         'tappi/js/main',
-
-        // includes icons that don't exist
-        'sherpa/js/fontawesome-5/iconList.js',
 
         // has phetioEngine
         'joist/js/simLauncher.ts',
@@ -405,11 +347,7 @@ export default localeData;` );
         'tandem/js/main.',
         'twixt/js/main.',
         'utterance-queue/js/main.',
-        'vegas/js/main.',
-
-
-        // references lodash from perennial-alias node_modules, don't want it!
-        'sherpa/js/lodash.ts'
+        'vegas/js/main.'
       ].some( aPath => srcPath.includes( aPath.replaceAll( '/', path.sep ) ) ) ) {
         continue;
       }
@@ -445,6 +383,7 @@ export default localeData;` );
 
         // Modify content (mostly adding correct imports)
         {
+          // TODO: remove this
           if ( repo !== 'sherpa' ) {
             if ( !destPath.includes( 'QueryStringMachine' ) && !destPath.includes( 'assert/js/assert' ) && modifiedContent.includes( 'QueryStringMachine' ) ) {
               insertImport( `import '${getImportPath( 'src/query-string-machine/js/QueryStringMachine.js' )}';` );
@@ -516,9 +455,36 @@ export default localeData;` );
               modifiedContent = modifiedContent.replace( fluentImportRegex, 'import $1 from \'@fluent/$2\';' );
             }
 
+            // Replace big.js import
             const bigImportRegex = /import Big from '[^'\n]*sherpa\/lib\/big-6\.2\.1\.js';/g;
             if ( modifiedContent.match( bigImportRegex ) ) {
               modifiedContent = modifiedContent.replace( bigImportRegex, 'import Big from \'big.js\';' );
+            }
+
+            // Replace himalaya import + smooth things over
+            if ( modifiedContent.includes( 'sherpa/lib/himalaya-1.1.0.js' ) ) {
+              // RichText, basically
+
+              // remove import line
+              modifiedContent = modifiedContent.replace( `${os.EOL}import '../../../sherpa/lib/himalaya-1.1.0.js';`, '' );
+
+              // remove remapping of variables
+              modifiedContent = modifiedContent.replace( `${os.EOL}// @ts-expect-error - Since himalaya isn't in tsconfig`, '' );
+              modifiedContent = modifiedContent.replace( `${os.EOL}const himalayaVar = himalaya;`, '' );
+              modifiedContent = modifiedContent.replace( `${os.EOL}assert && assert( himalayaVar, 'himalaya dependency needed for RichText.' );`, '' );
+
+              // insert import
+              insertImport( 'import { parse as himalayaParse } from \'himalaya\';' );
+
+              // replace usages
+              modifiedContent = modifiedContent.replaceAll( /himalayaVar\.parse/g, 'himalayaParse' );
+            }
+
+            // Remove game-up-camera imports (since it is 3rd-party)
+            if ( modifiedContent.includes( 'game-up-camera' ) ) {
+              const gameUpCameraImportRegex = /import '[^'\n]*sherpa\/lib\/game-up-camera-1\.0\.0\.js';/g;
+
+              modifiedContent = modifiedContent.replace( gameUpCameraImportRegex, '' );
             }
 
             if ( modifiedContent.includes( 'import { Pattern } from \'@fluent/bundle\';' ) ) {
@@ -818,12 +784,6 @@ type NumberLiteral = {
 
           // Skip exports from non-imports files in these repos
           if ( ( repo === 'alpenglow' || repo === 'scenery' || repo === 'kite' ) && !destPath.includes( 'imports.ts' ) ) {
-            return;
-          }
-
-          // Do not just re-export sherpa
-          // TODO: is there anything we could gain from this though?
-          if ( repo === 'sherpa' ) {
             return;
           }
 
@@ -1245,11 +1205,6 @@ export default ${stringModuleName};
     fs.writeFileSync( stringModulePath, content, 'utf8' );
   }
 
-  licensePaths.forEach( src => {
-    const dest = `./third-party-licenses/${path.basename( src )}`;
-    fs.cpSync( src, dest );
-  } );
-
   // type=module compatibility ... lots of very hacky things for vite build to work, since the detection code in each
   // library seems to go absolutely haywire.
   const patch = ( file: string, before: string, after: string ) => {
@@ -1263,11 +1218,6 @@ export default ${stringModuleName};
     './src/query-string-machine/js/QueryStringMachine.js',
     '}( this, () => {',
     '}( self, () => {'
-  );
-  patch(
-    './src/sherpa/lib/himalaya-1.1.0.js',
-    'module.exports=f()',
-    'self.himalaya=f()'
   );
   patch(
     './src/scenery/js/nodes/RichText.ts',

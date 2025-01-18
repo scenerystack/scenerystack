@@ -37,7 +37,6 @@ export default [
       'src/query-string-machine/',
       'src/scenery/',
       'src/scenery-phet/',
-      'src/sherpa/',
       'src/sun/',
       'src/tambo/',
       'src/tandem/',

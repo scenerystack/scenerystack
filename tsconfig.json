@@ -95,11 +95,6 @@
     "src/utterance-queue/js/**/*",
     "src/vegas/js/**/*",
 
-    /* Sherpa allowlist */
-    "src/sherpa/lib/himalaya-1.1.0.js",
-    "src/sherpa/lib/game-up-camera-1.0.0.js",
-    "src/sherpa/js/fontawesome-5/**/*", // TODO: BAD LICENSING
-
     /* Sounds */
     "src/joist/sounds/**/*",
     "src/scenery-phet/sounds/**/*",

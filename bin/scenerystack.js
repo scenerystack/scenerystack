@@ -159,7 +159,7 @@ const ExecuteError = class ExecuteError extends Error {
     'query-string-machine',
     'scenery-phet',
     'scenery',
-    'sherpa',
+    'sherpa', // NOTE: included so we can use runtime code that might depend on it. NOT included in SceneryStack
     'sun',
     'tambo',
     'tandem',
