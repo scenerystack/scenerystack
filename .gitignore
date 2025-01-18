@@ -33,10 +33,22 @@ src/assert.ts
 src/axon.ts
 src/bamboo.ts
 
+src/dot.ts
+
+src/joist.ts
+src/kite.ts
+src/mobius.ts
 src/nitroglycerin.ts
 
-src/tambo.ts
+src/phet-core.ts
 
+src/scenery.ts
+src/scenery-phet.ts
+src/sim.ts
+
+src/sun.ts
+src/tambo.ts
+src/tandem.ts
 src/tappi.ts
 src/twixt.ts
 src/utterance-queue.ts

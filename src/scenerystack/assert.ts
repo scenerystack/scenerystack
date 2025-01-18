@@ -1,7 +1,8 @@
-// Copyright 2024, University of Colorado Boulder
+// Copyright 2025, University of Colorado Boulder
 
 /**
  * Exports for assert (and added controls)
+ *
  * @author Jonathan Olson <jonathan.olson@colorado.edu>
  */
 

@@ -913,6 +913,9 @@ type NumberLiteral = {
             if ( srcPath.includes( 'assert.ts' ) ) {
               exportFile = 'assert';
             }
+            else if ( srcPath.includes( 'onReadyToLaunch.ts' ) ) {
+              exportFile = 'sim';
+            }
             else {
               throw new Error( `${srcPath} in scenerystack does not have explicit mapping` );
             }
@@ -1092,26 +1095,6 @@ type NumberLiteral = {
 
 ${exportLines.join( os.EOL )}`;
 
-      /*
-    brand: [],
-    chipper: [],
-    dot: [],
-    init: [],
-    joist: [],
-    kite: [],
-    mobius: [],
-    perennial: [],
-    'phet-core': [],
-    phetcommon: [],
-    'query-string-machine': [],
-    scenery: [],
-    'scenery-phet': [],
-    sim: [],
-    splash: [],
-    sun: [],
-    tandem: [],
-       */
-
       // allowlist for now
       if ( [
         'adapted-from-phet',
@@ -1119,21 +1102,32 @@ ${exportLines.join( os.EOL )}`;
         'assert',
         'axon',
         'bamboo',
-
-
+        // 'brand', // TODO
+        // 'chipper', // TODO
+        'dot',
+        // 'init', // TODO
+        'joist',
+        'kite',
+        'mobius',
         'nitroglycerin',
-
-
+        // 'perennial', // TODO
+        'phet-core',
+        // 'phetcommon', // TODO
+        // 'query-string-machine', // TODO
+        'scenery',
+        'scenery-phet',
+        'sim',
+        'sun',
         'tambo',
-
-        // TODO
-
+        'tandem',
         'tappi',
         'twixt',
         'utterance-queue',
         'vegas'
       ].includes( exportNamespace ) ) {
-        fs.writeFileSync( `./src/${exportNamespace}.ts`, barrelFileContents, 'utf8' );
+        if ( exportNamespace !== 'splash' ) {
+          fs.writeFileSync( `./src/${exportNamespace}.ts`, barrelFileContents, 'utf8' );
+        }
       }
       else {
         console.log( exportNamespace );
