@@ -369,8 +369,15 @@ export default localeData;` );
         'perennial-alias/tsconfig',
         'perennial-alias/views',
         'perennial-alias/js/build-server',
+        'perennial-alias/js/common',
         'perennial-alias/js/eslint',
         'perennial-alias/js/grunt',
+        'perennial-alias/js/npm-dependencies',
+        'perennial-alias/js/scripts',
+        'perennial-alias/js/test',
+        'perennial-alias/js/listContinuousTests.',
+        'phet-types.d.ts',
+        'phet-types-module.d.ts',
         'phet-core/tests',
         'scenery/assets',
         'scenery/doc',
@@ -386,6 +393,7 @@ export default localeData;` );
         'tambo/resources',
         'tappi/doc',
         'vegas/assets',
+        'load-unbuilt-strings.',
 
         // we will create our own brand when needed.
         'brand/adapted-from-phet/js/Brand.',
@@ -429,6 +437,7 @@ export default localeData;` );
         'vegas/js/demo',
 
         // Tests
+        // TODO: see if we can get much more general rules, this seems a bit ridiculous to maintain
         'axon/js/axon-tests.',
         'bamboo/js/bamboo-tests.',
         'bamboo/js/*Tests.ts',
@@ -447,6 +456,8 @@ export default localeData;` );
         'phet-core/js/qunitStartWithoutPhetioTests.',
         'query-string-machine-tests.',
         'QueryStringMachineTests.',
+        'chipper-tests.',
+        'MipmapElementTests.ts',
 
         // Unneeded mains
         'alpenglow/js/main.',
@@ -1105,43 +1116,8 @@ type NumberLiteral = {
 
 ${exportLines.join( os.EOL )}`;
 
-      // allowlist for now
-      if ( [
-        'adapted-from-phet',
-        'alpenglow',
-        'assert',
-        'axon',
-        'bamboo',
-        'brand',
-        // 'chipper', // TODO
-        'dot',
-        'init',
-        'joist',
-        'kite',
-        'mobius',
-        'nitroglycerin',
-        // 'perennial', // TODO
-        'phet-core',
-        'phetcommon',
-        'query-string-machine',
-        'scenery',
-        'scenery-phet',
-        'sim',
-        'sun',
-        'tambo',
-        'tandem',
-        'tappi',
-        'twixt',
-        'utterance-queue',
-        'vegas'
-      ].includes( exportNamespace ) ) {
-        if ( exportNamespace !== 'splash' ) {
-          fs.writeFileSync( `./src/${exportNamespace}.ts`, barrelFileContents, 'utf8' );
-        }
-      }
-      else {
-        console.log( exportNamespace );
-        console.log( barrelFileContents );
+      if ( exportNamespace !== 'splash' ) {
+        fs.writeFileSync( `./src/${exportNamespace}.ts`, barrelFileContents, 'utf8' );
       }
     }
   }

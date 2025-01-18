@@ -63,22 +63,25 @@
 
     /* scenerystack internals */
     "src/scenerystack/**/*",
+    "src/globals.ts",
 
     /* types */
     "src/types/**/*",
 
-    "src/globals.ts",
-
+    /* /js/ in repos */
     "src/alpenglow/js/**/*",
     "src/assert/js/**/*",
     "src/axon/js/**/*",
+    "src/babel/**/*",
     "src/bamboo/js/**/*",
+    "src/brand/js/**/*",
     "src/chipper/js/**/*",
     "src/dot/js/**/*",
     "src/joist/js/**/*",
     "src/kite/js/**/*",
     "src/mobius/js/**/*",
     "src/nitroglycerin/js/**/*",
+    "src/perennial-alias/js/**/*",
     "src/phet-core/js/**/*",
     "src/phetcommon/js/**/*",
     "src/query-string-machine/js/**/*",
@@ -92,36 +95,6 @@
     "src/utterance-queue/js/**/*",
     "src/vegas/js/**/*",
 
-    /* preloads */
-    "src/chipper/js/browser/initialize-globals.*",
-
-    /* string data */
-    "src/babel/babel-strings.js",
-    "src/babel/babel-metadata.js",
-    "src/babel/babel-stringRepos.js",
-    "src/babel/localeData.js",
-
-    /* Brand allowlist */
-    "src/brand/js/brand.ts",
-    "src/brand/js/TBrand.ts",
-    "src/brand/js/getLinks.ts",
-    "src/brand/adapted-from-phet/images/logo_png.*",
-    "src/brand/adapted-from-phet/images/logoOnWhite_png.*",
-    "src/brand/adapted-from-phet/images/splash_svg.*",
-    "src/brand/js/strings/**/*",
-
-//    /* Chipper allowlist */
-//    "src/chipper/js/browser/chipper.*",
-//    "src/chipper/js/browser/LocalizedString.ts",
-//    "src/chipper/js/browser/LocalizedStringProperty.ts",
-//    "src/chipper/js/browser/getStringModule.ts",
-//    "src/chipper/js/browser/MipmapElement.*",
-
-    /* perennial-alias allowlist */
-    "src/perennial-alias/js/browser-and-node/affirm.ts",
-    "src/perennial-alias/js/browser-and-node/SimVersion.ts",
-    "src/perennial-alias/js/browser-and-node/PerennialTypes.ts",
-
     /* Sherpa allowlist */
     "src/sherpa/lib/himalaya-1.1.0.js",
     "src/sherpa/lib/game-up-camera-1.0.0.js",
@@ -134,6 +107,7 @@
     "src/vegas/sounds/**/*",
 
     /* Images */
+    "src/brand/adapted-from-phet/images/**/*",
     "src/joist/images/**/*",
     "src/scenery-phet/images/**/*",
     "src/scenery-phet/mipmaps/**/*",

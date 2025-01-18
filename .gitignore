@@ -33,15 +33,14 @@ src/assert.ts
 src/axon.ts
 src/bamboo.ts
 src/brand.ts
-
+src/chipper.ts
 src/dot.ts
-
 src/init.ts
 src/joist.ts
 src/kite.ts
 src/mobius.ts
 src/nitroglycerin.ts
-
+src/perennial.ts
 src/phet-core.ts
 src/phetcommon.ts
 src/query-string-machine.ts
