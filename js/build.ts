@@ -721,7 +721,7 @@ type NumberLiteral = {
             );
 
             const isAssertIdentifier = ( node: ts.Node ): boolean => {
-              return ts.isIdentifier( node ) && ( node.text === 'assert' || node.text === 'assertSlow' );
+              return ts.isIdentifier( node ) && ( node.text === 'assert' || node.text === 'assertSlow' || node.text === 'affirm' );
             };
 
             const isAssertAmpersands = ( node: ts.Node ): boolean => {

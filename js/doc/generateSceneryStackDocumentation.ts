@@ -28,6 +28,8 @@ const entryPoints = [
   'sim',
   'scenery-phet',
 
+  // TODO: add missing entry points
+
   'adapted-from-phet',
   'alpenglow',
   // 'assert', // TODO: add back in
