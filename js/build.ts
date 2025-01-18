@@ -43,82 +43,11 @@ import _ from 'lodash';
 import pascalCase from '../../chipper/js/common/pascalCase.js';
 import ts from 'typescript';
 import { getExportNames } from './typescript/getExportNames.js';
+import { writeDependencies } from './writeDependencies.js';
+import { scenerystackRepos } from './data/scenerystackRepos.js';
+import { allowedNamespaces } from './data/allowedNamespaces.js';
 
-const repos = [
-  // NOTE: repos also used for cloned checkout
-  'alpenglow',
-  'assert',
-  'axon',
-  'bamboo',
-  'brand',
-  'chipper',
-  'dot',
-  'joist',
-  'kite',
-  'mobius',
-  'nitroglycerin',
-  'perennial-alias',
-  'phet-core',
-  'phetcommon',
-  'query-string-machine',
-  'scenery-phet',
-  'scenery',
-  'sherpa',
-  'sun',
-  'tambo',
-  'tandem',
-  'tappi',
-  'twixt',
-  'utterance-queue',
-  'vegas'
-];
-
-// We won't remove these namespaces, because they seem to be used internally
-const excludedNamespaces = [
-  // noted circularity
-  'dot.Quaternion',
-
-  // used for assignment
-  'scenery.scratchCanvas',
-  'scenery.scratchContext',
-  'kite.svgPath',
-  'kite.Edge',
-
-  // unclassified
-  'brand.Brand',
-  'joist.ScreenshotGenerator'
-];
-
-const writeDependencies = async () => {
-  // dependencies.json
-  {
-    const dependenciesJSON: Record<string, string | { sha: string | null; branch: string | null }> = {
-      comment: `# ${new Date().toString()}`
-    };
-
-    for ( const repo of repos ) {
-      if ( !fs.existsSync( `../${repo}` ) ) {
-        throw new Error( `repo not found: ${repo}` );
-      }
-
-      let sha = null;
-      let branch = null;
-
-      try {
-        sha = ( await execute( 'git', [ 'rev-parse', 'HEAD' ], `../${repo}` ) ).trim();
-        branch = ( await execute( 'git', [ 'rev-parse', '--abbrev-ref', 'HEAD' ], `../${repo}` ) ).trim();
-      }
-      catch( e ) {
-        // We support repos that are not git repositories, see https://github.com/phetsims/chipper/issues/1011
-        console.log( `Did not find git information for ${repo}` );
-      }
-
-      dependenciesJSON[ repo ] = { sha: sha, branch: branch };
-    }
-
-    fs.writeFileSync( './dependencies.json', JSON.stringify( dependenciesJSON, null, 2 ) );
-  }
-};
+const repos = scenerystackRepos;
 
 const copyAndPatch = async ( options?: {
   // TODO: because of performance and size
@@ -267,14 +196,12 @@ export default localeData;` );
   const writtenFileContents: { path: string; contents: string }[] = [];
   const removedNamespacePatterns: string[] = [];
   const exportEntries: Record<string, ExportEntry[]> = {
-
     // Our main export points are listed below.
-
     'adapted-from-phet': [],
     alpenglow: [],
     assert: [],
     axon: [],
-    bamboo: [], // TODO: populate this
+    bamboo: [],
     brand: [],
     chipper: [],
     dot: [],
@@ -282,7 +209,7 @@ export default localeData;` );
     joist: [],
     kite: [],
     mobius: [],
-    nitroglycerin: [], // TODO: populate this
+    nitroglycerin: [],
     perennial: [],
     'phet-core': [],
     phetcommon: [],
@@ -292,11 +219,11 @@ export default localeData;` );
     sim: [],
     splash: [],
     sun: [],
-    tambo: [], // TODO: populate this
+    tambo: [],
     tandem: [],
     tappi: [],
     twixt: [],
-    'utterance-queue': [], // TODO: populate this
+    'utterance-queue': [],
     vegas: []
   };
 
@@ -798,7 +725,7 @@ type NumberLiteral = {
                 ts.isStringLiteral( node.expression.arguments[ 0 ] )
               ) {
                 const namespacePattern = `${namespaceName}.${node.expression.arguments[ 0 ].text}`;
-                if ( !excludedNamespaces.includes( namespacePattern ) ) {
+                if ( !allowedNamespaces.includes( namespacePattern ) ) {
                   removedNamespacePatterns.push( namespacePattern );
 
                   // Replace with same-length things so source maps will still work
@@ -965,7 +892,6 @@ type NumberLiteral = {
     }
   };
 
-  // TODO: how do we ... remove assertions and such? maybe we build a separate dev package?
   repos.forEach( repo => {
     copyAndModify( repo, `../${repo}`, `./src/${repo}` );
   } );
