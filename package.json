@@ -24,8 +24,8 @@
   },
   "scripts": {
     "start": "node ./bin/scenerystack.js",
-    "build": "tsx js/build.ts",
-    "generate-documentation": "tsx js/doc/generate-documentation.ts"
+    "build": "sh ./node_modules/.bin/tsx js/build.ts",
+    "generate-documentation": "sh ./node_modules/.bin/tsx js/doc/generate-documentation.ts"
   },
   "files": [
     "dist",
@@ -238,6 +238,7 @@
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-terser": "^0.4.4",
-    "rimraf": "^6.0.1"
+    "rimraf": "^6.0.1",
+    "tsx": "~4.19.1"
   }
 }

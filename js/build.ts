@@ -980,7 +980,7 @@ type NumberLiteral = {
           if ( entries.length ) {
             const exportLine = `export ${isType ? 'type ' : ''}{ ${entries.map( entry => {
               return entry.exportedName === entry.originalName ? entry.exportedName : `${entry.originalName} as ${entry.exportedName}`;
-            } ).join( ', ' )} } from '${modulePath.replace( /^src/, '.' ).replace( /\.ts$/, '.js' )}';`;
+            } ).join( ', ' )} } from '${modulePath.replace( /^src/, '.' ).replace( /\.ts$/, '.js' ).replaceAll( path.sep, '/' )}';`;
 
             exportLines.push( exportLine );
           }
@@ -1118,10 +1118,9 @@ export const ${stringKeyToIdentifier( stringRepo, stringKey )} = new LocalizedSt
 
     // console.log( `rewriting ${stringModulePath}` );
 
-    const repo = stringModulePath.split( '/' )[ 1 ];
+    const repo = stringModulePath.split( path.sep )[ 1 ];
     const namespace = _.camelCase( repo );
     const stringModuleName = `${pascalCase( repo )}Strings`;
-
 
     if ( usedStrings[ repo ] ) {
       const imports: string[] = [];
