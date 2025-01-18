@@ -159,7 +159,6 @@ export default localeData;` );
   const requiredLibs = _.uniq( [
     ...Object.values( webpackGlobalLibraries ),
     ...buildJSON.common.preload,
-    'sherpa/lib/big-6.2.1.js', // hah, dot Utils...
     'sherpa/lib/font-awesome-4.5.0', // manual inclusion of fontawesome-4 license
     'sherpa/lib/game-up-camera-1.0.0.js'
   ].filter( str => str.includes( 'sherpa' ) ).map( str => path.basename( str ) ) ).filter( file => {
@@ -515,6 +514,11 @@ export default localeData;` );
             const fluentImportRegex = /import (.+) from '[^'\n]*sherpa\/lib\/fluent\/fluent-(\w+)-[^'\n]*';/g;
             while ( modifiedContent.match( fluentImportRegex ) ) {
               modifiedContent = modifiedContent.replace( fluentImportRegex, 'import $1 from \'@fluent/$2\';' );
+            }
+
+            const bigImportRegex = /import Big from '[^'\n]*sherpa\/lib\/big-6\.2\.1\.js';/g;
+            if ( modifiedContent.match( bigImportRegex ) ) {
+              modifiedContent = modifiedContent.replace( bigImportRegex, 'import Big from \'big.js\';' );
             }
 
             if ( modifiedContent.includes( 'import { Pattern } from \'@fluent/bundle\';' ) ) {
@@ -1264,11 +1268,6 @@ export default ${stringModuleName};
     './src/sherpa/lib/himalaya-1.1.0.js',
     'module.exports=f()',
     'self.himalaya=f()'
-  );
-  patch(
-    './src/sherpa/lib/big-6.2.1.js',
-    'export var Big = _Big_();',
-    '/**\n * @type Class\n */\nexport var Big = _Big_();'
   );
   patch(
     './src/scenery/js/nodes/RichText.ts',

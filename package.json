@@ -210,6 +210,7 @@
   },
   "dependencies": {
     "base64-js": "^1.5.1",
+    "big.js": "^6.2.2",
     "file-saver": "^2.0.5",
     "flatqueue": "^2.0.3",
     "@fluent/bundle": "^0.18.0",
