@@ -24,8 +24,8 @@
   },
   "scripts": {
     "start": "node ./bin/scenerystack.js",
-    "build": "sh ./node_modules/.bin/tsx js/build.ts",
-    "generate-documentation": "sh ./node_modules/.bin/tsx js/doc/generate-documentation.ts"
+    "build": "npx tsx js/build.ts",
+    "generate-documentation": "npx tsx js/doc/generate-documentation.ts"
   },
   "files": [
     "dist",
