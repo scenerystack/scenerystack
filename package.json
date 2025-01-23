@@ -54,11 +54,7 @@
     "./dist/prod/joist/js/Sim.js",
     "./dist/dev/joist/js/Sim.js",
     "./dist/prod/query-string-machine/js/QueryStringMachine.js",
-    "./dist/dev/query-string-machine/js/QueryStringMachine.js",
-    "./dist/prod/sherpa/lib/game-up-camera-1.0.0.js",
-    "./dist/dev/sherpa/lib/game-up-camera-1.0.0.js",
-    "./dist/prod/sherpa/lib/himalaya-1.1.0.js",
-    "./dist/dev/sherpa/lib/himalaya-1.1.0.js"
+    "./dist/dev/query-string-machine/js/QueryStringMachine.js"
   ],
   "exports": {
     ".": {
