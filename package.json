@@ -54,7 +54,15 @@
     "./dist/prod/joist/js/Sim.js",
     "./dist/dev/joist/js/Sim.js",
     "./dist/prod/query-string-machine/js/QueryStringMachine.js",
-    "./dist/dev/query-string-machine/js/QueryStringMachine.js"
+    "./dist/dev/query-string-machine/js/QueryStringMachine.js",
+    "./dist/prod/scenerystack/assert.js",
+    "./dist/dev/scenerystack/assert.js",
+    "./dist/prod/scenerystack/init.js",
+    "./dist/dev/scenerystack/init.js",
+    "./dist/prod/scenerystack/QueryStringMachine.js",
+    "./dist/dev/scenerystack/QueryStringMachine.js",
+    "./dist/prod/scenerystack/splash.js",
+    "./dist/dev/scenerystack/splash.js"
   ],
   "exports": {
     ".": {
