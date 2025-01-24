@@ -16,6 +16,17 @@ export type InitOptions = {
   availableLocales?: string[];
   isDebugBuild?: boolean;
   allowLocaleSwitching?: boolean;
+
+  // Sim Features
+  supportsDynamicLocale?: boolean;
+  supportsInteractiveDescription?: boolean;
+  supportsInteractiveHighlights?: boolean;
+  supportsVoicing?: boolean;
+  supportsTier1Voicing?: boolean;
+  supportsPanAndZoom?: boolean;
+  supportsSound?: boolean;
+  colorProfiles?: string[]; // supported list of color profile names
+  supportedRegionsAndCultures?: string; // TODO
 };
 
 const init = ( options: InitOptions ): void => {
@@ -37,7 +48,23 @@ const init = ( options: InitOptions ): void => {
 
   self.phet.chipper.packageObject = {
     name: options.name,
-    version: options.version
+    version: options.version,
+    phet: {
+      simulation: true,
+      runnable: true,
+      supportedBrands: [ options.brand ?? 'adapted-from-phet' ],
+      simFeatures: {
+        colorProfiles: options.colorProfiles ?? [ 'default' ],
+        supportsDynamicLocale: self.phet.chipper.allowLocaleSwitching && options.supportsDynamicLocale !== false,
+        supportsInteractiveDescription: options.supportsInteractiveDescription !== false,
+        supportsInteractiveHighlights: options.supportsInteractiveDescription && options.supportsInteractiveHighlights !== false,
+        supportsVoicing: options.supportsVoicing !== false,
+        supportsTier1Voicing: options.supportsTier1Voicing !== false,
+        supportsPanAndZoom: options.supportsPanAndZoom !== false,
+        supportedRegionsAndCultures: options.supportedRegionsAndCultures || [ 'usa' ],
+        supportsSound: options.supportsSound ?? false
+      }
+    }
   };
 
   // @ts-expect-error
