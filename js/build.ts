@@ -45,6 +45,7 @@ import { getExportNames } from './typescript/getExportNames.js';
 import { writeDependencies } from './writeDependencies.js';
 import { scenerystackRepos } from './data/scenerystackRepos.js';
 import { allowedNamespaces } from './data/allowedNamespaces.js';
+import { exportedNamespaces } from './data/exportedNamespaces.js';
 
 const repos = scenerystackRepos;
 
@@ -977,6 +978,11 @@ type NumberLiteral = {
         const matchingEntries = entries.filter( entry => entry.path === modulePath );
 
         const addLine = ( entries: ExportEntry[], isType: boolean ): void => {
+          // Remove namespaces that are not exported
+          entries = entries.filter( entry => {
+            return exportedNamespaces.includes( entry.exportedName ) || !entry.exportedName.match( new RegExp( `^${_.camelCase( exportNamespace )}(Namespace)?$` ) );
+          } );
+
           if ( entries.length ) {
             const exportLine = `export ${isType ? 'type ' : ''}{ ${entries.map( entry => {
               return entry.exportedName === entry.originalName ? entry.exportedName : `${entry.originalName} as ${entry.exportedName}`;

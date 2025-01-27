@@ -335,6 +335,7 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
   };
 
   let navYAML = '';
+  let apiSnippetsMarkdown = '';
 
   for ( const entryPoint of entryPoints ) {
 
@@ -358,6 +359,7 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
       const pageName = getPageName( entryPoint, module );
 
       navYAML += `        - ${pageName}: reference/api/${entryPoint}/${pageName}.md\n`;
+      apiSnippetsMarkdown += `[${pageName}]: /reference/api/${entryPoint}/${pageName}/\n`;
 
       const moduleExportMap = subsetExportMapWithModule( exportMap, module );
 
@@ -395,6 +397,7 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
     const newMkdocsYAML = mkdocsYAML.slice( 0, apiIndex + beforeString.length ) + navYAML + mkdocsYAML.slice( communityIndex );
 
     fs.writeFileSync( '../community/mkdocs.yml', newMkdocsYAML );
+    fs.writeFileSync( '../community/docs/snippets/api-reference-snippets.md', apiSnippetsMarkdown );
 
     // Add these changed files
     await execute( 'git', [ 'add', 'mkdocs.yml' ], '../community' );
