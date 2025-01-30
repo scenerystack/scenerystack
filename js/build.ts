@@ -584,6 +584,7 @@ type NumberLiteral = {
               insertImport( 'import FlatQueue from \'flatqueue\';' );
 
               modifiedContent = modifiedContent.replaceAll( 'new window.FlatQueue()', 'new FlatQueue()' );
+              modifiedContent = modifiedContent.replaceAll( '// @ts-expect-error because FlatQueue is not declared as a global', '' );
             }
             if ( modifiedContent.includes( 'fromByteArray(' ) ) {
               insertImport( 'import base64js from \'base64-js\';const fromByteArray = base64js.fromByteArray;' );
@@ -783,8 +784,13 @@ type NumberLiteral = {
 
         const addExportFor = ( name: string, isType: boolean ): void => {
 
-          // Skip exports from non-imports files in these repos
-          if ( ( repo === 'alpenglow' || repo === 'scenery' || repo === 'kite' ) && !destPath.includes( 'imports.ts' ) ) {
+          // Skip scenery non-imports
+          if ( repo === 'scenery' && !destPath.includes( 'imports.ts' ) ) {
+            return;
+          }
+
+          // Skip kite imports (we will grab things directly)
+          if ( repo === 'kite' && destPath.includes( 'imports.ts' ) ) {
             return;
           }
 
