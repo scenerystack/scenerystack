@@ -327,6 +327,7 @@ export default localeData;` );
         'QueryStringMachineTests.',
         'chipper-tests.',
         'MipmapElementTests.ts',
+        'PixelComparisonTestUtils.ts',
 
         // Unneeded mains
         'alpenglow/js/main.',
@@ -784,8 +785,8 @@ type NumberLiteral = {
 
         const addExportFor = ( name: string, isType: boolean ): void => {
 
-          // Skip scenery non-imports
-          if ( repo === 'scenery' && !destPath.includes( 'imports.ts' ) ) {
+          // Skip scenery imports (we will grab things directly)
+          if ( repo === 'scenery' && destPath.includes( 'imports.ts' ) ) {
             return;
           }
 
