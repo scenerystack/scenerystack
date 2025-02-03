@@ -8,5 +8,7 @@
 
 export const exportedNamespaces = [
   'assert',
+  'brand',
+  'init',
   'scenery'
 ];
