@@ -785,8 +785,8 @@ type NumberLiteral = {
 
         const addExportFor = ( name: string, isType: boolean ): void => {
 
-          // Skip scenery imports (we will grab things directly)
-          if ( repo === 'scenery' && destPath.includes( 'imports.ts' ) ) {
+          // Skip everything in scenery besides the imports file
+          if ( repo === 'scenery' && !destPath.includes( 'imports.ts' ) ) {
             return;
           }
 
