@@ -50,11 +50,8 @@ import { exportedNamespaces } from './data/exportedNamespaces.js';
 const repos = scenerystackRepos;
 
 const copyAndPatch = async ( options?: {
-  // TODO: because of performance and size
-  removeAssertions?: boolean;
-
-  // TODO: for innate tree-shakeability (e.g. rollup/vite)
-  removeNamespacing?: boolean;
+  removeAssertions?: boolean; // for performance/size - also removes sceneryLog
+  removeNamespacing?: boolean; // for tree-shakeability (e.g. rollup/vite)
 
   // TODO: can we get rid of imports for things after assertions/etc. are removed?
 } ) => {
@@ -629,7 +626,7 @@ type NumberLiteral = {
             );
 
             const isAssertIdentifier = ( node: ts.Node ): boolean => {
-              return ts.isIdentifier( node ) && ( node.text === 'assert' || node.text === 'assertSlow' || node.text === 'affirm' );
+              return ts.isIdentifier( node ) && ( node.text === 'assert' || node.text === 'assertSlow' || node.text === 'affirm' || node.text === 'sceneryLog' );
             };
 
             const isAssertAmpersands = ( node: ts.Node ): boolean => {
