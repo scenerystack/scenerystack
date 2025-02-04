@@ -280,6 +280,9 @@ export default localeData;` );
         'joist/js/simLauncher.ts',
         'chipper/js/browser/sim-tests/qunitStart.js',
 
+        // is for eslint with PhET config
+        'webGPUEslintGlobals.',
+
         // Is the main for the demo
         'bamboo/js/bamboo-main.',
         'joist/js/joist-main.',
