@@ -13,8 +13,6 @@ export const allowedNamespaces = [
   'dot.Quaternion',
 
   // used for assignment
-  'scenery.scratchCanvas',
-  'scenery.scratchContext',
   'kite.svgPath',
   'kite.Edge',
 
