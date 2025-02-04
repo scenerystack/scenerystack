@@ -785,8 +785,8 @@ type NumberLiteral = {
 
         const addExportFor = ( name: string, isType: boolean ): void => {
 
-          // Skip everything in scenery besides the imports file
-          if ( repo === 'scenery' && !destPath.includes( 'imports.ts' ) ) {
+          // Skip scenery imports (we will grab things directly)
+          if ( repo === 'scenery' && destPath.includes( 'imports.ts' ) ) {
             return;
           }
 
@@ -1234,8 +1234,9 @@ export default ${stringModuleName};
     '}( this, () => {',
     '}( self, () => {'
   );
+  // TODO: move patches up above
   patch(
-    './src/scenery/js/nodes/RichText.ts',
+    './src/scenery/js/util/rich-text/richTextContentToString.ts',
     '// @ts-expect-error - we should get a string from this',
     ''
   );
