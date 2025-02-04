@@ -307,6 +307,7 @@ export default localeData;` );
 
         // Tests
         // TODO: see if we can get much more general rules, this seems a bit ridiculous to maintain
+        'alpenglow/js/alpenglow-tests.',
         'axon/js/axon-tests.',
         'bamboo/js/bamboo-tests.',
         'bamboo/js/*Tests.ts',
@@ -315,11 +316,13 @@ export default localeData;` );
         'kite/js/kite-tests.',
         'phet-core/js/phet-core-tests.',
         'phetcommon/js/phetcommon-tests.',
-        'scenery-phet/js/scenery-phet-tests.',
+        'scenery/js/tests/',
         'scenery/js/scenery-tests.',
+        'scenery-phet/js/scenery-phet-tests.',
         'sun/js/sun-tests.',
         'tandem/js/tandem-tests.',
         'twixt/js/twixt-tests.',
+        'utterance-queue/js/utterance-queue-tests.',
         'dot/js/UtilsTests.',
         'chipper/js/browser/sim-tests',
         'phet-core/js/qunitStartWithoutPhetioTests.',
@@ -331,6 +334,7 @@ export default localeData;` );
 
         // Unneeded mains
         'alpenglow/js/main.',
+        'alpenglow/js/alpenglow-main.',
         'axon/js/main.',
         'bamboo/js/main.',
         'dot/js/dot-main.',
@@ -349,6 +353,7 @@ export default localeData;` );
         'tandem/js/main.',
         'twixt/js/main.',
         'utterance-queue/js/main.',
+        'utterance-queue/js/utterance-queue-main.',
         'vegas/js/main.'
       ].some( aPath => srcPath.includes( aPath.replaceAll( '/', path.sep ) ) ) ) {
         continue;
