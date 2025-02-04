@@ -20,6 +20,13 @@
 
     "emitDeclarationOnly": false,
 
+    // Allow d.ts to reference each other, so we have accurate type info!
+    // Overrides tsconfig-core.json values
+    "isolatedModules": false,
+
+    // Potentially helps imports between d.ts?
+    "importHelpers": true,
+
     "esModuleInterop": true,
     "lib": [
       "es2023",
