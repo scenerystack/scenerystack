@@ -1282,6 +1282,18 @@ const rollupRun = async () => {
   }
 };
 
+const madgeRun = async () => {
+  console.log( 'running madge' );
+  const madgeResult = await execute( 'npx', [ 'madge', '--warning', '--circular', './src' ], '.', { errors: 'resolve' } );
+
+  conditionalLog( madgeResult.stdout );
+  conditionalError( madgeResult.stderr );
+  if ( madgeResult.code !== 0 ) {
+    console.error( 'madge failed - likely has circular dependencies' );
+    process.exit( 1 );
+  }
+};
+
 ( async () => {
 
   // dependencies.json
@@ -1306,6 +1318,8 @@ const rollupRun = async () => {
 
   // tsc files into ./dist/dev/
   await tscRun( false );
+
+  await madgeRun();
 
   // Use rollup for bundles written to ./dist/
   await rollupRun();
