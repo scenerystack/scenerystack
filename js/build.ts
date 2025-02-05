@@ -861,6 +861,9 @@ type NumberLiteral = {
               throw new Error( `${srcPath} in scenerystack does not have explicit mapping` );
             }
           }
+          if ( repo === 'joist' && destPath.includes( 'updateCheck' ) ) {
+            exportFile = 'sim';
+          }
 
           const entry = {
             isType: isType,
