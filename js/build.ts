@@ -873,7 +873,13 @@ type NumberLiteral = {
             path: destPath
           };
 
-          exportEntries[ exportFile ].push( entry );
+          // TODO: reduce quadratic behavior?
+          // Ignore duplicated exports in the same file, it might be just providing
+          // overloads. See
+          // https://github.com/phetsims/scenery/issues/1682
+          if ( !exportEntries[ exportFile ].some( otherEntry => _.isEqual( entry, otherEntry ) ) ) {
+            exportEntries[ exportFile ].push( entry );
+          }
         };
 
         const exportNames = getExportNames( modifiedContent );
