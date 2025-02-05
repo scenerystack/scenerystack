@@ -505,6 +505,7 @@ export default localeData;` );
 
             if ( modifiedContent.includes( 'import { Pattern } from \'@fluent/bundle\';' ) ) {
               modifiedContent = modifiedContent.replace( 'import { Pattern } from \'@fluent/bundle\';', '' );
+              modifiedContent = modifiedContent.replace( 'Set<Pattern>', 'Set<FluentPattern>' );
               modifiedContent = modifiedContent.replace( 'export type { Pattern as FluentPattern };', `export type FluentPattern = string | ComplexPattern;
 type ComplexPattern = Array<PatternElement>;
 type PatternElement = string | Expression;
