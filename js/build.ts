@@ -277,6 +277,10 @@ export default localeData;` );
         'joist/js/simLauncher.ts',
         'chipper/js/browser/sim-tests/qunitStart.js',
 
+        'phet-io-overrides.',
+        'phet-io-elements-overrides.',
+        'google-analytics.',
+
         // is for eslint with PhET config
         'webGPUEslintGlobals.',
 
@@ -304,6 +308,7 @@ export default localeData;` );
         'tambo/js/demo',
         'twixt/js/demo',
         'vegas/js/demo',
+        'tambo/sounds/demo-and-test/',
 
         // Tests
         // TODO: see if we can get much more general rules, this seems a bit ridiculous to maintain
@@ -312,6 +317,7 @@ export default localeData;` );
         'bamboo/js/bamboo-tests.',
         'bamboo/js/*Tests.ts',
         'dot/js/dot-tests.',
+        'Tests.',
         'joist/js/joist-tests.',
         'kite/js/kite-tests.',
         'phet-core/js/phet-core-tests.',
@@ -365,6 +371,9 @@ export default localeData;` );
         }
       }
       else if ( suffixes.some( suffix => name.endsWith( suffix ) ) ) {
+        if ( name.endsWith( '.js' ) ) {
+          console.log( `JS file: ${srcPath}` );
+        }
         // console.log( `including ${srcPath}` );
 
         // Read, modify, and write the file if it matches the filter
@@ -676,6 +685,10 @@ type NumberLiteral = {
               const paddedReplacement = _.repeat( ' ', end - start - replacement.length ) + replacement;
 
               modifiedContent = modifiedContent.slice( 0, start ) + paddedReplacement + modifiedContent.slice( end );
+            }
+
+            if ( modifiedContent.includes( 'sceneryLog && ' ) ) {
+              throw new Error( 'failed to strip sceneryLog' );
             }
           }
 
