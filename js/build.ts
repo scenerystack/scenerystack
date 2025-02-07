@@ -804,16 +804,6 @@ type NumberLiteral = {
 
         const addExportFor = ( name: string, isType: boolean ): void => {
 
-          // Skip scenery imports (we will grab things directly)
-          if ( repo === 'scenery' && destPath.includes( 'imports.ts' ) ) {
-            return;
-          }
-
-          // Skip kite imports (we will grab things directly)
-          if ( repo === 'kite' && destPath.includes( 'imports.ts' ) ) {
-            return;
-          }
-
           const originalName = name;
           let exportedName = name === 'default' ? path.basename( destPath ).replace( /\.[jt]s$/g, '' ) : name;
 
