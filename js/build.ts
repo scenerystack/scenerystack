@@ -1112,7 +1112,8 @@ ${exportLines.join( os.EOL )}`;
         }
 
         if ( entry ) {
-          stringMap[ locale ] = entry.value;
+          // Normalize for https://github.com/phetsims/scenery/issues/1687
+          stringMap[ locale ] = entry.value.normalize();
         }
       }
 
