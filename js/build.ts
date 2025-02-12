@@ -401,10 +401,10 @@ export default localeData;` );
         {
           // TODO: remove this
           if ( repo !== 'sherpa' ) {
-            if ( !destPath.includes( 'QueryStringMachine' ) && !destPath.includes( 'assert/js/assert' ) && modifiedContent.includes( 'QueryStringMachine' ) ) {
+            if ( !destPath.includes( 'QueryStringMachine' ) && !destPath.includes( `assert${path.sep}js${path.sep}$assert` ) && modifiedContent.includes( 'QueryStringMachine' ) ) {
               insertImport( `import '${getImportPath( 'src/query-string-machine/js/QueryStringMachine.js' )}';` );
             }
-            if ( !destPath.includes( 'src/assert' ) && modifiedContent.includes( 'assert' ) ) {
+            if ( !destPath.includes( `src${path.sep}assert` ) && modifiedContent.includes( 'assert' ) ) {
               insertImport( `import '${getImportPath( 'src/assert/js/assert.js' )}';` );
             }
             if ( !destPath.includes( 'initialize-globals' ) && [
