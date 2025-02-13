@@ -26,7 +26,7 @@
     "start": "node ./bin/scenerystack.js",
     "build": "npx tsx js/build.ts",
     "generate-documentation": "npx tsx js/doc/generate-documentation.ts",
-    "copy-community-lib": "cp dist/scenerystack.* ../community/docs/lib/"
+    "copy-to-community": "cp dist/scenerystack.* ../community/docs/lib/"
   },
   "files": [
     "dist",
