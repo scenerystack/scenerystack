@@ -110,7 +110,11 @@ export const docToMarkdown = (
   const debug = doc.debug;
   doc.debug = null;
 
-  return `# ${primaryName}
+  return `!!! warning "Under Construction"
+    This documentation is auto-generated, and is a work in progress. Please see the source code at
+    [${githubPathURL}](${githubPathURL}) for the most up-to-date information.
+
+# ${primaryName}
 
 ## Overview
 
