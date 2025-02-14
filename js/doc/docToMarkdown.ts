@@ -131,6 +131,9 @@ ${paddedBody}
 `;
         result += '</script>';
       }
+      else if ( type === 'monospace' ) {
+        result += `<pre style="max-width: 100%; overflow-x: auto; font-size: 70%">\n${escapeWithLinks( body )}</pre>`;
+      }
       else if ( type === 'raw' ) {
         result += body;
       }
