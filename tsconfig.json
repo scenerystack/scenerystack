@@ -178,7 +178,6 @@
     "src/joist/js/simLauncher.ts",
 
     /* Grunt / Node */
-    "src/dot/js/grunt/**/*",
     "src/kite/js/grunt/**/*",
   ],
 
