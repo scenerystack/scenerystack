@@ -366,7 +366,7 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
       console.log( `${entryPoint}/${pageName}.md` );
       // TODO: just log missing exports!
 
-      const markdown = docToMarkdown( docMap[ module ], moduleExportMap, entryPoint, pageName, wrapNameString );
+      const markdown = docToMarkdown( docMap[ module ], moduleExportMap, entryPoint, pageName, wrapNameString, getURLForName );
 
       fs.writeFileSync( `../community/docs/reference/api/${entryPoint}/${pageName}.md`, markdown );
     }
