@@ -284,6 +284,10 @@ export default localeData;` );
         // is for eslint with PhET config
         'webGPUEslintGlobals.',
 
+        'dot/js/Utils.',
+
+        'scenery/js/layout/LayoutTestUtils.',
+
         // Is the main for the demo
         'bamboo/js/bamboo-main.',
         'joist/js/joist-main.',
