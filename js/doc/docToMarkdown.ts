@@ -51,6 +51,11 @@ export const docToMarkdown = (
     let index = 0;
     let beginIndex: number;
 
+    comment = comment.split( '\n' ).filter( line => {
+      return !line.includes( 'eslint-disable' ) &&
+             !line.includes( '@formatter:off' );
+    } ).join( '\n' );
+
     // e.g. turn `Node` into [Node](URL)
     const escapeWithLinks = ( section: string ) => {
       const backtickMatches = [ ...section.matchAll( /`[^`\n]+`/g ) ].reverse();
@@ -216,6 +221,32 @@ ${paddedBody}
   const debug = doc.debug;
   doc.debug = null;
 
+  const imagePreview = `${primaryName.endsWith( '_png' ) ? `
+
+<img id="doc-image" alt="${primaryName}">
+<script type="module">
+import { ${primaryName} } from '/lib/scenerystack.esm.min.js';
+
+if ( ${primaryName} instanceof HTMLImageElement ) {
+  document.querySelector( '#doc-image' ).src = ${primaryName}.src;
+}
+else if ( Array.isArray( ${primaryName} ) ) {
+  document.querySelector( '#doc-image' ).src = ${primaryName}[ 0 ].url;
+}
+</script>
+` : ''}`;
+
+  const soundPreview = primaryName.endsWith( '_mp3' ) ? `
+<audio controls id="doc-audio">
+<script type="module">
+import { ${primaryName} } from '/lib/scenerystack.esm.min.js';
+import { audioBufferToURL } from '/js/audioBufferToURL.js';
+
+${primaryName}.audioBufferProperty.lazyLink( async audioBuffer => {
+  document.querySelector( '#doc-audio' ).src = await audioBufferToURL( audioBuffer );
+} );
+</script>` : '';
+
   return `# ${primaryName}
 
 !!! warning "Under Construction"
@@ -224,7 +255,7 @@ ${paddedBody}
 
 ## Overview
 
-${convertComment( doc.topLevelComments.join( '\n' ) )}
+${convertComment( doc.topLevelComments.join( '\n' ) )}${imagePreview}${soundPreview}
 
 ${exports.filter( exportName => getExportInfo( exportName ) ).map( exportName => {
   
