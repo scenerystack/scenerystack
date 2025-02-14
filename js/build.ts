@@ -46,6 +46,7 @@ import { writeDependencies } from './writeDependencies.js';
 import { scenerystackRepos } from './data/scenerystackRepos.js';
 import { allowedNamespaces } from './data/allowedNamespaces.js';
 import { exportedNamespaces } from './data/exportedNamespaces.js';
+import { skipDeprecatedModules } from './data/skipDeprecatedModules.js';
 
 const repos = scenerystackRepos;
 
@@ -287,6 +288,14 @@ export default localeData;` );
         'dot/js/Utils.',
 
         'scenery/js/layout/LayoutTestUtils.',
+
+        // deprecated and unused internally
+        'scenery/js/input/ButtonListener.',
+        'scenery/js/input/DownUpListener.',
+        'scenery/js/input/SimpleDragHandler.',
+        'scenery-phet/js/NextPreviousNavigationNode.',
+        'scenery-phet/js/NumberEntryControl.',
+        'scenery-phet/js/NumberKeypad.',
 
         // Is the main for the demo
         'bamboo/js/bamboo-main.',
@@ -1004,6 +1013,10 @@ type NumberLiteral = {
       const modulePaths = _.uniq( entries.map( entry => entry.path ) ).sort();
 
       for ( const modulePath of modulePaths ) {
+        if ( skipDeprecatedModules.some( deprecated => modulePath.includes( deprecated ) ) ) {
+          continue;
+        }
+
         const matchingEntries = entries.filter( entry => entry.path === modulePath );
 
         const addLine = ( entries: ExportEntry[], isType: boolean ): void => {
