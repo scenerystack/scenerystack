@@ -223,7 +223,6 @@ export default localeData;` );
         'chipper/templates',
         'chipper/tsconfig',
         'dot/assets',
-        'dot/doc',
         'dot/examples',
         'dot/tests',
         'joist/assets',
