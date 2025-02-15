@@ -15,4 +15,8 @@ export const skipDeprecatedModules = [
   'scenery-phet/js/SpectrumSlider.',
   'scenery-phet/js/WavelengthSlider.',
   'tappi/js/VibrationManageriOS.',
+
+  // not ready yet
+  'scenery/js/filters/DropShadow.',
+  'scenery/js/filters/GaussianBlur.'
 ];
