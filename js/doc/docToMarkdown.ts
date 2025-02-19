@@ -98,9 +98,6 @@ export const docToMarkdown = (
           if ( parameter.startsWith( 'showCode=' ) ) {
             options.showCode = parameter === 'showCode=true';
           }
-          if ( parameter.startsWith( 'showErrors=' ) ) {
-            options.showErrors = parameter === 'showErrors=true';
-          }
           if ( parameter.startsWith( 'showPDOM=' ) ) {
             options.showPDOM = parameter === 'showPDOM=true';
           }
