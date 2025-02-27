@@ -11,12 +11,13 @@
  */
 
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { rimraf } from 'rimraf';
 import ts from 'typescript';
-import { Documentation, extractDoc } from './extractDoc.js';
-import { docToMarkdown } from './docToMarkdown.js';
 import execute from '../../../perennial-alias/js/common/execute.js';
+import { docToMarkdown } from './docToMarkdown.js';
+import { Documentation, extractDoc } from './extractDoc.js';
 
 // NOTE: This is the order of entry points in documentation
 const entryPoints = [
@@ -387,10 +388,8 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
   - Community:
      */
 
-    const beforeString = `### AUTO-GENERATE BELOW
-`;
-    const afterString = `### AUTO-GENERATE ABOVE
-`;
+    const beforeString = `### AUTO-GENERATE BELOW${os.EOL}`;
+    const afterString = `### AUTO-GENERATE ABOVE${os.EOL}`;
 
     const apiIndex = mkdocsYAML.indexOf( beforeString );
     const communityIndex = mkdocsYAML.indexOf( afterString );
