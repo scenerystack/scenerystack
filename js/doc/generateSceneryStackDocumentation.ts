@@ -130,7 +130,7 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
     };
 
     const mapModule = ( module: string ): Module => {
-      return path.normalize( `${path.dirname( sourceFilePath )}/${module}` ).replace( /^\.\//, '' );
+      return path.normalize( `${path.dirname( sourceFilePath )}/${module}` ).replace( /^\.\//, '' ).replaceAll( path.sep, '/' );
     };
 
     const visit = ( node: ts.Node ) => {
@@ -345,7 +345,7 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
 
   for ( const entryPoint of entryPoints ) {
 
-    navYAML += `      - ${entryPoint}:\n`;
+    navYAML += `      - ${entryPoint}:${os.EOL}`;
 
     const exportMap = resolvedExportMaps[ entryPoint ];
 
@@ -364,8 +364,8 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
 
       const pageName = getPageName( entryPoint, module );
 
-      navYAML += `        - ${pageName}: reference/api/${entryPoint}/${pageName}.md\n`;
-      apiSnippetsMarkdown += `[${pageName}]: /reference/api/${entryPoint}/${pageName}/\n`;
+      navYAML += `        - ${pageName}: reference/api/${entryPoint}/${pageName}.md${os.EOL}`;
+      apiSnippetsMarkdown += `[${pageName}]: /reference/api/${entryPoint}/${pageName}/${os.EOL}`;
 
       const moduleExportMap = subsetExportMapWithModule( exportMap, module );
 
@@ -406,6 +406,7 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
     // Add these changed files
     await execute( 'git', [ 'add', 'mkdocs.yml' ], '../community' );
     await execute( 'git', [ 'add', 'docs/reference/api' ], '../community' );
+    await execute( 'git', [ 'add', 'docs/snippets/api-reference-snippets.md' ], '../community' );
   }
 
   console.log( 'complete' );

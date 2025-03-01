@@ -10,6 +10,7 @@
  */
 
 import path from 'path';
+import os from 'os';
 import { ClassMethodDocumentation, ClassPropertyDocumentation, Documentation, TypeDocumentation, TypeIntersectionDocumentation, TypeLiteralDocumentation } from './extractDoc.js';
 import type { ExportMap } from './generateSceneryStackDocumentation.js';
 
@@ -51,10 +52,10 @@ export const docToMarkdown = (
     let index = 0;
     let beginIndex: number;
 
-    comment = comment.split( '\n' ).filter( line => {
+    comment = comment.split( os.EOL ).filter( line => {
       return !line.includes( 'eslint-disable' ) &&
              !line.includes( '@formatter:off' );
-    } ).join( '\n' );
+    } ).join( os.EOL );
 
     // e.g. turn `Node` into [Node](URL)
     const escapeWithLinks = ( section: string ) => {
@@ -80,10 +81,10 @@ export const docToMarkdown = (
       }
 
       // Get the rest of the line after the '#begin ':
-      const parameters = comment.slice( index + '#begin '.length, comment.indexOf( '\n', index ) ).trim().split( ' ' );
+      const parameters = comment.slice( index + '#begin '.length, comment.indexOf( os.EOL, index ) ).trim().split( ' ' );
       const type = parameters[ 0 ];
       const endString = `#end ${type}`;
-      index = comment.indexOf( '\n', index ) + 1;
+      index = comment.indexOf( os.EOL, index ) + 1;
       const endIndex = comment.indexOf( endString, index );
       const body = comment.slice( index, endIndex );
 
@@ -111,10 +112,10 @@ export const docToMarkdown = (
 
         let paddedBody = body.replace( '#on', '/*START*/' ).replace( '#off', '/*END*/' );
         if ( !paddedBody.includes( '/*START*/' ) ) {
-          paddedBody = `/*START*/\n${paddedBody}`;
+          paddedBody = `/*START*/${os.EOL}${paddedBody}`;
         }
         if ( !paddedBody.includes( '/*END*/' ) ) {
-          paddedBody = `${paddedBody}\n/*END*/`;
+          paddedBody = `${paddedBody}${os.EOL}/*END*/`;
         }
 
         const id = `sandbox-${sandboxId++}`;
@@ -134,7 +135,7 @@ ${paddedBody}
         result += '</script>';
       }
       else if ( type === 'monospace' ) {
-        result += `<pre style="max-width: 100%; overflow-x: auto; font-size: 70%">\n${escapeWithLinks( body )}</pre>`;
+        result += `<pre style="max-width: 100%; overflow-x: auto; font-size: 70%">${os.EOL}${escapeWithLinks( body )}</pre>`;
       }
       else if ( type === 'raw' ) {
         result += body;
@@ -159,7 +160,7 @@ ${paddedBody}
   };
 
   const indentMultiline = ( string: string, indent: string ): string => {
-    return string.split( '\n' ).map( line => `${indent}${line}` ).join( '\n' );
+    return string.split( os.EOL ).map( line => `${indent}${line}` ).join( os.EOL );
   };
 
   const wrapNamesIn = ( string: string ): string => {
@@ -252,7 +253,7 @@ ${primaryName}.audioBufferProperty.lazyLink( async audioBuffer => {
 
 ## Overview
 
-${convertComment( doc.topLevelComments.join( '\n' ) )}${imagePreview}${soundPreview}
+${convertComment( doc.topLevelComments.join( os.EOL ) )}${imagePreview}${soundPreview}
 
 ${exports.filter( exportName => getExportInfo( exportName ) ).map( exportName => {
   
@@ -271,19 +272,19 @@ ${exports.filter( exportName => getExportInfo( exportName ) ).map( exportName =>
   
   const methodDoc = ( method: ClassMethodDocumentation ): string => {
     const headerText = `${method.name}(${methodParameters( method )})${typeSuffix( method.returnTypeString )}${getID( method.name )}`;
-    return `#### ${headerText}${method.isProtected ? '\n\n(protected)' : ''}${method.comment ? `\n\n${convertComment( method.comment )}` : ''}`;
+    return `#### ${headerText}${method.isProtected ? `${os.EOL}${os.EOL}(protected)` : ''}${method.comment ? `${os.EOL}${os.EOL}${convertComment( method.comment )}` : ''}`;
   };
   
   const propertyDoc = ( property: ClassPropertyDocumentation ): string => {
     const headerText = `${property.name}${typeSuffix( property.typeString )}${getID( property.name )}`;
     const attribs = [ property.isProtected ? 'protected' : '', property.isReadonly ? 'readonly' : '' ].filter( attrib => attrib.length ).join( ', ' );
-    return `#### ${headerText}${attribs.length ? `\n\n(${attribs})` : ''}${property.comment ? `\n\n${convertComment( property.comment )}` : ''}`;
+    return `#### ${headerText}${attribs.length ? `${os.EOL}${os.EOL}(${attribs})` : ''}${property.comment ? `${os.EOL}${os.EOL}${convertComment( property.comment )}` : ''}`;
   };
 
   let body = '';
   
   if ( obj.comment ) {
-    body += `${convertComment( obj.comment )}\n\n`;
+    body += `${convertComment( obj.comment )}${os.EOL}${os.EOL}`;
   }
   
   // Import statement
@@ -298,28 +299,28 @@ import ${obj.type === 'type' ? 'type ' : ''}{ ${exportName} } from 'scenerystack
 
     const constructor = obj.methods.find( method => method.name === 'constructor' ) ?? null;
     if ( constructor ) {
-      body += '### Constructor\n\n';
-      body += `#### new ${exportName}(${methodParameters( constructor )})${getConstructorID( exportName )}\n\n`;
+      body += `### Constructor${os.EOL}${os.EOL}`;
+      body += `#### new ${exportName}(${methodParameters( constructor )})${getConstructorID( exportName )}${os.EOL}${os.EOL}`;
     }
     
     if ( obj.methods.length ) {
-      body += '### Instance Methods\n\n';
-      body += obj.methods.filter( method => method.name !== 'constructor' ).map( methodDoc ).join( '\n\n' ) + '\n\n';
+      body += `### Instance Methods${os.EOL}${os.EOL}`;
+      body += obj.methods.filter( method => method.name !== 'constructor' ).map( methodDoc ).join( `${os.EOL}${os.EOL}` ) + `${os.EOL}${os.EOL}`;
     }
     
     if ( obj.properties.length ) {
-      body += '### Instance Properties\n\n';
-      body += obj.properties.map( propertyDoc ).join( '\n\n' ) + '\n\n';
+      body += `### Instance Properties${os.EOL}${os.EOL}`;
+      body += obj.properties.map( propertyDoc ).join( `${os.EOL}${os.EOL}` ) + `${os.EOL}${os.EOL}`;
     }
     
     if ( obj.staticMethods.length ) {
-      body += '### Static Methods\n\n';
-      body += obj.staticMethods.map( methodDoc ).join( '\n\n' ) + '\n\n';
+      body += `### Static Methods${os.EOL}${os.EOL}`;
+      body += obj.staticMethods.map( methodDoc ).join( `${os.EOL}${os.EOL}` ) + `${os.EOL}${os.EOL}`;
     }
     
     if ( obj.staticProperties.length ) {
-      body += '### Static Properties\n\n';
-      body += obj.staticProperties.map( propertyDoc ).join( '\n\n' ) + '\n\n';
+      body += `### Static Properties${os.EOL}${os.EOL}`;
+      body += obj.staticProperties.map( propertyDoc ).join( `${os.EOL}${os.EOL}` ) + `${os.EOL}${os.EOL}`;
     }
   }
   
@@ -368,19 +369,19 @@ import ${obj.type === 'type' ? 'type ' : ''}{ ${exportName} } from 'scenerystack
         // Finish the main line
         if ( signature.typeDoc ) {
           if ( isLiteralLike( signature.typeDoc ) ) {
-            result += ':\n';
+            result += `:${os.EOL}`;
           }
           else {
-            result += `: ${wrapNamesIn( toSingleString( signature.typeDoc ) )}\n`;
+            result += `: ${wrapNamesIn( toSingleString( signature.typeDoc ) )}${os.EOL}`;
           }
         }
         else {
-          result += '\n';
+          result += os.EOL;
         }
         
         if ( signature.comment ) {
           // Break for separation from rest of signature
-          result += `<br>${indentMultiline( convertComment( signature.comment ), `${indent}  ` )}\n`;
+          result += `<br>${indentMultiline( convertComment( signature.comment ), `${indent}  ` )}${os.EOL}`;
         }
         
         // Sub-options
@@ -390,7 +391,7 @@ import ${obj.type === 'type' ? 'type ' : ''}{ ${exportName} } from 'scenerystack
       }
       
       if ( nonLiterals.length ) {
-        result += `- &amp; ${nonLiterals.map( nonLiteral => wrapNamesIn( toSingleString( nonLiteral ) ) ).join( ' &amp; ' )}\n`;
+        result += `- &amp; ${nonLiterals.map( nonLiteral => wrapNamesIn( toSingleString( nonLiteral ) ) ).join( ' &amp; ' )}${os.EOL}`;
       }
       
       return result;
@@ -398,13 +399,13 @@ import ${obj.type === 'type' ? 'type ' : ''}{ ${exportName} } from 'scenerystack
     
     // Nested 
     if ( isLiteralLike( obj.typeDoc ) ) {
-      body += '\n\n';
+      body += `${os.EOL}${os.EOL}`;
       body += toNestedString( obj.typeDoc );
-      body += '\n\n';
+      body += `${os.EOL}${os.EOL}`;
     }
     else {
-      body += '\n\n';
-      body += `${wrapNamesIn( toSingleString( obj.typeDoc ) )}\n\n`;
+      body += `${os.EOL}${os.EOL}`;
+      body += `${wrapNamesIn( toSingleString( obj.typeDoc ) )}${os.EOL}${os.EOL}`;
     }
     
     // TODO: add comments
@@ -412,8 +413,8 @@ import ${obj.type === 'type' ? 'type ' : ''}{ ${exportName} } from 'scenerystack
     // TODO: we will want to recursively output nested structures for literals (i.e. nested options)
   }
   
-  return `## ${TYPE_MAP[ obj.type ]} ${exportName} {: #${exportName} }\n\n${body.length ? `\n${body}` : ''}`;
-} ).join( '\n\n' )}
+  return `## ${TYPE_MAP[ obj.type ]} ${exportName} {: #${exportName} }${os.EOL}${os.EOL}${body.length ? `${os.EOL}${body}` : ''}`;
+} ).join( `${os.EOL}${os.EOL}` )}
 
 ## Source Code
 

@@ -31,6 +31,7 @@
 
 import ts from 'typescript';
 import _ from 'lodash';
+import os from 'os';
 import { hasExportModifier, hasDefaultExportModifier, hasPrivateModifier, hasStaticModifier, hasReadonlyModifier, hasProtectedModifier } from '../typescript/modifiers.js';
 
 export type Documentation = {
@@ -158,7 +159,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
   };
 
   const destarBlockComment = ( string: string ) => {
-    return string.split( '\n' ).filter( line => {
+    return string.split( os.EOL ).filter( line => {
       const isCommentStart = line.match( /^ *\/\*+ *$/g );
       const isCommentEnd = line.match( /^ *\*+\/ *$/g );
       return !isCommentStart && !isCommentEnd;
@@ -170,7 +171,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
         destarred = '';
       }
       return destarred;
-    } ).join( '\n' );
+    } ).join( os.EOL );
   };
 
   const deSlashLineComment = ( string: string ) => {
@@ -207,7 +208,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     }
     else {
       const lastNonLineComment = comments.findLastIndex( comment => !comment.startsWith( '//' ) );
-      return comments.slice( lastNonLineComment + 1 ).map( cleanupComment ).join( '\n' );
+      return comments.slice( lastNonLineComment + 1 ).map( cleanupComment ).join( os.EOL );
     }
   };
 
@@ -404,7 +405,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       const className = child.name?.getText();
 
       if ( className ) {
-        debug += `class: ${className}\n`;
+        debug += `class: ${className}${os.EOL}`;
 
         const comment = getSpecificLeadingComment( child );
 
@@ -577,31 +578,31 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     }
 
     // @ts-expect-error
-    debug += `${kindOf( child )} ${child.modifiers ? child.modifiers.map( kindOf ) : ''}\n`;
+    debug += `${kindOf( child )} ${child.modifiers ? child.modifiers.map( kindOf ) : ''}${os.EOL}`;
 
     if ( child.kind === ts.SyntaxKind.FirstStatement ) {
       for ( const subChild of child.getChildren() ) {
-        debug += `  ${kindOf( subChild )}\n`;
+        debug += `  ${kindOf( subChild )}${os.EOL}`;
 
         if ( ts.isVariableDeclarationList( subChild ) ) {
           // readonly declarations: NodeArray<VariableDeclaration>;
 
           for ( const variableDeclaration of subChild.declarations ) {
-            debug += `    ${variableDeclaration.name.getText()}\n`;
+            debug += `    ${variableDeclaration.name.getText()}${os.EOL}`;
             if ( variableDeclaration.initializer ) {
-              debug += `      ${kindOf( variableDeclaration.initializer )}\n`;
+              debug += `      ${kindOf( variableDeclaration.initializer )}${os.EOL}`;
 
               if ( ts.isAsExpression( variableDeclaration.initializer ) ) {
-                debug += `        ${kindOf( variableDeclaration.initializer.expression )}\n`;
+                debug += `        ${kindOf( variableDeclaration.initializer.expression )}${os.EOL}`;
                 // readonly expression: Expression;
                 // readonly type: TypeNode;
 
                 if ( ts.isArrayLiteralExpression( variableDeclaration.initializer.expression ) ) {
                   for ( const element of variableDeclaration.initializer.expression.elements ) {
-                    debug += `          ${kindOf( element )}\n`;
+                    debug += `          ${kindOf( element )}${os.EOL}`;
 
                     if ( ts.isStringLiteral( element ) ) {
-                      debug += `            "${element.text}"\n`;
+                      debug += `            "${element.text}"${os.EOL}`;
                     }
                     // StringLiteral???
                     // isStringLiteral =>
@@ -615,14 +616,14 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     }
 
     if ( ts.isTypeAliasDeclaration( child ) ) {
-      debug += `  :${kindOf( child.type )}\n`;
+      debug += `  :${kindOf( child.type )}${os.EOL}`;
 
       if ( ts.isIndexedAccessTypeNode( child.type ) ) {
-        debug += `    obj: ${kindOf( child.type.objectType )}\n`;
-        debug += `    index: ${kindOf( child.type.indexType )}\n`;
+        debug += `    obj: ${kindOf( child.type.objectType )}${os.EOL}`;
+        debug += `    index: ${kindOf( child.type.indexType )}${os.EOL}`;
 
         if ( ts.isTypeQueryNode( child.type.objectType ) && child.type.indexType.kind === ts.SyntaxKind.NumberKeyword ) {
-          debug += `      "${child.type.objectType.exprName.getText()}"\n`;
+          debug += `      "${child.type.objectType.exprName.getText()}"${os.EOL}`;
 
           //         readonly exprName: EntityName;
         }
@@ -635,14 +636,14 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
 
       if ( ts.isIntersectionTypeNode( child.type ) || ts.isUnionTypeNode( child.type ) ) {
         for ( const type of child.type.types ) {
-          debug += `    ${ts.isIntersectionTypeNode( child.type ) ? '&' : '|'}${kindOf( type )}\n`;
+          debug += `    ${ts.isIntersectionTypeNode( child.type ) ? '&' : '|'}${kindOf( type )}${os.EOL}`;
 
           if ( ts.isTypeReferenceNode( type ) ) {
-            debug += `      "${type.typeName.getText()}${type.typeArguments ? `<${type.typeArguments.map( kindOf ).join( ', ' )}>` : ''}"\n`;
+            debug += `      "${type.typeName.getText()}${type.typeArguments ? `<${type.typeArguments.map( kindOf ).join( ', ' )}>` : ''}"${os.EOL}`;
           }
           if ( ts.isLiteralTypeNode( type ) ) {
             if ( ts.isStringLiteral( type.literal ) ) {
-              debug += `      "${type.literal.text}"\n`;
+              debug += `      "${type.literal.text}"${os.EOL}`;
             }
           }
         }
@@ -650,41 +651,41 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       if ( ts.isTypeLiteralNode( child.type ) ) {
         for ( const member of child.type.members ) {
           // @ts-expect-error
-          debug += `    .${kindOf( member )} ${member.modifiers ? member.modifiers.map( kindOf ) : ''}\n`;
+          debug += `    .${kindOf( member )} ${member.modifiers ? member.modifiers.map( kindOf ) : ''}${os.EOL}`;
 
           if ( ts.isPropertySignature( member ) ) {
-            debug += `      "${member.name.getText()}"${member.questionToken ? '?' : ''}: ${member.type ? kindOf( member.type ) : 'any'}\n`;
+            debug += `      "${member.name.getText()}"${member.questionToken ? '?' : ''}: ${member.type ? kindOf( member.type ) : 'any'}${os.EOL}`;
           }
         }
       }
 
       if ( child.typeParameters ) {
         for ( const typeParameter of child.typeParameters ) {
-          debug += `  <${kindOf( typeParameter )}\n`;
+          debug += `  <${kindOf( typeParameter )}${os.EOL}`;
         }
       }
     }
 
     if ( ts.isClassDeclaration( child ) ) {
       for ( const subChild of child.getChildren() ) {
-        debug += `  ${kindOf( subChild )}\n`;
+        debug += `  ${kindOf( subChild )}${os.EOL}`;
       }
       for ( const member of child.members ) {
         // @ts-expect-error
-        debug += `  :${kindOf( member )} ${member.modifiers ? member.modifiers.map( kindOf ) : ''}\n`;
+        debug += `  :${kindOf( member )} ${member.modifiers ? member.modifiers.map( kindOf ) : ''}${os.EOL}`;
 
         if ( [ ts.SyntaxKind.PropertyDeclaration, ts.SyntaxKind.MethodDeclaration, ts.SyntaxKind.GetAccessor, ts.SyntaxKind.SetAccessor ].includes( member.kind ) ) {
           for ( const subChild of member.getChildren() ) {
-            debug += `    ${kindOf( subChild )}\n`;
+            debug += `    ${kindOf( subChild )}${os.EOL}`;
 
             if ( subChild.kind === ts.SyntaxKind.SyntaxList ) {
               for ( const subSubChild of subChild.getChildren() ) {
                 // @ts-expect-error
-                debug += `      ${kindOf( subSubChild )} ${member.modifiers ? member.modifiers.map( kindOf ) : ''}\n`;
+                debug += `      ${kindOf( subSubChild )} ${member.modifiers ? member.modifiers.map( kindOf ) : ''}${os.EOL}`;
 
                 if ( ts.isParameter( subSubChild ) ) {
                   for ( const subSubSubChild of subSubChild.getChildren() ) {
-                    debug += `        ${kindOf( subSubSubChild )}\n`;
+                    debug += `        ${kindOf( subSubSubChild )}${os.EOL}`;
                   }
                 }
               }
@@ -700,7 +701,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       ts.SyntaxKind.ExportAssignment
     ].includes( child.kind ) ) {
       for ( const subChild of child.getChildren() ) {
-        debug += `  ${kindOf( subChild )}\n`;
+        debug += `  ${kindOf( subChild )}${os.EOL}`;
       }
     }
   }
