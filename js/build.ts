@@ -1012,7 +1012,8 @@ type NumberLiteral = {
       const modulePaths = _.uniq( entries.map( entry => entry.path ) ).sort();
 
       for ( const modulePath of modulePaths ) {
-        if ( skipDeprecatedModules.some( deprecated => modulePath.includes( deprecated ) ) ) {
+        const modulePathWithSlashes = modulePath.replaceAll( path.sep, '/' );
+        if ( skipDeprecatedModules.some( deprecated => modulePathWithSlashes.includes( deprecated ) ) ) {
           continue;
         }
 
