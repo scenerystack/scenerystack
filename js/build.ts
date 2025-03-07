@@ -35,18 +35,18 @@
 // TODO: we should be able to split this file into modules
 
 import fs from 'fs';
+import _ from 'lodash';
 import os from 'os';
 import path from 'path';
-import execute from '../../perennial-alias/js/common/execute.js';
-import _ from 'lodash';
-import pascalCase from '../../chipper/js/common/pascalCase.js';
 import ts from 'typescript';
-import { getExportNames } from './typescript/getExportNames.js';
-import { writeDependencies } from './writeDependencies.js';
-import { scenerystackRepos } from './data/scenerystackRepos.js';
+import pascalCase from '../../chipper/js/common/pascalCase.js';
+import execute from '../../perennial-alias/js/common/execute.js';
 import { allowedNamespaces } from './data/allowedNamespaces.js';
 import { exportedNamespaces } from './data/exportedNamespaces.js';
+import { scenerystackRepos } from './data/scenerystackRepos.js';
 import { skipDeprecatedModules } from './data/skipDeprecatedModules.js';
+import { getExportNames } from './typescript/getExportNames.js';
+import { writeDependencies } from './writeDependencies.js';
 
 const repos = scenerystackRepos;
 
@@ -761,10 +761,10 @@ type NumberLiteral = {
 
                 const matchedIndex = match.index;
                 const stringAccess = matchedString
-                    .replace( /StringProperty'\s?].*/, '\' ]' )
-                    .replace( /StringProperty.*/, '' )
-                    .replace( /\[ '/g, '[\'' )
-                    .replace( /' \]/g, '\']' );
+                  .replace( /StringProperty'\s?].*/, '\' ]' )
+                  .replace( /StringProperty.*/, '' )
+                  .replace( /\[ '/g, '[\'' )
+                  .replace( /' \]/g, '\']' );
 
                 const depth = 2; // TODO: this is not a great way to do this, coppied from getStringMap
                 const stringKeyParts = stringAccess.match( /\.[a-zA-Z_$][a-zA-Z0-9_$]*|\[\s*['"][^'"]+['"]\s*\]/g )!.map( token => {
