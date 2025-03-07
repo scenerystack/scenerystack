@@ -1265,11 +1265,6 @@ export default ${stringModuleName};
     }
     fs.writeFileSync( file, qsm.replace( before, after ) );
   };
-  patch(
-    './src/query-string-machine/js/QueryStringMachine.js',
-    '}( this, () => {',
-    '}( self, () => {'
-  );
   // TODO: move patches up above
   patch(
     './src/scenery/js/util/rich-text/richTextContentToString.ts',
