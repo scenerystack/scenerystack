@@ -18,6 +18,7 @@ import ts from 'typescript';
 import execute from '../../../perennial-alias/js/common/execute.js';
 import { docToMarkdown } from './docToMarkdown.js';
 import { Documentation, extractDoc } from './extractDoc.js';
+import { externalDocumentationURLs } from '../data/externalDocumentationURLs.js';
 
 // NOTE: This is the order of entry points in documentation
 const entryPoints = [
@@ -50,11 +51,6 @@ const entryPoints = [
   'utterance-queue',
   'vegas'
 ] as const;
-
-const EXTERNAL_DOC_URLS: Record<string, string> = {
-  // TODO: expand this list
-  HTMLCanvasElement: 'https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement'
-};
 
 const KEYWORD_LIST = [
   'null', 'undefined', 'this', 'number', 'string', 'boolean', 'unknown', 'any', 'bigint', 'symbol', 'never', 'void'
@@ -310,8 +306,8 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
 
       return `${page}${isSameName ? '' : `#${name}`}`;
     }
-    else if ( EXTERNAL_DOC_URLS[ name ] ) {
-      return EXTERNAL_DOC_URLS[ name ];
+    else if ( externalDocumentationURLs[ name ] ) {
+      return externalDocumentationURLs[ name ];
     }
     else {
       return null;
@@ -321,14 +317,12 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
   const wrapNameString = ( name: string, string: string = name ): string => {
     const url = getURLForName( name );
 
-    // TODO: number/string/boolean/etc. highlighting? Use KEYWORD_LIST
     if ( url ) {
       return `[${string}](${url})`;
     }
     else if ( KEYWORD_LIST.includes( name ) ) {
+      // NOTE: In the future, can we get this working with accent colors that are more built-in?
       return `<span style="color: hsla(calc(var(--md-hue) + 180deg),80%,40%,1);">${string}</span>`;
-      // TODO: can we get this working with accent colors that are more built-in?
-      // return `<!--<span style="color: var(&#45;&#45;md-accent-fg-color);">${string}</span>-->`;
     }
     else {
       return string;
@@ -336,12 +330,10 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
   };
 
   let navYAML = '';
-  let apiSnippetsMarkdown = `[HTMLElement]: https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement
-[HTMLCanvasElement]: https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement
-[HTMLImageElement]: https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement
-[HTMLVideoElement]: https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement
-[CanvasRenderingContext2D]: https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
-`;
+  let apiSnippetsMarkdown = Object.keys( externalDocumentationURLs ).map( name => {
+    const url = externalDocumentationURLs[ name ];
+    return `[${name}]: ${url}`;
+  } ).join( os.EOL );
 
   for ( const entryPoint of entryPoints ) {
 

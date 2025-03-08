@@ -33,6 +33,12 @@ import ts from 'typescript';
 import _ from 'lodash';
 import os from 'os';
 import { hasExportModifier, hasDefaultExportModifier, hasPrivateModifier, hasStaticModifier, hasReadonlyModifier, hasProtectedModifier } from '../typescript/modifiers.js';
+import { kindOf } from '../typescript/kindOf.js';
+import { cleanupComment } from './cleanupComment.js';
+import { getLeadingComments } from '../typescript/getLeadingComments.js';
+import { getSpecificLeadingComment } from '../typescript/getSpecificLeadingComment.js';
+import { getPossibleStringEnumName } from '../typescript/getPossibleStringEnumName.js';
+import { getFunctionReturnTypeString } from '../typescript/getFunctionReturnTypeString.js';
 
 export type Documentation = {
   repo: string;
@@ -150,78 +156,6 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
 
   let debug = '';
 
-  const kindOf = ( node: ts.Node ) => ts.SyntaxKind[ node.kind ];
-
-  const getLeadingComments = ( node: ts.Node ): string[] => {
-    const comments = ts.getLeadingCommentRanges( sourceCode, node.pos );
-
-    return comments ? comments.map( comment => sourceCode.slice( comment.pos, comment.end ) ) : [];
-  };
-
-  const destarBlockComment = ( string: string ) => {
-    return string.split( os.EOL ).filter( line => {
-      const isCommentStart = line.match( /^ *\/\*+ *$/g );
-      const isCommentEnd = line.match( /^ *\*+\/ *$/g );
-      return !isCommentStart && !isCommentEnd;
-    } ).map( line => {
-      let destarred = line.replace( /^ *\* ?/, '' );
-
-      // If the line is effectively empty (composed of only spaces), set it to the empty string.
-      if ( destarred.replace( / /g, '' ).length === 0 ) {
-        destarred = '';
-      }
-      return destarred;
-    } ).join( os.EOL );
-  };
-
-  const deSlashLineComment = ( string: string ) => {
-    return string.replace( /^\/\/ ?/, '' );
-  };
-
-  const cleanupComment = ( string: string ) => {
-    if ( string.startsWith( '/*' ) ) {
-      return destarBlockComment( string );
-    }
-    else if ( string.startsWith( '//' ) ) {
-      return deSlashLineComment( string );
-    }
-    else {
-      return string;
-    }
-  };
-
-  // Either take the last block comment, or all of the last line comments.
-  // TODO: should we look for double newlines between line comments?
-  //
-  // // TODO: or get trailing comment too (e.g. single-line things that get doc'ed)
-  const getSpecificLeadingComment = ( node: ts.Node ): string | null => {
-    const comments = getLeadingComments( node );
-
-    if ( comments.length === 0 ) {
-      return null;
-    }
-
-    const isLastBlock = comments[ comments.length - 1 ].startsWith( '/*' );
-
-    if ( isLastBlock ) {
-      return cleanupComment( comments[ comments.length - 1 ] );
-    }
-    else {
-      const lastNonLineComment = comments.findLastIndex( comment => !comment.startsWith( '//' ) );
-      return comments.slice( lastNonLineComment + 1 ).map( cleanupComment ).join( os.EOL );
-    }
-  };
-
-  // if in the form of `typeof VALUES[number]`, return `VALUES`
-  const getPossibleStringEnumName = ( type: ts.TypeNode ): string | null => {
-    if ( ts.isIndexedAccessTypeNode( type ) && ts.isTypeQueryNode( type.objectType ) && type.indexType.kind === ts.SyntaxKind.NumberKeyword ) {
-      return type.objectType.exprName.getText();
-    }
-    else {
-      return null;
-    }
-  };
-
   // given a name, find `const name = <initializer>;` and return the initializer
   const getTopLevelInitializedValue = ( name: string, topLevelNodes: readonly ts.Node[] ): ts.Expression | null => {
     for ( const node of topLevelNodes ) {
@@ -315,18 +249,6 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
     } );
   };
 
-  const getFunctionReturnTypeString = ( type: ts.Node ): string => {
-    const children = type.getChildren();
-    const colonIndex = children.findIndex( child => child.kind === ts.SyntaxKind.ColonToken );
-
-    let returnTypeString = 'any';
-    if ( colonIndex !== -1 ) {
-      returnTypeString = children[ colonIndex + 1 ].getText();
-    }
-
-    return returnTypeString;
-  };
-
   const isNameExcluded = ( name: string ): boolean => {
     return name.startsWith( '_' );
   };
@@ -355,7 +277,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
             name: member.name.getText(),
             question: !!member.questionToken,
             typeDoc: member.type ? parseToTypeDoc( member.type ) : null,
-            comment: getSpecificLeadingComment( member )
+            comment: getSpecificLeadingComment( sourceCode, member )
           } );
         }
       }
@@ -392,7 +314,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
   const mainChildren = sourceAST.getChildren()[ 0 ].getChildren();
 
   const topLevelComments = mainChildren.filter( node => node.kind === ts.SyntaxKind.ImportDeclaration ).map( node => {
-    return getLeadingComments( node ).map( cleanupComment );
+    return getLeadingComments( sourceCode, node ).map( cleanupComment );
   } ).flat().filter( comment => !( comment.includes( 'Copyright' ) && comment.includes( 'University of Colorado Boulder' ) ) );
 
   const classes: ClassDocumentation[] = [];
@@ -407,7 +329,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       if ( className ) {
         debug += `class: ${className}${os.EOL}`;
 
-        const comment = getSpecificLeadingComment( child );
+        const comment = getSpecificLeadingComment( sourceCode, child );
 
         // heritage
         // console.log( child.heritageClauses );
@@ -421,7 +343,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
         const staticProperties: ClassPropertyDocumentation[] = [];
 
         for ( const member of child.members ) {
-          const memberComment = getSpecificLeadingComment( member );
+          const memberComment = getSpecificLeadingComment( sourceCode, member );
 
           if ( ts.isPropertyDeclaration( member ) ) {
 
@@ -543,7 +465,7 @@ export const extractDoc = ( sourceCode: string, sourcePath: string, sourceFile?:
       const name = child.name.getText();
 
       // TODO: or get trailing comment too
-      const comment = getSpecificLeadingComment( child );
+      const comment = getSpecificLeadingComment( sourceCode, child );
 
       if ( isNameExcluded( name ) || isCommentExcluded( comment ) ) {
         continue;
