@@ -15,6 +15,9 @@
  * `npm pack --dry-run` (to see what files will be included)
  * `npm version patch` (or minor/major)
  * `npm publish` (once ready)
+ * OR IF it is a prelease:
+ * manually patch version
+ * `npm publish --tag next`
  *
  * Conditional exports (development/others) used in bundlers:
  * - https://vite.dev/config/shared-options#resolve-conditions
