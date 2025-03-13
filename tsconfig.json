@@ -183,7 +183,7 @@
 
   "files": [
     "../perennial-alias/js/browser-and-node/phet-types.d.ts",
-    "../perennial-alias/js/browser-and-node/phet-types-module.d.ts",
+    "../chipper/js/browser-and-node/phet-types-module.d.ts",
     "../perennial-alias/node_modules/@types/jquery/index.d.ts",
     "../perennial-alias/node_modules/@types/lodash/index.d.ts",
     "../perennial-alias/node_modules/@types/p2/index.d.ts",
