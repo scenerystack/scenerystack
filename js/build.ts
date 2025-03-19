@@ -386,9 +386,9 @@ export default localeData;` );
         }
       }
       else if ( suffixes.some( suffix => name.endsWith( suffix ) ) ) {
-        if ( name.endsWith( '.js' ) ) {
-          console.log( `JS file: ${srcPath}` );
-        }
+        // if ( name.endsWith( '.js' ) ) {
+        //   console.log( `JS file: ${srcPath}` );
+         // }
         // console.log( `including ${srcPath}` );
 
         // Read, modify, and write the file if it matches the filter
@@ -418,7 +418,7 @@ export default localeData;` );
           if ( repo !== 'sherpa' ) {
             if ( !destPath.includes( 'QueryStringMachine' ) && !destPath.includes( `assert${path.sep}js${path.sep}assert` ) &&
                  modifiedContent.includes( 'QueryStringMachine' ) && !modifiedContent.includes( 'QueryStringMachineModule' ) ) {
-              insertImport( `import '${getImportPath( 'src/query-string-machine/js/QueryStringMachine.js' )}';` );
+              insertImport( `import '${getImportPath( 'src/query-string-machine/js/QueryStringMachineModule.js' )}';` );
             }
             if ( !destPath.includes( `src${path.sep}assert` ) && modifiedContent.includes( 'assert' ) ) {
               insertImport( `import '${getImportPath( 'src/assert/js/assert.js' )}';` );
