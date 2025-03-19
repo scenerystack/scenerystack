@@ -416,7 +416,8 @@ export default localeData;` );
         {
           // TODO: remove this
           if ( repo !== 'sherpa' ) {
-            if ( !destPath.includes( 'QueryStringMachine' ) && !destPath.includes( `assert${path.sep}js${path.sep}assert` ) && modifiedContent.includes( 'QueryStringMachine' ) ) {
+            if ( !destPath.includes( 'QueryStringMachine' ) && !destPath.includes( `assert${path.sep}js${path.sep}assert` ) &&
+                 modifiedContent.includes( 'QueryStringMachine' ) && !modifiedContent.includes( 'QueryStringMachineModule' ) ) {
               insertImport( `import '${getImportPath( 'src/query-string-machine/js/QueryStringMachine.js' )}';` );
             }
             if ( !destPath.includes( `src${path.sep}assert` ) && modifiedContent.includes( 'assert' ) ) {
