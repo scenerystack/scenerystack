@@ -333,7 +333,7 @@ export const generateSceneryStackDocumentation = async (): Promise<void> => {
   let apiSnippetsMarkdown = Object.keys( externalDocumentationURLs ).map( name => {
     const url = externalDocumentationURLs[ name ];
     return `[${name}]: ${url}`;
-  } ).join( os.EOL );
+  } ).join( os.EOL ) + os.EOL;
 
   for ( const entryPoint of entryPoints ) {
 
