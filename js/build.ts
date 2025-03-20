@@ -211,6 +211,8 @@ export default localeData;` );
       if ( srcPath.includes( `alpenglow${path.sep}doc` ) ) {
         continue;
       }
+
+      // Skip these files!
       if ( [
         'eslint.config.mjs',
         'alpenglow/tests',
@@ -283,6 +285,10 @@ export default localeData;` );
         'phet-io-overrides.',
         'phet-io-elements-overrides.',
         'google-analytics.',
+
+        // query-string-machine
+        'query-string-machine/js/QueryStringMachine.js',
+        'query-string-machine/js/preload-main',
 
         // is for eslint with PhET config
         'webGPUEslintGlobals.',
@@ -388,7 +394,7 @@ export default localeData;` );
       else if ( suffixes.some( suffix => name.endsWith( suffix ) ) ) {
         // if ( name.endsWith( '.js' ) ) {
         //   console.log( `JS file: ${srcPath}` );
-         // }
+        // }
         // console.log( `including ${srcPath}` );
 
         // Read, modify, and write the file if it matches the filter
@@ -417,8 +423,12 @@ export default localeData;` );
           // TODO: remove this
           if ( repo !== 'sherpa' ) {
             if ( !destPath.includes( 'QueryStringMachine' ) && !destPath.includes( `assert${path.sep}js${path.sep}assert` ) &&
+
+                 // TODO: This does not support if you use window.QueryStringMachine and QueryStringMachineModule in the same file
                  modifiedContent.includes( 'QueryStringMachine' ) && !modifiedContent.includes( 'QueryStringMachineModule' ) ) {
-              insertImport( `import '${getImportPath( 'src/query-string-machine/js/QueryStringMachineModule.js' )}';` );
+              insertImport( `import { QueryStringMachine } from '${getImportPath( 'src/query-string-machine/js/QueryStringMachineModule.js' )}';` );
+              modifiedContent = modifiedContent.replace( /window.QueryStringMachine/g, 'QueryStringMachine' );
+              modifiedContent = modifiedContent.replace( /self.QueryStringMachine/g, 'QueryStringMachine' );
             }
             if ( !destPath.includes( `src${path.sep}assert` ) && modifiedContent.includes( 'assert' ) ) {
               insertImport( `import '${getImportPath( 'src/assert/js/assert.js' )}';` );
@@ -854,9 +864,6 @@ type NumberLiteral = {
             }
             else if ( srcPath.includes( 'onReadyToLaunch.ts' ) ) {
               exportFile = 'sim';
-            }
-            else if ( srcPath.includes( 'QueryStringMachine.ts' ) ) {
-              exportFile = 'query-string-machine';
             }
             else if ( srcPath.includes( 'init.ts' ) ) {
               exportFile = 'init';
