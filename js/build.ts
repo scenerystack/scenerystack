@@ -420,9 +420,14 @@ export default localeData;` );
 
         // Modify content (mostly adding correct imports)
         {
+          const isAssertFile = destPath.includes( `assert${path.sep}js${path.sep}assert.` );
+          const isQueryStringMachineFile = destPath.includes( `query-string-machine${path.sep}js${path.sep}QueryStringMachineModule.` );
+
           // TODO: remove this
           if ( repo !== 'sherpa' ) {
-            if ( !destPath.includes( 'QueryStringMachine' ) && !destPath.includes( `assert${path.sep}js${path.sep}assert` ) &&
+            // update QueryStringMachine reference
+            // TODO: WE NEED TO FIX THE assert <=> QueryStringMachine circularity, especially with QSM as a module
+            if ( !isQueryStringMachineFile &&
 
                  // TODO: This does not support if you use window.QueryStringMachine and QueryStringMachineModule in the same file
                  modifiedContent.includes( 'QueryStringMachine' ) && !modifiedContent.includes( 'QueryStringMachineModule' ) ) {
@@ -430,9 +435,24 @@ export default localeData;` );
               modifiedContent = modifiedContent.replace( /window.QueryStringMachine/g, 'QueryStringMachine' );
               modifiedContent = modifiedContent.replace( /self.QueryStringMachine/g, 'QueryStringMachine' );
             }
-            if ( !destPath.includes( `src${path.sep}assert` ) && modifiedContent.includes( 'assert' ) ) {
-              insertImport( `import '${getImportPath( 'src/assert/js/assert.js' )}';` );
+
+            // If we aren't assert.js
+            if ( !isAssertFile ) {
+              // add assert/assertSlow imports
+              // TODO: for the future, get it so that we aren't manually excluding QSM
+              if ( modifiedContent.includes( 'assert' ) && !isQueryStringMachineFile ) {
+                // Also include assertSlow if used
+                insertImport( `import { assert${modifiedContent.includes( 'assertSlow' ) ? ', assertSlow' : '' } } from '${getImportPath( 'src/assert/js/assert.js' )}';` );
+              }
+
+              // add assertionHooks import (and associated rewrite)
+              if ( modifiedContent.includes( 'window.assertions.assertionHooks' ) ) {
+                insertImport( `import { assertionHooks } from '${getImportPath( 'src/assert/js/assert.js' )}';` );
+
+                modifiedContent = modifiedContent.replaceAll( 'window.assertions.assertionHooks', 'assertionHooks' );
+              }
             }
+
             if ( !destPath.includes( 'initialize-globals' ) && [
               'chipper.queryParameters',
               'chipper?.queryParameters',
@@ -640,6 +660,11 @@ type NumberLiteral = {
 
             // NOTE: keep last, so it will be up top
             insertImport( `import '${getImportPath( 'src/globals.js' )}';` );
+
+            if ( modifiedContent.includes( 'if ( window.TWEEN ) {' ) ) {
+              // insert a ts-expect-error to ignore the window.TWEEN
+              modifiedContent = modifiedContent.replace( 'if ( window.TWEEN ) {', '// @ts-expect-error\n      if ( window.TWEEN ) {\n// @ts-expect-error' );
+            }
           }
 
           // Use `self` instead of `window` for WebWorker compatibility
@@ -649,6 +674,68 @@ type NumberLiteral = {
 
             // Handle Namespace so it works correctly (it was failing in web workers)
             modifiedContent = modifiedContent.replaceAll( '!globalThis.hasOwnProperty( \'window\' )', '!globalThis.self' );
+          }
+
+          // Splash rewrite
+          {
+            // Rewrite splash.js to a module
+            if ( destPath.includes( `joist${path.sep}js${path.sep}splash.js` ) ) {
+              // Remove top-level IIFE
+              modifiedContent = modifiedContent.replace( `${os.EOL}( function() {`, '' );
+              modifiedContent = modifiedContent.replace( `${os.EOL}} )();`, '' );
+
+              modifiedContent = modifiedContent.replace( 'self.phetSplashScreenDownloadComplete = ', 'export const splashScreenDownloadComplete = ' );
+              modifiedContent = modifiedContent.replace( 'self.phetSplashScreen = ', 'export const splashScreen = ' );
+            }
+            else {
+              // NOTE: ordering matters, since we are replacing the longer string first
+              if ( modifiedContent.includes( 'self.phetSplashScreenDownloadComplete' ) ) {
+                insertImport( `import { splashScreenDownloadComplete } from '${getImportPath( 'src/joist/js/splash.js' )}';` );
+
+                modifiedContent = modifiedContent.replaceAll( 'self.phetSplashScreenDownloadComplete', 'splashScreenDownloadComplete' );
+              }
+              if ( modifiedContent.includes( 'self.phetSplashScreen' ) ) {
+                insertImport( `import { splashScreen } from '${getImportPath( 'src/joist/js/splash.js' )}';` );
+
+                modifiedContent = modifiedContent.replaceAll( 'self.phetSplashScreen', 'splashScreen' );
+              }
+            }
+          }
+
+          // Assert rewrite
+          {
+            // Rewrite assert.js to a module
+            if ( destPath.includes( `assert${path.sep}js${path.sep}assert.js` ) ) {
+              // Remove top-level IIFE
+              modifiedContent = modifiedContent.replace( `${os.EOL}( function() {`, '' );
+              modifiedContent = modifiedContent.replace( `${os.EOL}} )();`, '' );
+
+              modifiedContent = modifiedContent.replaceAll( 'self.assertions.assertionHooks', 'assertionHooks' );
+
+              modifiedContent = modifiedContent.replace( `assertionHooks = [];`, 'export const assertionHooks = []' );
+              modifiedContent += `${os.EOL}export const assert = self.assert;`;
+              modifiedContent += `${os.EOL}export const assertSlow = self.assertSlow;`;
+              modifiedContent += `${os.EOL}export const enableAssert = self.assertions.enableAssert;`;
+              modifiedContent += `${os.EOL}export const disableAssert = self.assertions.disableAssert;`;
+              modifiedContent += `${os.EOL}export const enableAssertSlow = self.assertions.enableAssertSlow;`;
+              modifiedContent += `${os.EOL}export const disableAssertSlow = self.assertions.disableAssertSlow;`;
+            }
+          }
+
+          // sceneryLog rewrite
+          {
+            if ( destPath.includes( `scenery${path.sep}js${path.sep}scenery.js` ) ) {
+              // use export let
+              modifiedContent = modifiedContent.replace( `window.sceneryLog = null;`, `/** @type {( Record<string, ( ob: any, style?: any ) => void ) & { pop: () => void; push: () => void; getDepth: () => number }> | null} */${os.EOL}export let sceneryLog = null;` );
+
+              modifiedContent = modifiedContent.replaceAll( 'self.sceneryLog', 'sceneryLog' );
+            }
+            else {
+              // initialize-globals just defines the query parameter
+              if ( modifiedContent.includes( 'sceneryLog' ) && !destPath.includes( 'initialize-globals' ) ) {
+                insertImport( `import { sceneryLog } from '${getImportPath( 'src/scenery/js/scenery.js' )}';` );
+              }
+            }
           }
 
           // const kindOf = ( node: ts.Node ) => ts.SyntaxKind[ node.kind ];
@@ -668,7 +755,7 @@ type NumberLiteral = {
             const isAssertAmpersands = ( node: ts.Node ): boolean => {
               return ts.isBinaryExpression( node ) &&
                      node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken &&
-                     isAssertNode( node.left ); // support assert && something && something-else
+                     ( isAssertNode( node.left ) || isAssertAmpersands( node.right ) ); // support assert && something && something-else
             };
 
             const isAssertNode = ( node: ts.Node ): boolean => {
