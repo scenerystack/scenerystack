@@ -425,13 +425,15 @@ export default localeData;` );
 
           // TODO: remove this
           if ( repo !== 'sherpa' ) {
-            // update QueryStringMachine reference
-            // TODO: WE NEED TO FIX THE assert <=> QueryStringMachine circularity, especially with QSM as a module
-            if ( !isQueryStringMachineFile &&
 
-                 // TODO: This does not support if you use window.QueryStringMachine and QueryStringMachineModule in the same file
-                 modifiedContent.includes( 'QueryStringMachine' ) && !modifiedContent.includes( 'QueryStringMachineModule' ) ) {
-              insertImport( `import { QueryStringMachine } from '${getImportPath( 'src/query-string-machine/js/QueryStringMachineModule.js' )}';` );
+            // update QueryStringMachine reference
+            if ( !isQueryStringMachineFile && modifiedContent.includes( 'QueryStringMachine' ) ) {
+              if ( !modifiedContent.includes( 'QueryStringMachineModule' ) ) {
+
+                insertImport( `import { QueryStringMachine } from '${getImportPath( 'src/query-string-machine/js/QueryStringMachineModule.js' )}';` );
+              }
+
+              // Separate from above if block, since Sim.ts uses the global and the module.
               modifiedContent = modifiedContent.replace( /window.QueryStringMachine/g, 'QueryStringMachine' );
               modifiedContent = modifiedContent.replace( /self.QueryStringMachine/g, 'QueryStringMachine' );
             }
@@ -442,7 +444,7 @@ export default localeData;` );
               // TODO: for the future, get it so that we aren't manually excluding QSM
               if ( modifiedContent.includes( 'assert' ) && !isQueryStringMachineFile ) {
                 // Also include assertSlow if used
-                insertImport( `import { assert${modifiedContent.includes( 'assertSlow' ) ? ', assertSlow' : '' } } from '${getImportPath( 'src/assert/js/assert.js' )}';` );
+                insertImport( `import { assert${modifiedContent.includes( 'assertSlow' ) ? ', assertSlow' : ''} } from '${getImportPath( 'src/assert/js/assert.js' )}';` );
               }
 
               // add assertionHooks import (and associated rewrite)
@@ -712,7 +714,7 @@ type NumberLiteral = {
 
               modifiedContent = modifiedContent.replaceAll( 'self.assertions.assertionHooks', 'assertionHooks' );
 
-              modifiedContent = modifiedContent.replace( `assertionHooks = [];`, 'export const assertionHooks = []' );
+              modifiedContent = modifiedContent.replace( 'assertionHooks = [];', 'export const assertionHooks = []' );
               modifiedContent += `${os.EOL}export const assert = self.assert;`;
               modifiedContent += `${os.EOL}export const assertSlow = self.assertSlow;`;
               modifiedContent += `${os.EOL}export const enableAssert = self.assertions.enableAssert;`;
@@ -726,7 +728,7 @@ type NumberLiteral = {
           {
             if ( destPath.includes( `scenery${path.sep}js${path.sep}scenery.js` ) ) {
               // use export let
-              modifiedContent = modifiedContent.replace( `window.sceneryLog = null;`, `/** @type {( Record<string, ( ob: any, style?: any ) => void ) & { pop: () => void; push: () => void; getDepth: () => number }> | null} */${os.EOL}export let sceneryLog = null;` );
+              modifiedContent = modifiedContent.replace( 'window.sceneryLog = null;', `/** @type {( Record<string, ( ob: any, style?: any ) => void ) & { pop: () => void; push: () => void; getDepth: () => number }> | null} */${os.EOL}export let sceneryLog = null;` );
 
               modifiedContent = modifiedContent.replaceAll( 'self.sceneryLog', 'sceneryLog' );
             }
