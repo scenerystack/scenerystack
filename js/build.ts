@@ -606,9 +606,6 @@ type NumberLiteral = {
 ` );
             }
 
-            if ( modifiedContent.includes( '$(' ) ) {
-              insertImport( 'import $ from \'jquery\';' );
-            }
             if ( modifiedContent.includes( 'paper.' ) ) {
               insertImport( 'import paper from \'paper\';' );
             }
