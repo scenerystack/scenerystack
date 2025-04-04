@@ -97,6 +97,8 @@ export const excludedSourcePaths = [
   'scenery-phet/js/NextPreviousNavigationNode.',
   'scenery-phet/js/NumberEntryControl.',
   'scenery-phet/js/NumberKeypad.',
+  'tambo/js/PeakDetectorAudioNode.',
+  'tambo/js/peak-detector.js',
 
   // demo parts
   'bamboo/js/demo',
