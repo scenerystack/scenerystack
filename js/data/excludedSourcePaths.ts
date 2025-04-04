@@ -112,7 +112,6 @@ export const excludedSourcePaths = [
   'tambo/sounds/demo-and-test/',
 
   // Tests
-  // TODO: see if we can get much more general rules, this seems a bit ridiculous to maintain
   'Tests.',
   'alpenglow/js/alpenglow-tests.',
   'axon/js/axon-tests.',
