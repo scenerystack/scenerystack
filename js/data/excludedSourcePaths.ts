@@ -1,0 +1,180 @@
+// Copyright 2025, University of Colorado Boulder
+
+/**
+ * List of paths that will not be copied over from the source directories during a build.
+ *
+ * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ */
+
+export const excludedSourcePaths = [
+  'eslint.config.mjs',
+  'alpenglow/tests',
+  'brand/phet',
+  'brand/phet-io',
+  'chipper/data',
+  'chipper/js/common',
+  'chipper/js/data',
+  'chipper/js/grunt',
+  'chipper/js/phet-io',
+  'chipper/js/scripts',
+  'chipper/js/test',
+  'chipper/templates',
+  'chipper/tsconfig',
+  'dot/assets',
+  'dot/examples',
+  'dot/tests',
+  'joist/assets',
+  'joist/doc',
+  'kite/doc',
+  'kite/examples',
+  'kite/tests',
+  'perennial-alias/aider',
+  'perennial-alias/bin',
+  'perennial-alias/data',
+  'perennial-alias/doc',
+  'perennial-alias/logs',
+  'perennial-alias/tsconfig',
+  'perennial-alias/views',
+  'perennial-alias/js/build-server',
+  'perennial-alias/js/common',
+  'perennial-alias/js/eslint',
+  'perennial-alias/js/grunt',
+  'perennial-alias/js/npm-dependencies',
+  'perennial-alias/js/scripts',
+  'perennial-alias/js/test',
+  'perennial-alias/js/listContinuousTests.',
+  'phet-types.d.ts',
+  'phet-types-module.d.ts',
+  'phet-core/tests',
+  'scenery/assets',
+  'scenery/doc',
+  'scenery/examples',
+  'scenery/tests',
+  'scenery-phet/assets',
+  'scenery-phet/util',
+  'sun/doc',
+  'tambo/assets',
+  'tambo/css',
+  'tambo/doc',
+  'tambo/html',
+  'tambo/resources',
+  'tappi/doc',
+  'vegas/assets',
+  'load-unbuilt-strings.',
+
+  // we will create our own brand when needed.
+  'brand/adapted-from-phet/js/Brand.',
+
+  // includes griddle!!!
+  'tappi/js/demo/patterns/PatternsScreen',
+  'tappi/js/demo/patterns/view/PatternsScreenView',
+  'tappi/js/view/VibrationChart',
+  'tappi/js/main',
+
+  // has phetioEngine
+  'joist/js/simLauncher.ts',
+  'chipper/js/browser/sim-tests/qunitStart.js',
+
+  'phet-io-overrides.',
+  'phet-io-elements-overrides.',
+  'google-analytics.',
+
+  // query-string-machine
+  'query-string-machine/js/QueryStringMachine.js',
+  'query-string-machine/js/preload-main',
+
+  // is for eslint with PhET config
+  'webGPUEslintGlobals.',
+
+  'dot/js/Utils.',
+
+  'scenery/js/layout/LayoutTestUtils.',
+
+  // deprecated and unused internally
+  'scenery/js/input/ButtonListener.',
+  'scenery/js/input/DownUpListener.',
+  'scenery/js/input/SimpleDragHandler.',
+  'scenery-phet/js/NextPreviousNavigationNode.',
+  'scenery-phet/js/NumberEntryControl.',
+  'scenery-phet/js/NumberKeypad.',
+
+  // demo parts
+  'bamboo/js/demo',
+  'joist/js/demo',
+  'mobius/js/demo',
+  'nitroglycerin/js/demo',
+  'scenery-phet/js/demo',
+  'sun/js/demo',
+  'tappi/js/demo',
+  'tambo/js/demo',
+  'twixt/js/demo',
+  'vegas/js/demo',
+  'tambo/sounds/demo-and-test/',
+
+  // Tests
+  // TODO: see if we can get much more general rules, this seems a bit ridiculous to maintain
+  'Tests.',
+  'alpenglow/js/alpenglow-tests.',
+  'axon/js/axon-tests.',
+  'bamboo/js/bamboo-tests.',
+  'bamboo/js/*Tests.ts',
+  'chipper-tests.',
+  'chipper/js/browser/sim-tests',
+  'dot/js/dot-tests.',
+  'dot/js/UtilsTests.',
+  'joist/js/joist-tests.',
+  'kite/js/kite-tests.',
+  'MipmapElementTests.ts',
+  'phet-core/js/phet-core-tests.',
+  'phet-core/js/qunitStartWithoutPhetioTests.',
+  'phetcommon/js/phetcommon-tests.',
+  'PixelComparisonTestUtils.ts',
+  'query-string-machine-tests.',
+  'QueryStringMachineTests.',
+  'scenery/js/tests/',
+  'scenery/js/scenery-tests.',
+  'scenery-phet/js/scenery-phet-tests.',
+  'sun/js/sun-tests.',
+  'tandem/js/tandem-tests.',
+  'twixt/js/twixt-tests.',
+  'utterance-queue/js/utterance-queue-tests.',
+
+  // kite grunt code
+  'kite/js/grunt',
+
+  // Unneeded mains
+  'alpenglow/js/main.',
+  'alpenglow/js/alpenglow-main.',
+  'axon/js/main.',
+  'bamboo/js/main.',
+  'bamboo/js/bamboo-main.',
+  'dot/js/dot-main.',
+  'dot/js/main.',
+  'joist/js/main.',
+  'joist/js/joist-main.',
+  'kite/js/kite-main.',
+  'kite/js/main.',
+  'mobius/js/main.',
+  'mobius/js/mobius-main.',
+  'nitroglycerin/js/main.',
+  'nitroglycerin/js/nitroglycerin-main.',
+  'phet-core/js/main.',
+  'phetcommon/js/main.',
+  'scenery/js/main.',
+  'scenery/js/scenery-main.',
+  'scenery-phet/js/main.',
+  'scenery-phet/js/scenery-phet-main.',
+  'sun/js/main.',
+  'sun/js/sun-main.',
+  'tambo/js/main.',
+  'tambo/js/tambo-main.',
+  'tandem/js/main.',
+  'tappi/js/main.',
+  'tappi/js/tappi-main.',
+  'twixt/js/main.',
+  'twixt/js/twixt-main.',
+  'utterance-queue/js/main.',
+  'utterance-queue/js/utterance-queue-main.',
+  'vegas/js/main.',
+  'vegas/js/vegas-main.'
+];
