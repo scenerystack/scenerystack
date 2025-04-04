@@ -305,20 +305,7 @@ export default localeData;` );
         'scenery-phet/js/NumberEntryControl.',
         'scenery-phet/js/NumberKeypad.',
 
-        // Is the main for the demo
-        'bamboo/js/bamboo-main.',
-        'joist/js/joist-main.',
-        'mobius/js/mobius-main.',
-        'nitroglycerin/js/nitroglycerin-main.',
-        'scenery/js/scenery-main.',
-        'scenery-phet/js/scenery-phet-main.',
-        'sun/js/sun-main.',
-        'tambo/js/tambo-main.',
-        'tappi/js/tappi-main.',
-        'twixt/js/twixt-main.',
-        'vegas/js/vegas-main.',
-
-        // parts of demo
+        // demo parts
         'bamboo/js/demo',
         'joist/js/demo',
         'mobius/js/demo',
@@ -333,16 +320,24 @@ export default localeData;` );
 
         // Tests
         // TODO: see if we can get much more general rules, this seems a bit ridiculous to maintain
+        'Tests.',
         'alpenglow/js/alpenglow-tests.',
         'axon/js/axon-tests.',
         'bamboo/js/bamboo-tests.',
         'bamboo/js/*Tests.ts',
+        'chipper-tests.',
+        'chipper/js/browser/sim-tests',
         'dot/js/dot-tests.',
-        'Tests.',
+        'dot/js/UtilsTests.',
         'joist/js/joist-tests.',
         'kite/js/kite-tests.',
+        'MipmapElementTests.ts',
         'phet-core/js/phet-core-tests.',
+        'phet-core/js/qunitStartWithoutPhetioTests.',
         'phetcommon/js/phetcommon-tests.',
+        'PixelComparisonTestUtils.ts',
+        'query-string-machine-tests.',
+        'QueryStringMachineTests.',
         'scenery/js/tests/',
         'scenery/js/scenery-tests.',
         'scenery-phet/js/scenery-phet-tests.',
@@ -350,38 +345,45 @@ export default localeData;` );
         'tandem/js/tandem-tests.',
         'twixt/js/twixt-tests.',
         'utterance-queue/js/utterance-queue-tests.',
-        'dot/js/UtilsTests.',
-        'chipper/js/browser/sim-tests',
-        'phet-core/js/qunitStartWithoutPhetioTests.',
-        'query-string-machine-tests.',
-        'QueryStringMachineTests.',
-        'chipper-tests.',
-        'MipmapElementTests.ts',
-        'PixelComparisonTestUtils.ts',
+
+        // kite grunt code
+        'kite/js/grunt',
 
         // Unneeded mains
         'alpenglow/js/main.',
         'alpenglow/js/alpenglow-main.',
         'axon/js/main.',
         'bamboo/js/main.',
+        'bamboo/js/bamboo-main.',
         'dot/js/dot-main.',
         'dot/js/main.',
         'joist/js/main.',
+        'joist/js/joist-main.',
         'kite/js/kite-main.',
         'kite/js/main.',
         'mobius/js/main.',
+        'mobius/js/mobius-main.',
         'nitroglycerin/js/main.',
+        'nitroglycerin/js/nitroglycerin-main.',
         'phet-core/js/main.',
         'phetcommon/js/main.',
-        'scenery-phet/js/main.',
         'scenery/js/main.',
+        'scenery/js/scenery-main.',
+        'scenery-phet/js/main.',
+        'scenery-phet/js/scenery-phet-main.',
         'sun/js/main.',
+        'sun/js/sun-main.',
         'tambo/js/main.',
+        'tambo/js/tambo-main.',
         'tandem/js/main.',
+        'tappi/js/main.',
+        'tappi/js/tappi-main.',
         'twixt/js/main.',
+        'twixt/js/twixt-main.',
         'utterance-queue/js/main.',
         'utterance-queue/js/utterance-queue-main.',
-        'vegas/js/main.'
+        'vegas/js/main.',
+        'vegas/js/vegas-main.'
       ].some( aPath => srcPath.includes( aPath.replaceAll( '/', path.sep ) ) ) ) {
         continue;
       }
