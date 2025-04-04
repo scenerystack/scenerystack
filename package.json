@@ -62,6 +62,8 @@
     "./dist/dev/scenerystack/init.js",
     "./dist/prod/scenerystack/QueryStringMachine.js",
     "./dist/dev/scenerystack/QueryStringMachine.js",
+    "./dist/prod/scenerystack/simLock.js",
+    "./dist/dev/scenerystack/simLock.js",
     "./dist/prod/scenerystack/splash.js",
     "./dist/dev/scenerystack/splash.js"
   ],
