@@ -7,14 +7,31 @@
  */
 
 export type InitOptions = {
+  // REQUIRED VALUES
+
+  // The "internal" name of the simulation (e.g. 'energy-skate-park'), usually used for the npm package name
   name: string;
+
+  // A semver string, e.g. '1.0.0'
   version: string;
+
+  // The URI for the splash screen data, which is a base64 encoded image (usually a PNG)
   splashDataURI: string;
 
+  // OPTIONS
+
+  // The "internal" name of the brand (e.g. 'adapted-from-phet')
   brand?: string;
+
+  // The initial locale. Should be one of the keys of the localeData object (see
+  // https://github.com/phetsims/babel/blob/main/localeData.json).
   locale?: string;
+
+  // All of the available locales for the translation (what is supported by the simulation, since it can be set by the
+  // ?locale=... query parameter, or switched dynamically if the allowLocaleSwitching below is true).
   availableLocales?: string[];
-  isDebugBuild?: boolean;
+
+  // Whether the simulation allows switching locale dynamically (via the Preferences dialog, for example).
   allowLocaleSwitching?: boolean;
 
   // Sim Features
@@ -26,7 +43,7 @@ export type InitOptions = {
   supportsPanAndZoom?: boolean;
   supportsSound?: boolean;
   colorProfiles?: string[]; // supported list of color profile names
-  supportedRegionsAndCultures?: string; // TODO
+  supportedRegionsAndCultures?: string;
 };
 
 const init = ( options: InitOptions ): void => {
@@ -36,7 +53,7 @@ const init = ( options: InitOptions ): void => {
   self.phet.chipper.version = options.version;
   self.phet.chipper.brand = options.brand ?? 'adapted-from-phet';
   self.phet.chipper.locale = options.locale ?? 'en';
-  self.phet.chipper.isDebugBuild = options.isDebugBuild ?? false;
+  self.phet.chipper.isDebugBuild = false; // Hard-coded, see https://github.com/scenerystack/community/issues/149
   self.phet.chipper.allowLocaleSwitching = options.allowLocaleSwitching ?? true;
   self.phet.chipper.availableLocales = options.availableLocales || [ 'en' ];
 
