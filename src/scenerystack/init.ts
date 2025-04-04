@@ -54,6 +54,7 @@ const init = ( options: InitOptions ): void => {
   self.phet.chipper.brand = options.brand ?? 'adapted-from-phet';
   self.phet.chipper.locale = options.locale ?? 'en';
   self.phet.chipper.isDebugBuild = false; // Hard-coded, see https://github.com/scenerystack/community/issues/149
+  self.phet.chipper.isSceneryStack = true; // Global for sim code that needs to see if we are scenerystack-based
   self.phet.chipper.allowLocaleSwitching = options.allowLocaleSwitching ?? true;
   self.phet.chipper.availableLocales = options.availableLocales || [ 'en' ];
 
@@ -73,11 +74,11 @@ const init = ( options: InitOptions ): void => {
       simFeatures: {
         colorProfiles: options.colorProfiles ?? [ 'default' ],
         supportsDynamicLocale: self.phet.chipper.allowLocaleSwitching && options.supportsDynamicLocale !== false,
-        supportsInteractiveDescription: options.supportsInteractiveDescription !== false,
-        supportsInteractiveHighlights: options.supportsInteractiveDescription && options.supportsInteractiveHighlights !== false,
-        supportsVoicing: options.supportsVoicing !== false,
-        supportsTier1Voicing: options.supportsTier1Voicing !== false,
-        supportsPanAndZoom: options.supportsPanAndZoom !== false,
+        supportsInteractiveDescription: options.supportsInteractiveDescription ?? true,
+        supportsInteractiveHighlights: options.supportsInteractiveHighlights ?? true,
+        supportsVoicing: options.supportsVoicing ?? false,
+        supportsTier1Voicing: options.supportsTier1Voicing ?? true,
+        supportsPanAndZoom: options.supportsPanAndZoom ?? true,
         supportedRegionsAndCultures: options.supportedRegionsAndCultures || [ 'usa' ],
         supportsSound: options.supportsSound ?? false
       }

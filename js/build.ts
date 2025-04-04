@@ -54,7 +54,21 @@ import { excludedSourcePaths } from './data/excludedSourcePaths.js';
 
 const repos = scenerystackRepos;
 
+const wipeDir = ( dirname: string ) => {
+  if ( fs.existsSync( `./${dirname}` ) ) {
+    fs.rmSync( `./${dirname}`, {
+      recursive: true
+    } );
+  }
+
+  fs.mkdirSync( `./${dirname}`, { recursive: true } );
+};
+
+// Will skip the full wipe of the dist directory
+const fastDist = process.argv.some( arg => arg === '--fastDist' );
+
 const copyAndPatch = async ( options?: {
+  isProduction: boolean;
   removeAssertions?: boolean; // for performance/size - also removes sceneryLog
   removeNamespacing?: boolean; // for tree-shakeability (e.g. rollup/vite)
 
@@ -66,19 +80,12 @@ const copyAndPatch = async ( options?: {
 
   console.log( `copying and patching${removeAssertions ? ' no-assert' : ''}${removeNamespacing ? ' no-namespace' : ''}` );
 
-  const wipeDir = ( dirname: string ) => {
-    if ( fs.existsSync( `./${dirname}` ) ) {
-      fs.rmSync( `./${dirname}`, {
-        recursive: true
-      } );
-    }
-
-    fs.mkdirSync( `./${dirname}`, { recursive: true } );
-  };
-
   repos.forEach( repo => {
     wipeDir( `src/${repo}` );
   } );
+
+  fs.writeFileSync( './src/scenerystack/isProduction.ts', `export const isProduction = ${options.isProduction};` );
+  fs.writeFileSync( './src/scenerystack/isDevelopment.ts', `export const isDevelopment = ${!options.isProduction};` );
 
   const localeData = JSON.parse( fs.readFileSync( '../babel/localeData.json', 'utf8' ) );
 
@@ -253,7 +260,7 @@ export default localeData;` );
 
         // Modify content (mostly adding correct imports)
         {
-          const isAssertFile = destPath.includes( `assert${path.sep}js${path.sep}assert.` );
+          const isAssertFile = destPath.includes( `${path.sep}assert.ts` );
           const isQueryStringMachineFile = destPath.includes( `query-string-machine${path.sep}js${path.sep}QueryStringMachineModule.` );
 
           // TODO: remove this
@@ -277,14 +284,16 @@ export default localeData;` );
               // TODO: for the future, get it so that we aren't manually excluding QSM
               if ( modifiedContent.includes( 'assert' ) && !isQueryStringMachineFile ) {
                 // Also include assertSlow if used
-                insertImport( `import { assert${modifiedContent.includes( 'assertSlow' ) ? ', assertSlow' : ''} } from '${getImportPath( 'src/assert/js/assert.js' )}';` );
+                insertImport( `import { assert${modifiedContent.includes( 'assertSlow' ) ? ', assertSlow' : ''} } from '${getImportPath( 'src/scenerystack/assert.js' )}';` );
               }
 
-              // add assertionHooks import (and associated rewrite)
-              if ( modifiedContent.includes( 'window.assertions.assertionHooks' ) ) {
-                insertImport( `import { assertionHooks } from '${getImportPath( 'src/assert/js/assert.js' )}';` );
+              for ( const assertionProp of [ 'assertionHooks', 'enableAssert', 'disableAssert', 'enableAssertSlow', 'disableAssertSlow' ] ) {
+                // add import (and associated rewrite)
+                if ( modifiedContent.includes( `window.assertions.${assertionProp}` ) ) {
+                  insertImport( `import { ${assertionProp} } from '${getImportPath( 'src/scenerystack/assert.js' )}';` );
 
-                modifiedContent = modifiedContent.replaceAll( 'window.assertions.assertionHooks', 'assertionHooks' );
+                  modifiedContent = modifiedContent.replaceAll( `window.assertions.${assertionProp}`, `${assertionProp}` );
+                }
               }
             }
 
@@ -534,24 +543,10 @@ type NumberLiteral = {
             }
           }
 
-          // Assert rewrite
-          {
-            // Rewrite assert.js to a module
-            if ( destPath.includes( `assert${path.sep}js${path.sep}assert.js` ) ) {
-              // Remove top-level IIFE
-              modifiedContent = modifiedContent.replace( `${os.EOL}( function() {`, '' );
-              modifiedContent = modifiedContent.replace( `${os.EOL}} )();`, '' );
-
-              modifiedContent = modifiedContent.replaceAll( 'self.assertions.assertionHooks', 'assertionHooks' );
-
-              modifiedContent = modifiedContent.replace( 'assertionHooks = [];', 'export const assertionHooks = []' );
-              modifiedContent += `${os.EOL}export const assert = self.assert;`;
-              modifiedContent += `${os.EOL}export const assertSlow = self.assertSlow;`;
-              modifiedContent += `${os.EOL}export const enableAssert = self.assertions.enableAssert;`;
-              modifiedContent += `${os.EOL}export const disableAssert = self.assertions.disableAssert;`;
-              modifiedContent += `${os.EOL}export const enableAssertSlow = self.assertions.enableAssertSlow;`;
-              modifiedContent += `${os.EOL}export const disableAssertSlow = self.assertions.disableAssertSlow;`;
-            }
+          // Do not console.log assertions on production
+          // TODO: add flags for this instead
+          if ( removeAssertions && destPath.includes( `scenerystack${path.sep}assert.` ) ) {
+            modifiedContent = modifiedContent.replace( 'const assertConsoleLog = true;', 'const assertConsoleLog = false;' );
           }
 
           // sceneryLog rewrite
@@ -787,7 +782,7 @@ type NumberLiteral = {
             else if ( srcPath.includes( 'simLock.ts' ) ) {
               exportFile = 'lock';
             }
-            else if ( srcPath.includes( 'init.ts' ) ) {
+            else if ( srcPath.includes( 'init.ts' ) || srcPath.includes( 'isProduction.ts' ) || srcPath.includes( 'isDevelopment.ts' ) ) {
               exportFile = 'init';
             }
             else if ( srcPath.includes( 'splash.ts' ) ) {
@@ -1220,6 +1215,16 @@ const conditionalError = ( string: string ) => {
 const tscRun = async ( production: boolean ): Promise<void> => {
   console.log( `running tsc (${production ? 'prod' : 'dev'})` );
 
+  if ( !fastDist ) {
+    // TODO: potentially make this optional for iterating quickly?
+    // Wipe production directories so we aren't shipping things we shouldn't.
+    wipeDir( `dist/${production ? 'prod' : 'dev'}` );
+    const buildInfoFile = `./dist/tsconfig${production ? '' : '.dev'}.tsbuildinfo`;
+    if ( fs.existsSync( buildInfoFile ) ) {
+      fs.unlinkSync( buildInfoFile );
+    }
+  }
+
   const tscResult = await execute( 'node', [
     '../perennial-alias/node_modules/typescript/bin/tsc',
     ...( production ? [] : [ '--project', 'tsconfig.dev.json' ] )
@@ -1266,7 +1271,8 @@ const madgeRun = async () => {
   // copy "production version" into ./src/
   await copyAndPatch( {
     removeAssertions: true,
-    removeNamespacing: true
+    removeNamespacing: true,
+    isProduction: true
   } );
 
   // tsc files into ./dist/prod/
@@ -1277,7 +1283,8 @@ const madgeRun = async () => {
   // so source maps will look nicer
   await copyAndPatch( {
     removeAssertions: false,
-    removeNamespacing: false
+    removeNamespacing: false,
+    isProduction: false
   } );
 
   // tsc files into ./dist/dev/

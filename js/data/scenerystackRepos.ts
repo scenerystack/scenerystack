@@ -9,7 +9,6 @@
 export const scenerystackRepos = [
   // NOTE: repos also used for cloned checkout
   'alpenglow',
-  'assert',
   'axon',
   'bamboo',
   'brand',

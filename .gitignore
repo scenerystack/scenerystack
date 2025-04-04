@@ -55,6 +55,9 @@ src/twixt.ts
 src/utterance-queue.ts
 src/vegas.ts
 
+src/scenerystack/isDevelopment.ts
+src/scenerystack/isProduction.ts
+
 third-party-licenses/
 dependencies.json
 
