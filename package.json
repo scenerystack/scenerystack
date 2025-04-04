@@ -126,6 +126,11 @@
       "import": "./dist/prod/kite.js",
       "default": "./dist/prod/kite.js"
     },
+    "./lock": {
+      "development": "./dist/dev/lock.js",
+      "import": "./dist/prod/lock.js",
+      "default": "./dist/prod/lock.js"
+    },
     "./mobius": {
       "development": "./dist/dev/mobius.js",
       "import": "./dist/prod/mobius.js",
