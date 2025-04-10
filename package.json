@@ -38,8 +38,6 @@
     "./dist/dev/init.js",
     "./dist/prod/splash.js",
     "./dist/dev/splash.js",
-    "./dist/prod/assert/js/assert.js",
-    "./dist/dev/assert/js/assert.js",
     "./dist/prod/babel/babel-metadata.js",
     "./dist/dev/babel/babel-metadata.js",
     "./dist/prod/babel/babel-stringRepos.js",
