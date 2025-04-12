@@ -781,6 +781,14 @@ type NumberLiteral = {
             else if ( srcPath.includes( 'init.ts' ) || srcPath.includes( 'isProduction.ts' ) || srcPath.includes( 'isDevelopment.ts' ) ) {
               exportFile = 'init';
             }
+            else if ( srcPath.includes( 'madeWithSceneryStack' ) ) {
+              if ( srcPath.includes( 'madeWithSceneryStackSplashDataURI' ) ) {
+                exportFile = 'init'; // included in init so that it can be loaded for the splash screen, or other early initialization
+              }
+              else {
+                exportFile = 'brand';
+              }
+            }
             else if ( srcPath.includes( 'splash.ts' ) ) {
               exportFile = 'splash';
             }
