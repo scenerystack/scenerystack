@@ -20,7 +20,7 @@ export type InitOptions = {
 
   // OPTIONS
 
-  // The "internal" name of the brand (e.g. 'adapted-from-phet')
+  // The "internal" name of the brand (e.g. 'made-with-scenerystack')
   brand?: string;
 
   // The initial locale. Should be one of the keys of the localeData object (see
@@ -34,7 +34,7 @@ export type InitOptions = {
   // Whether the simulation allows switching locale dynamically (via the Preferences dialog, for example).
   allowLocaleSwitching?: boolean;
 
-  // Sim Features
+  // Sim Features (will document soon)
   supportsDynamicLocale?: boolean;
   supportsInteractiveDescription?: boolean;
   supportsInteractiveHighlights?: boolean;
@@ -50,7 +50,7 @@ const init = ( options: InitOptions ): void => {
   self.phet.chipper = self.phet.chipper || {};
   self.phet.chipper.project = options.name;
   self.phet.chipper.version = options.version;
-  self.phet.chipper.brand = options.brand ?? 'adapted-from-phet';
+  self.phet.chipper.brand = options.brand ?? 'made-with-scenerystack';
   self.phet.chipper.locale = options.locale ?? 'en';
   self.phet.chipper.isDebugBuild = false; // Hard-coded, see https://github.com/scenerystack/community/issues/149
   self.phet.chipper.isSceneryStack = true; // Global for sim code that needs to see if we are scenerystack-based
@@ -69,7 +69,7 @@ const init = ( options: InitOptions ): void => {
     phet: {
       simulation: true,
       runnable: true,
-      supportedBrands: [ options.brand ?? 'adapted-from-phet' ],
+      supportedBrands: [ options.brand ?? 'made-with-scenerystack' ],
       simFeatures: {
         colorProfiles: options.colorProfiles ?? [ 'default' ],
         supportsDynamicLocale: self.phet.chipper.allowLocaleSwitching && options.supportsDynamicLocale !== false,
