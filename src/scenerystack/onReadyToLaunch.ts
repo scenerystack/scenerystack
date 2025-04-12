@@ -6,13 +6,17 @@
  */
 
 import asyncLoader from '../phet-core/js/asyncLoader.js';
-import { simLock } from './simLock.js';
 
 export const onReadyToLaunch = ( callback: () => void ): void => {
   // Add listener before unlocking the launch lock
-  asyncLoader.addListener( callback );
+  asyncLoader.addListener( () => {
+    // Since more resources might be added after the initial load, we need to reset the asyncLoader.
+    asyncLoader.reset();
 
-  simLock();
+    callback();
+  } );
+
+  asyncLoader.stageComplete();
 
   // Signify that the simLauncher was called, see https://github.com/phetsims/joist/issues/142
   self.phet.joist.launchCalled = true;

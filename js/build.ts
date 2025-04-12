@@ -186,7 +186,6 @@ export default localeData;` );
     init: [],
     joist: [],
     kite: [],
-    lock: [],
     mobius: [],
     nitroglycerin: [],
     perennial: [],
@@ -778,9 +777,6 @@ type NumberLiteral = {
             }
             else if ( srcPath.includes( 'onReadyToLaunch.ts' ) ) {
               exportFile = 'sim';
-            }
-            else if ( srcPath.includes( 'simLock.ts' ) ) {
-              exportFile = 'lock';
             }
             else if ( srcPath.includes( 'init.ts' ) || srcPath.includes( 'isProduction.ts' ) || srcPath.includes( 'isDevelopment.ts' ) ) {
               exportFile = 'init';

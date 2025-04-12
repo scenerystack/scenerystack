@@ -47,7 +47,6 @@
     "src/init.ts",
     "src/joist.ts",
     "src/kite.ts",
-    "src/lock.ts",
     "src/mobius.ts",
     "src/nitroglycerin.ts",
     "src/perennial.ts",

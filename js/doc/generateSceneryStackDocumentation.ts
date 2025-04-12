@@ -33,7 +33,6 @@ const entryPoints = [
   'init',
   'joist',
   'kite',
-  'lock',
   'mobius',
   'nitroglycerin',
   'perennial',

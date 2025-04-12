@@ -60,8 +60,6 @@
     "./dist/dev/scenerystack/init.js",
     "./dist/prod/scenerystack/QueryStringMachine.js",
     "./dist/dev/scenerystack/QueryStringMachine.js",
-    "./dist/prod/scenerystack/simLock.js",
-    "./dist/dev/scenerystack/simLock.js",
     "./dist/prod/scenerystack/splash.js",
     "./dist/dev/scenerystack/splash.js"
   ],
@@ -125,11 +123,6 @@
       "development": "./dist/dev/kite.js",
       "import": "./dist/prod/kite.js",
       "default": "./dist/prod/kite.js"
-    },
-    "./lock": {
-      "development": "./dist/dev/lock.js",
-      "import": "./dist/prod/lock.js",
-      "default": "./dist/prod/lock.js"
     },
     "./mobius": {
       "development": "./dist/dev/mobius.js",
