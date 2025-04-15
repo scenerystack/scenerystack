@@ -767,6 +767,9 @@ type NumberLiteral = {
           if ( repo === 'perennial-alias' ) {
             exportFile = 'perennial';
           }
+          if ( repo === 'joist' && destPath.includes( 'splash.' ) ) {
+            exportFile = 'splash';
+          }
           if ( destPath.includes( 'adapted-from-phet' ) && repo === 'brand' ) {
             exportFile = 'adapted-from-phet';
           }
@@ -788,9 +791,6 @@ type NumberLiteral = {
               else {
                 exportFile = 'brand';
               }
-            }
-            else if ( srcPath.includes( 'splash.ts' ) ) {
-              exportFile = 'splash';
             }
             else {
               throw new Error( `${srcPath} in scenerystack does not have explicit mapping` );
@@ -987,9 +987,7 @@ type NumberLiteral = {
 
 ${exportLines.join( os.EOL )}`;
 
-      if ( exportNamespace !== 'splash' ) {
-        fs.writeFileSync( `./src/${exportNamespace}.ts`, barrelFileContents, 'utf8' );
-      }
+      fs.writeFileSync( `./src/${exportNamespace}.ts`, barrelFileContents, 'utf8' );
     }
   }
 

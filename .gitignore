@@ -46,6 +46,7 @@ src/query-string-machine.ts
 src/scenery.ts
 src/scenery-phet.ts
 src/sim.ts
+src/splash.ts
 src/sun.ts
 src/tambo.ts
 src/tandem.ts
