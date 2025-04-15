@@ -31,7 +31,8 @@
   "files": [
     "dist",
     "src",
-    "dependencies.json"
+    "dependencies.json",
+    "CHANGELOG.md"
   ],
   "sideEffects": [
     "./dist/prod/init.js",
