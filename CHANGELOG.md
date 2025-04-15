@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.0.1] - 2025-04-15
+
+### Fixed
+
+- `splash` was incorrectly included in joist exports, thus breaking scrolling/zoom on standalone SceneryStack.
+
 ## [2.0.0] - 2025-04-15
 
 ### Changed
