@@ -394,8 +394,8 @@ export default localeData;` );
 
             if ( modifiedContent.includes( 'import { Pattern } from \'@fluent/bundle\';' ) ) {
               modifiedContent = modifiedContent.replace( 'import { Pattern } from \'@fluent/bundle\';', '' );
-              modifiedContent = modifiedContent.replace( 'Set<Pattern>', 'Set<FluentPattern>' );
-              modifiedContent = modifiedContent.replace( 'export type { Pattern as FluentPattern };', `export type FluentPattern = string | ComplexPattern;
+              modifiedContent = modifiedContent.replace( 'Set<Pattern>', 'Set<FluentBundlePattern>' );
+              modifiedContent = modifiedContent.replace( 'export type { Pattern as FluentBundlePattern };', `export type FluentBundlePattern = string | ComplexPattern;
 type ComplexPattern = Array<PatternElement>;
 type PatternElement = string | Expression;
 type Expression = SelectExpression | VariableReference | TermReference | MessageReference | FunctionReference | Literal;
@@ -427,7 +427,7 @@ type FunctionReference = {
 };
 type Variant = {
   key: Literal;
-  value: FluentPattern;
+  value: FluentBundlePattern;
 };
 type NamedArgument = {
   type: "narg";
