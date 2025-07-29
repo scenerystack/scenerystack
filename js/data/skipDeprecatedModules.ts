@@ -9,7 +9,6 @@
  */
 
 export const skipDeprecatedModules = [
-  'axon/js/EnumerationDeprecatedProperty.',
   'phet-core/js/EnumerationDeprecated.',
   'phet-core/js/Poolable.',
   'scenery-phet/js/SpectrumSlider.',
