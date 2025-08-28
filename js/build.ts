@@ -51,6 +51,8 @@ import { skipDeprecatedModules } from './data/skipDeprecatedModules.js';
 import { getExportNames } from './typescript/getExportNames.js';
 import { writeDependencies } from './writeDependencies.js';
 import { excludedSourcePaths } from './data/excludedSourcePaths.js';
+import ChipperStringUtils from '../../chipper/js/common/ChipperStringUtils.js';
+import { getFluentInternalReferences } from '../../chipper/js/grunt/modulify/getFluentInternalReferences.js';
 
 type Repo = string;
 
@@ -69,7 +71,7 @@ const wipeDir = ( dirname: string ) => {
 // Will skip the full wipe of the dist directory
 const fastDist = process.argv.some( arg => arg === '--fastDist' );
 
-const copyAndPatch = async ( options?: {
+const copyAndPatch = async ( options: {
   isProduction: boolean;
   removeAssertions?: boolean; // for performance/size - also removes sceneryLog
   removeNamespacing?: boolean; // for tree-shakeability (e.g. rollup/vite)
@@ -1059,42 +1061,145 @@ ${exportLines.join( os.EOL )}`;
     }
   }
 
+  const getStringFilesMap = ( stringRepo: string ): Record<string, any> => {
+    // load string files into memory
+    const stringFiles: Record<string, any> = {
+      en: JSON.parse( fs.readFileSync( `../${stringRepo}/${stringRepo}-strings_en.json`, 'utf8' ) )
+    };
+    const locales = Object.keys( localeData );
+    for ( const locale of locales ) {
+      const babelPath = `../babel/${stringRepo}/${stringRepo}-strings_${locale}.json`;
+      if ( fs.existsSync( babelPath ) ) {
+        stringFiles[ locale ] = JSON.parse( fs.readFileSync( babelPath, 'utf8' ) );
+      }
+    }
+
+    return stringFiles;
+  };
+
   // Create fluent string modules (before normal string modules, since we are likely inserting more usedStrings!)
+  // Note: we have a few different representations for these strings:
+  // - Raw key: e.g. a11y.units.secondsPattern
+  // - Fluent key (has certain things mapped to _): e.g. a11y_units_secondsPattern (this will be used in the actual FTL file)
+  // - Basic Identifier: the import/export name (and variable name) for the reference to the LocalizedStringProperty
+  //                     e.g. string_scenery_phet_a11y_units_secondsPattern_StringProperty
+  // - Fluent Identifier: the import/export name (and variable name) for the reference to the FluentConstant/FluentPattern/etc.
+  //                     e.g. fluent_string_scenery_phet_a11y_units_secondsPattern_StringProperty
+  //
+  // So each fluent string can have dependencies on OTHER fluent strings (e.g. `{ OTHER_STRING }` in the FTL file),
+  // and we need to ensure that those dependencies are imported into the generated module.
+  // We'll first need to scan all locales to determine the dependencies for every string (and mark those for inclusion
+  // as regular strings) before continuing.
+  //
+  // We will have the FluentConstant and FluentPattern modules importing and using the "normal" string Property modules.
   for ( const stringRepo of Object.keys( usedFluentStrings ).sort() ) {
-    const fluentStringKeys = usedFluentStrings[ stringRepo ].sort();
-    if ( fluentStringKeys.length ) {
+    const fluentRawStringKeys = usedFluentStrings[ stringRepo ].sort();
+    if ( fluentRawStringKeys.length ) {
       const fluentLines = fs.readFileSync( `../${stringRepo}/js/${pascalCase( stringRepo )}Fluent.ts`, 'utf8' ).split( '\n' ).map( line => line.trim() ).filter( line => line.includes( '_.get' ) );
 
-      // NOTE: in the future, we may want to scan all translations and look for strings that have dependencies.
-      // We can create a list of { fluentKey, value } values and use ChipperStringUtils.createFluentFileFromData to
-      // create an FTL string file, then getFluentInternalReferences to find the dependencies.
-      // I have some concerns about common-code dependencies between strings, and scenery-phet currently doesn't have
-      // any yet, so I haven't implemented all of that yet.
+      // raw key => fluent key dependencies (so we can figure out what to import and listen to)
+      const fluentStringDependenciesMap: Record<string, Set<string>> = {};
 
-      for ( const fluentStringKey of fluentStringKeys ) {
-        const fluentStringModulePath = `./src/${fluentStringKeyToRelativePath( stringRepo, fluentStringKey )}`;
-        const fluentName = fluentStringKeyToIdentifier( stringRepo, fluentStringKey );
+      // fluent key => raw key (reverse lookup of createFluentKey, so we can work backwards and figure out imports)
+      const fluentStringKeyToRawMap: Record<string, string> = {};
+
+      // Scan dependencies (and build the reverse map)
+      const stringFilesMap = getStringFilesMap( stringRepo );
+      for ( const locale of Object.keys( stringFilesMap ) ) {
+        const fluentKeyMap = ChipperStringUtils.getFluentKeyMap( stringFilesMap[ locale ] );
+
+        for ( const fluentRawStringKey of fluentKeyMap.keys() ) {
+          fluentStringKeyToRawMap[ fluentKeyMap.get( fluentRawStringKey ).fluentKey ] = fluentRawStringKey;
+        }
+
+        const ftl = ChipperStringUtils.createFluentFileFromData( Array.from( fluentKeyMap.values() ) );
+
+        for ( const fluentRawStringKey of fluentRawStringKeys ) {
+          const fluentKey = ChipperStringUtils.createFluentKey( fluentRawStringKey );
+
+          if ( !fluentStringDependenciesMap[ fluentRawStringKey ] ) {
+            fluentStringDependenciesMap[ fluentRawStringKey ] = new Set<string>();
+          }
+
+          const dependencies = getFluentInternalReferences( ftl, fluentKey );
+          if ( dependencies.includes( null ) ) {
+            throw new Error( `dependencies failure for ${fluentKey} returned ${JSON.stringify( dependencies )}: ftl:\n\n${ftl}` );
+          }
+
+          for ( const dependency of dependencies ) {
+            fluentStringDependenciesMap[ fluentRawStringKey ].add( dependency );
+          }
+        }
+      }
+
+      const getFluentPathFromRawStringKey = ( rawStringKey: string ): string => {
+        return `./src/${fluentStringKeyToRelativePath( stringRepo, rawStringKey )}`;
+      };
+
+      const getBasicPathFromRawStringKey = ( rawStringKey: string ): string => {
+        return `./src/${stringKeyToRelativePath( stringRepo, rawStringKey )}`;
+      };
+
+      for ( const fluentRawStringKey of fluentRawStringKeys ) {
+        const fluentKey = ChipperStringUtils.createFluentKey( fluentRawStringKey );
+
+        const fluentStringModulePath = getFluentPathFromRawStringKey( fluentRawStringKey );
+        const fluentName = fluentStringKeyToIdentifier( stringRepo, fluentRawStringKey );
         fs.mkdirSync( path.dirname( fluentStringModulePath ), { recursive: true } );
 
-        const basicStringModulePath = `./src/${stringKeyToRelativePath( stringRepo, fluentStringKey )}`;
-        const basicName = stringKeyToIdentifier( stringRepo, fluentStringKey );
+        const basicName = stringKeyToIdentifier( stringRepo, fluentRawStringKey );
 
-        const matchingLine = fluentLines.find( line => line.includes( `'${fluentStringKey}StringProperty'` ) );
-        // TODO: three types, direct (we will import/export), FluentConstant (.fromStringProperty), and FluentPattern (.fromStringProperty)
+        const getBasicImportPathFromRawStringKey = ( rawStringKey: string ): string => {
+          return path.relative( path.dirname( fluentStringModulePath ), getBasicPathFromRawStringKey( rawStringKey ).replace( /\.ts$/, '.js' ) ).replaceAll( path.sep, '/' );
+        };
+
+        const matchingLine = fluentLines.find( line => line.includes( `'${fluentRawStringKey}StringProperty'` ) );
 
         if ( !matchingLine ) {
           throw new Error(
-            `Could not find fluent string key ${fluentStringKey} in ${stringRepo}/${pascalCase( stringRepo )}Fluent.ts`
+            `Could not find fluent string key ${fluentRawStringKey} in ${stringRepo}/${pascalCase( stringRepo )}Fluent.ts`
           );
         }
 
         const rootDirToModule = path.relative( path.dirname( fluentStringModulePath ), './src' ).replaceAll( path.sep, '/' );
-        const basicImportPath = path.relative( path.dirname( fluentStringModulePath ), basicStringModulePath.replace( /\.ts$/, '.js' ) ).replaceAll( path.sep, '/' )
+        const basicImportPath = getBasicImportPathFromRawStringKey( fluentRawStringKey );
+
+        const fluentKeyDependencies = Array.from( fluentStringDependenciesMap[ fluentRawStringKey ] ).sort();
+        const rawKeyDependencies = fluentKeyDependencies.map( fluentKey => {
+          return fluentStringKeyToRawMap[ fluentKey ];
+        } );
+
+        // Ensure we are including the raw strings (if not already included):
+        for ( const rawKeyDependency of rawKeyDependencies ) {
+          if ( !usedStrings[ stringRepo ] ) {
+            usedStrings[ stringRepo ] = [];
+          }
+          if ( !usedStrings[ stringRepo ].includes( rawKeyDependency ) ) {
+            usedStrings[ stringRepo ].push( rawKeyDependency );
+          }
+        }
+
+        // Dependencies to import
+        const dependencyImports = rawKeyDependencies.map( rawFluentStringKey => {
+          const importPath = getBasicImportPathFromRawStringKey( rawFluentStringKey );
+          const identifier = stringKeyToIdentifier( stringRepo, rawFluentStringKey );
+          return `import { ${identifier} } from '${importPath}';`;
+        } ).join( '\n' );
+
+        // List of string Properties (needed for the FluentContainer)
+        const stringPropertiesString = `[ ${basicName}${rawKeyDependencies.map( rawFluentStringKey => {
+          return `, ${stringKeyToIdentifier( stringRepo, rawFluentStringKey )}`;
+        } ).join( '' )} ]`;
+
+        // Map of string Property => fluent key (needed for creation of the FTL file during runtime)
+        const fluentKeyMapString = `new Map( [ [ ${basicName}, '${fluentKey}' ]${rawKeyDependencies.map( rawFluentStringKey => {
+          return `, [ ${stringKeyToIdentifier( stringRepo, rawFluentStringKey )}, '${ChipperStringUtils.createFluentKey( rawFluentStringKey )}' ]`;
+        } ).join( '' )} ] ) `;
 
         // Force string module inclusion below
         usedStrings[ stringRepo ] = usedStrings[ stringRepo ] || [];
-        if ( !usedStrings[ stringRepo ].includes( fluentStringKey ) ) {
-          usedStrings[ stringRepo ].push( fluentStringKey );
+        if ( !usedStrings[ stringRepo ].includes( fluentRawStringKey ) ) {
+          usedStrings[ stringRepo ].push( fluentRawStringKey );
         }
 
         if ( matchingLine.includes( ': new FluentPattern' ) ) {
@@ -1118,8 +1223,9 @@ import '${rootDirToModule}/globals.js';
 import FluentPattern, { FluentVariable } from '${rootDirToModule}/chipper/js/browser/FluentPattern.js';
 import type { TReadOnlyProperty } from '${rootDirToModule}/axon/js/TReadOnlyProperty.js';
 import { ${basicName} } from '${basicImportPath}';
+${dependencyImports}
 
-export const ${fluentName} = FluentPattern.fromStringProperty<${type}>( ${basicName}, '${fluentStringKey}', ${args} );
+export const ${fluentName} = FluentPattern.fromStringProperty<${type}>( ${basicName}, ${stringPropertiesString}, '${fluentKey}', ${fluentKeyMapString}, ${args} );
 `, 'utf8' );
         }
         else if ( matchingLine.includes( ': new FluentConstant' ) ) {
@@ -1135,8 +1241,9 @@ export const ${fluentName} = FluentPattern.fromStringProperty<${type}>( ${basicN
 import '${rootDirToModule}/globals.js';
 import FluentConstant from '${rootDirToModule}/chipper/js/browser/FluentConstant.js';
 import { ${basicName} } from '${basicImportPath}';
+${dependencyImports}
 
-export const ${fluentName} = FluentConstant.fromStringProperty( ${basicName}, '${fluentStringKey}' );
+export const ${fluentName} = FluentConstant.fromStringProperty( ${basicName}, ${stringPropertiesString}, '${fluentKey}', ${fluentKeyMapString} );
 `, 'utf8' );
         }
         else {
@@ -1165,20 +1272,11 @@ export const ${fluentName} = ${basicName};
     const stringKeys = usedStrings[ stringRepo ].sort();
 
     // load string files into memory
-    const stringFiles: Record<string, any> = {
-      en: JSON.parse( fs.readFileSync( `../${stringRepo}/${stringRepo}-strings_en.json`, 'utf8' ) )
-    };
-    const locales = Object.keys( localeData );
-    for ( const locale of locales ) {
-      const babelPath = `../babel/${stringRepo}/${stringRepo}-strings_${locale}.json`;
-      if ( fs.existsSync( babelPath ) ) {
-        stringFiles[ locale ] = JSON.parse( fs.readFileSync( babelPath, 'utf8' ) );
-      }
-    }
+    const stringFilesMap = getStringFilesMap( stringRepo );
 
     const requireJSNamespace = JSON.parse( fs.readFileSync( `../${stringRepo}/package.json`, 'utf8' ) ).phet.requirejsNamespace;
 
-    const repoLocales = Object.keys( stringFiles );
+    const repoLocales = Object.keys( stringFilesMap );
 
     for ( const stringKey of stringKeys ) {
       const stringModulePath = `./src/${stringKeyToRelativePath( stringRepo, stringKey )}`;
@@ -1186,7 +1284,7 @@ export const ${fluentName} = ${basicName};
 
       const stringMap: Record<string, string> = {};
       for ( const locale of repoLocales ) {
-        const entry = _.at( stringFiles[ locale ], stringKey )[ 0 ];
+        const entry = _.at( stringFilesMap[ locale ], stringKey )[ 0 ];
 
         if ( locale === 'en' && !entry ) {
           throw new Error( `Missing English string for ${stringRepo}/${stringKey}` );
