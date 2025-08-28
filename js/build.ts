@@ -1091,8 +1091,6 @@ ${exportLines.join( os.EOL )}`;
           usedStrings[ stringRepo ].push( fluentStringKey );
         }
 
-        console.log( `${stringRepo} ${fluentStringKey} matching line: ${matchingLine}` );
-
         if ( matchingLine.includes( ': new FluentPattern' ) ) {
           const firstLessThan = matchingLine.indexOf( '<' );
           const lastGreaterThan = matchingLine.lastIndexOf( '>' );
@@ -1100,9 +1098,6 @@ ${exportLines.join( os.EOL )}`;
           const firstBracket = matchingLine.indexOf( '[', lastGreaterThan );
           const lastBracket = matchingLine.lastIndexOf( ']' );
           const args = matchingLine.slice( firstBracket, lastBracket + 1 ).trim();
-
-          console.log( 'type', type );
-          console.log( 'args', args );
 
           fs.writeFileSync( fluentStringModulePath, `// Copyright ${new Date().getFullYear() + ''}, University of Colorado Boulder
 
