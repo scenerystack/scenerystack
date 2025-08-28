@@ -52,6 +52,8 @@ import { getExportNames } from './typescript/getExportNames.js';
 import { writeDependencies } from './writeDependencies.js';
 import { excludedSourcePaths } from './data/excludedSourcePaths.js';
 
+type Repo = string;
+
 const repos = scenerystackRepos;
 
 const wipeDir = ( dirname: string ) => {
@@ -94,8 +96,16 @@ const copyAndPatch = async ( options?: {
     return `string_${repo}_${stringKey}_StringProperty`.replaceAll( /[^a-zA-Z0-9_]/g, '_' );
   };
 
+  const fluentStringKeyToIdentifier = ( repo: string, stringKey: string ): string => {
+    return `fluent_string_${repo}_${stringKey}_StringProperty`.replaceAll( /[^a-zA-Z0-9_]/g, '_' );
+  };
+
   const stringKeyToRelativePath = ( repo: string, stringKey: string ): string => {
     return `${repo}/js/strings/${stringKey.replaceAll( '.', '/' )}.ts`;
+  };
+
+  const fluentStringKeyToRelativePath = ( repo: string, stringKey: string ): string => {
+    return `${repo}/js/fluent-strings/${stringKey.replaceAll( '.', '/' )}.ts`;
   };
 
   // babel-strings.js
@@ -169,7 +179,8 @@ export default localeData;` );
     path: string;
   };
 
-  const usedStrings: Record<string, string[]> = {};
+  const usedStrings: Record<Repo, string[]> = {};
+  const usedFluentStrings: Record<Repo, string[]> = {};
   const stringModulePaths: string[] = [];
   const writtenFileContents: { path: string; contents: string }[] = [];
   const removedNamespacePatterns: string[] = [];
@@ -238,6 +249,11 @@ export default localeData;` );
 
         // Read, modify, and write the file if it matches the filter
         const content = fs.readFileSync( srcPath, 'utf8' );
+
+        // Skip things like SceneryPhetFluent (it will be fully replaced)
+        if ( srcPath.endsWith( 'Fluent.ts' ) && content.includes( 'const addToMapIfDefined' ) ) {
+          continue;
+        }
 
         if ( srcPath.endsWith( 'Strings.ts' ) && content.includes( 'Strings = getStringModule(' ) ) {
           stringModulePaths.push( destPath );
@@ -671,65 +687,82 @@ type NumberLiteral = {
         {
           // See getStringMap for documentation
           for ( const stringRepo of repos ) {
-            const prefix = `${pascalCase( stringRepo )}Strings`; // e.g. JoistStrings
-            if ( modifiedContent.includes( `import ${prefix} from` ) ) {
-              const matches = Array.from( modifiedContent.matchAll( new RegExp( `${prefix}(\\.[a-zA-Z_$][a-zA-Z0-9_$]*|\\[\\s*['"][^'"]+['"]\\s*\\])+[^\\.\\[]`, 'g' ) ) );
+            // eslint-disable-next-line @typescript-eslint/no-loop-func
+            const replaceStrings = ( isFluent: boolean ) => {
+              const prefix = `${pascalCase( stringRepo )}${isFluent ? 'Fluent' : 'Strings'}`; // e.g. JoistStrings or JoistFluent
+              if ( modifiedContent.includes( `import ${prefix} from` ) ) {
+                const matches = Array.from( modifiedContent.matchAll( new RegExp( `${prefix}(\\.[a-zA-Z_$][a-zA-Z0-9_$]*|\\[\\s*['"][^'"]+['"]\\s*\\])+[^\\.\\[]`, 'g' ) ) );
 
-              const imports: string[] = [];
+                const imports: string[] = [];
 
-              for ( const match of matches.reverse() ) {
-                // Strip off the last character - it's a character that shouldn't be in a string access
-                const matchedString = match[ 0 ].slice( 0, match[ 0 ].length - 1 );
+                for ( const match of matches.reverse() ) {
+                  // Strip off the last character - it's a character that shouldn't be in a string access
+                  const matchedString = match[ 0 ].slice( 0, match[ 0 ].length - 1 );
 
-                // Ignore imports
-                if ( matchedString === `${prefix}.js` ) {
-                  continue;
+                  // Ignore imports
+                  if ( matchedString === `${prefix}.js` ) {
+                    continue;
+                  }
+
+                  const matchedIndex = match.index;
+                  const stringAccess = matchedString
+                    .replace( /StringProperty'\s?].*/, '\' ]' )
+                    .replace( /StringProperty.*/, '' )
+                    .replace( /\.format.*/, '' )
+                    .replace( /\.createProperty.*/, '' )
+                    .replace( /\.getDependentProperties.*/, '' )
+                    .replace( /\[ '/g, '[\'' )
+                    .replace( /' \]/g, '\']' );
+
+                  // TODO: handle getDependentProperties() on FluentPatterns
+
+                  const depth = 2; // TODO: this is not a great way to do this, coppied from getStringMap
+                  const stringKeyParts = stringAccess.match( /\.[a-zA-Z_$][a-zA-Z0-9_$]*|\[\s*['"][^'"]+['"]\s*\]/g )!.map( token => {
+                    return token.startsWith( '.' ) ? token.slice( 1 ) : token.slice( depth, token.length - depth );
+                  } );
+                  const partialStringKey = stringKeyParts.join( '.' );
+
+                  const usedStringObject = ( isFluent ? usedFluentStrings : usedStrings );
+
+                  usedStringObject[ stringRepo ] = usedStringObject[ stringRepo ] || [];
+                  if ( !usedStringObject[ stringRepo ].includes( partialStringKey ) ) {
+                    usedStringObject[ stringRepo ].push( partialStringKey );
+                  }
+
+                  const stringModulePath = ( isFluent ? fluentStringKeyToRelativePath : stringKeyToRelativePath )( stringRepo, partialStringKey );
+                  const identifier = ( isFluent ? fluentStringKeyToIdentifier : stringKeyToIdentifier )( stringRepo, partialStringKey );
+
+                  const importString = `import { ${identifier} } from '${getImportPath( `src/${stringModulePath.replace( /\.ts$/, '.js' )}` )}';`;
+
+                  if ( !imports.includes( importString ) ) {
+                    imports.push( importString );
+                  }
+
+                  modifiedContent = modifiedContent.slice( 0, matchedIndex ) + identifier + (
+                                    ( matchedString.includes( '.format' ) ? '.format' : '' ) +
+                                    ( matchedString.includes( '.createProperty' ) ? '.createProperty' : '' ) +
+                                    ( matchedString.includes( '.getDependentProperties' ) ? '.getDependentProperties' : '' )
+                  ) + modifiedContent.slice( matchedIndex + matchedString.length );
                 }
 
-                const matchedIndex = match.index;
-                const stringAccess = matchedString
-                  .replace( /StringProperty'\s?].*/, '\' ]' )
-                  .replace( /StringProperty.*/, '' )
-                  .replace( /\[ '/g, '[\'' )
-                  .replace( /' \]/g, '\']' );
-
-                const depth = 2; // TODO: this is not a great way to do this, coppied from getStringMap
-                const stringKeyParts = stringAccess.match( /\.[a-zA-Z_$][a-zA-Z0-9_$]*|\[\s*['"][^'"]+['"]\s*\]/g )!.map( token => {
-                  return token.startsWith( '.' ) ? token.slice( 1 ) : token.slice( depth, token.length - depth );
-                } );
-                const partialStringKey = stringKeyParts.join( '.' );
-
-                usedStrings[ stringRepo ] = usedStrings[ stringRepo ] || [];
-                if ( !usedStrings[ stringRepo ].includes( partialStringKey ) ) {
-                  usedStrings[ stringRepo ].push( partialStringKey );
+                for ( const importString of imports ) {
+                  insertImport( importString );
                 }
 
-                const stringModulePath = stringKeyToRelativePath( stringRepo, partialStringKey );
-                const identifier = stringKeyToIdentifier( stringRepo, partialStringKey );
-
-                const importString = `import { ${identifier} } from '${getImportPath( `src/${stringModulePath.replace( /\.ts$/, '.js' )}` )}';`;
-
-                if ( !imports.includes( importString ) ) {
-                  imports.push( importString );
+                // We should now have removed all usages (except for the 2 in the import)
+                // Count how many times prefix shows up
+                const prefixUsages = Array.from( modifiedContent.matchAll( new RegExp( prefix, 'g' ) ) ).length;
+                if ( prefixUsages !== 2 ) {
+                  throw new Error( `Failed to remove all string usages in ${srcPath} of ${prefix}:\n\n${modifiedContent}` );
                 }
 
-                modifiedContent = modifiedContent.slice( 0, matchedIndex ) + identifier + modifiedContent.slice( matchedIndex + matchedString.length );
+                // Remove the now-unused import
+                modifiedContent = modifiedContent.replace( new RegExp( `${os.EOL}import ${prefix} from '[^']+';`, 'g' ), '' );
               }
+            };
 
-              for ( const importString of imports ) {
-                insertImport( importString );
-              }
-
-              // We should now have removed all usages (except for the 2 in the import)
-              // Count how many times prefix shows up
-              const prefixUsages = Array.from( modifiedContent.matchAll( new RegExp( prefix, 'g' ) ) ).length;
-              if ( prefixUsages !== 2 ) {
-                throw new Error( 'Failed to remove all string usages' );
-              }
-
-              // Remove the now-unused import
-              modifiedContent = modifiedContent.replace( new RegExp( `${os.EOL}import ${prefix} from '[^']+';`, 'g' ), '' );
-            }
+            replaceStrings( false );
+            replaceStrings( true );
           }
         }
 
@@ -1023,6 +1056,106 @@ ${exportLines.join( os.EOL )}`;
         }
       };
       recur( sourceAST.getChildren()[ 0 ] );
+    }
+  }
+
+  // Create fluent string modules (before normal string modules, since we are likely inserting more usedStrings!)
+  for ( const stringRepo of Object.keys( usedFluentStrings ).sort() ) {
+    const fluentStringKeys = usedFluentStrings[ stringRepo ].sort();
+    if ( fluentStringKeys.length ) {
+      const fluentLines = fs.readFileSync( `../${stringRepo}/js/${pascalCase( stringRepo )}Fluent.ts`, 'utf8' ).split( '\n' ).map( line => line.trim() ).filter( line => line.includes( '_.get' ) );
+
+      for ( const fluentStringKey of fluentStringKeys ) {
+        const fluentStringModulePath = `./src/${fluentStringKeyToRelativePath( stringRepo, fluentStringKey )}`;
+        const fluentName = fluentStringKeyToIdentifier( stringRepo, fluentStringKey );
+        fs.mkdirSync( path.dirname( fluentStringModulePath ), { recursive: true } );
+
+        const basicStringModulePath = `./src/${stringKeyToRelativePath( stringRepo, fluentStringKey )}`;
+        const basicName = stringKeyToIdentifier( stringRepo, fluentStringKey );
+
+        const matchingLine = fluentLines.find( line => line.includes( `'${fluentStringKey}StringProperty'` ) );
+        // TODO: three types, direct (we will import/export), FluentConstant (.fromStringProperty), and FluentPattern (.fromStringProperty)
+
+        if ( !matchingLine ) {
+          throw new Error(
+            `Could not find fluent string key ${fluentStringKey} in ${stringRepo}/${pascalCase( stringRepo )}Fluent.ts`
+          );
+        }
+
+        const rootDirToModule = path.relative( path.dirname( fluentStringModulePath ), './src' ).replaceAll( path.sep, '/' );
+        const basicImportPath = path.relative( path.dirname( fluentStringModulePath ), basicStringModulePath.replace( /\.ts$/, '.js' ) ).replaceAll( path.sep, '/' )
+
+        // Force string module inclusion below
+        usedStrings[ stringRepo ] = usedStrings[ stringRepo ] || [];
+        if ( !usedStrings[ stringRepo ].includes( fluentStringKey ) ) {
+          usedStrings[ stringRepo ].push( fluentStringKey );
+        }
+
+        console.log( `${stringRepo} ${fluentStringKey} matching line: ${matchingLine}` );
+
+        if ( matchingLine.includes( ': new FluentPattern' ) ) {
+          const firstLessThan = matchingLine.indexOf( '<' );
+          const lastGreaterThan = matchingLine.lastIndexOf( '>' );
+          const type = matchingLine.slice( firstLessThan + 1, lastGreaterThan ).trim();
+          const firstBracket = matchingLine.indexOf( '[', lastGreaterThan );
+          const lastBracket = matchingLine.lastIndexOf( ']' );
+          const args = matchingLine.slice( firstBracket, lastBracket + 1 ).trim();
+
+          console.log( 'type', type );
+          console.log( 'args', args );
+
+          fs.writeFileSync( fluentStringModulePath, `// Copyright ${new Date().getFullYear() + ''}, University of Colorado Boulder
+
+/* eslint-disable */
+/* @formatter:off */
+
+/**
+ * Auto-generated from scenerystack build
+ */
+
+import '${rootDirToModule}/globals.js';
+import FluentPattern, { FluentVariable } from '${rootDirToModule}/chipper/js/browser/FluentPattern.js';
+import type { TReadOnlyProperty } from '${rootDirToModule}/axon/js/TReadOnlyProperty.js';
+import { ${basicName} } from '${basicImportPath}';
+
+export const ${fluentName} = FluentPattern.fromStringProperty<${type}>( ${basicName}, '${fluentStringKey}', ${args} );
+`, 'utf8' );
+        }
+        else if ( matchingLine.includes( ': new FluentConstant' ) ) {
+          fs.writeFileSync( fluentStringModulePath, `// Copyright ${new Date().getFullYear() + ''}, University of Colorado Boulder
+
+/* eslint-disable */
+/* @formatter:off */
+
+/**
+ * Auto-generated from scenerystack build
+ */
+
+import '${rootDirToModule}/globals.js';
+import FluentConstant from '${rootDirToModule}/chipper/js/browser/FluentConstant.js';
+import { ${basicName} } from '${basicImportPath}';
+
+export const ${fluentName} = FluentConstant.fromStringProperty( ${basicName}, '${fluentStringKey}' );
+`, 'utf8' );
+        }
+        else {
+          // direct forwarding
+          fs.writeFileSync( fluentStringModulePath, `// Copyright ${new Date().getFullYear() + ''}, University of Colorado Boulder
+
+/* eslint-disable */
+/* @formatter:off */
+
+/**
+ * Auto-generated from scenerystack build
+ */
+
+import '${rootDirToModule}/globals.js';
+import { ${basicName} } from '${basicImportPath}';
+
+export const ${fluentName} = ${basicName};
+`, 'utf8' );
+        }
+      }
     }
   }
 

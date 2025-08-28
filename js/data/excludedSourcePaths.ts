@@ -100,6 +100,9 @@ export const excludedSourcePaths = [
   'tambo/js/PeakDetectorAudioNode.',
   'tambo/js/peak-detector.js',
 
+  // licensing
+  'scenery-phet/js/buttons/RestartUndoButton.',
+
   // demo parts
   'bamboo/js/demo',
   'joist/js/demo',
