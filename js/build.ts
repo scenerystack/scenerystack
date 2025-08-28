@@ -1065,6 +1065,12 @@ ${exportLines.join( os.EOL )}`;
     if ( fluentStringKeys.length ) {
       const fluentLines = fs.readFileSync( `../${stringRepo}/js/${pascalCase( stringRepo )}Fluent.ts`, 'utf8' ).split( '\n' ).map( line => line.trim() ).filter( line => line.includes( '_.get' ) );
 
+      // NOTE: in the future, we may want to scan all translations and look for strings that have dependencies.
+      // We can create a list of { fluentKey, value } values and use ChipperStringUtils.createFluentFileFromData to
+      // create an FTL string file, then getFluentInternalReferences to find the dependencies.
+      // I have some concerns about common-code dependencies between strings, and scenery-phet currently doesn't have
+      // any yet, so I haven't implemented all of that yet.
+
       for ( const fluentStringKey of fluentStringKeys ) {
         const fluentStringModulePath = `./src/${fluentStringKeyToRelativePath( stringRepo, fluentStringKey )}`;
         const fluentName = fluentStringKeyToIdentifier( stringRepo, fluentStringKey );
