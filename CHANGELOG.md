@@ -2,6 +2,95 @@
 
 ## [Unreleased]
 
+## [3.0.0] - 2025-09-01
+
+### Changed
+
+- **Breaking:** `DerivedProperty.toFixed()` renamed to `DerivedProperty.toFixedProperty()` for consistency
+- **Breaking:** `ButtonModel.produceSoundEmitter` renamed to `ButtonModel.fireCompleteEmitter` across all button models
+- **Breaking:** `NumberDisplay.valueStringProperty` renamed to `NumberDisplay.accessibleValueStringProperty` for clearer visual/accessible string separation
+- **Breaking:** `ToggleSwitch.leftValueContextResponse`/`rightValueContextResponse` renamed to `accessibleContextResponseLeftValue`/`accessibleContextResponseRightValue`
+- **Breaking:** `Checkbox.checkedContextResponse`/`uncheckedContextResponse` renamed to `accessibleContextResponseChecked`/`accessibleContextResponseUnchecked`
+- **Breaking:** `Checkbox.voicingCheckedObjectResponse`/`voicingUncheckedObjectResponse` renamed to `voicingObjectResponseChecked`/`voicingObjectResponseUnchecked`
+- **Breaking:** `PlayControlButton.startPlayingLabel`/`endPlayingLabel` renamed to `startPlayingAccessibleName`/`endPlayingAccessibleName`
+- **Breaking:** `NumberSpinner` individual arrow button styling options (`arrowButtonFill`, `arrowButtonStroke`, `arrowButtonLineWidth`) replaced with single `arrowButtonOptions` object
+- **Breaking:** `AudioModel.toolbarEnabledProperty` renamed to `AudioModel.voicingToolbarEnabledProperty`
+- **Breaking:** Query parameter `?supportsTier1Voicing` renamed to `?supportsCoreVoicing`
+- **Breaking:** Query parameter `?printVoicingResponses` renamed to `?logVoicingResponses`
+- **Breaking:** `VoicingNode` and `ReadingBlockNode` renamed to `TVoicingNode` and `TReadingBlockNode`
+- **Breaking:** `eraser_png.ts` replaced with `eraser_svg.ts`
+
+### Added
+
+- Add `PhetUnit` class with rich unit objects supporting visual/accessible string patterns, localization, and dependency tracking
+- Add `ReadOnlyProperty` support for `units: Unit` in addition to string units for rich formatting capabilities
+- Add automatic number formatting in `NumberDisplay`, `NumberControl`, and `Slider` when provided with `Unit`-typed properties
+- Add `NumberFormatting` module with utilities like `getFormattedNumber`, `getFormattedVisualNumber`, `getFormattedAccessibleNumber`
+- Add `AccessibleStrings` module with `DualString`, `DualStringNumber`, `DualValuePattern` types for dual visual/accessible formatting
+- Add `DEFAULT_FORMATTED_NUMBER_VISUAL_OPTIONS` and `DEFAULT_FORMATTED_NUMBER_ACCESSIBLE_OPTIONS` constants for consistent formatting
+- Add `StringUtils.toFixedLTR()` method for number formatting with automatic LTR wrapping for RTL text compatibility
+- Add `TinyEmitter` and `Emitter` support for `disableListenerLimit` option to bypass assertion checks on listener count limits (used in high-frequency scenarios like `localeProperty`)
+- Add `GatedEnabledProperty` and `GatedVisibleProperty` (split from `GatedBooleanProperty`)
+- Add `RangedDynamicProperty`, `PhetioReadOnlyProperty`, and `EnumerationDeprecatedProperty` exports
+- Add `DerivedProperty.toFixedProperty()` method for creating derived properties with fixed decimal precision
+- Add `RANGE_PROPERTY_TANDEM_NAME` exported constant from `NumberProperty` for consistent tandem naming of range properties
+- Add `Node.focusedProperty` lazily-created BooleanProperty indicating focus state with automatic cleanup on disposal
+- Add complete drag listener forwarding system with `DragListener.createForwardingListener()`, `KeyboardDragListener.createForwardingListener()`, and `RichDragListener.createForwardingListener()`
+- Add `ButtonNode` accessibility with `accessibleContextResponse` and `speakVoicingNameResponseOnFire` options for comprehensive button accessibility and voicing support
+- Add `ToggleSwitch` accessibility with `accessibleContextResponseLeftValue` and `accessibleContextResponseRightValue` options
+- Add `ComboBox` and `ComboBoxListBox` accessibility with `accessibleContextResponse` option for selection feedback
+- Add `Checkbox` accessibility enhancements with `accessibleContextResponseChecked`/`accessibleContextResponseUnchecked` and separate voicing responses (`voicingContextResponseChecked`/`voicingContextResponseUnchecked`, `voicingObjectResponseChecked`/`voicingObjectResponseUnchecked`)
+- Add `RoundMomentaryButton` and `RectangularMomentaryButton` accessibility with `accessibleContextResponseValueOn`/`accessibleContextResponseValueOff` options for context-aware accessibility responses
+- Add `AquaRadioButton` accessibility with `accessibleContextResponse` option for providing accessible responses when radio button value changes
+- Add `RectangularRadioButtonGroup` and `AquaRadioButtonGroup` comprehensive voicing support with `voicingNameResponse`, `voicingHintResponse`, and `speakVoicingNameResponseOnFocus` options
+- Add `BucketFront` interactive highlighting extending `InteractiveHighlighting( Node )` instead of plain `Node`
+- Add `BucketFront` gradient customization with `gradientLuminanceLeft` and `gradientLuminanceRight` options (defaults: 0.5 and -0.5)
+- Add `NumberSpinner` enhanced configuration with `arrowButtonOptions` and `linkedElementOptions` for better customization and PhET-iO support
+- Add `TimerToggleButton` customization with `offIconOptions` for timer off state appearance
+- Add `PlayControlButton` accessibility enhancements with `accessibleContextResponse` and `voicingNameResponse` options
+- Add `GroupSelectView` comprehensive accessibility with `grabbedRoleDescription`, `releasedRoleDescription`, `grabbedAccessibleContextResponse`, and `releasedAccessibleContextResponse` options
+- Add `GroupSelectView` improved focus management that preserves selection state across focus changes
+- Add `ZoomButtonGroup` accessibility options with `accessibleNameZoomIn`/`accessibleNameZoomOut` and `accessibleHelpTextZoomIn`/`accessibleHelpTextZoomOut` options
+- Add `StopwatchNode` major accessibility overhaul with keyboard support, focus-based value readout, and enhanced time formatting (see [phetsims/scenery-phet#929](https://github.com/phetsims/scenery-phet/issues/929))
+- Add `StopwatchNode` integration with `AccessibleDraggableOptions` for keyboard accessibility
+- Add `StopwatchNode` focus listener with `addAccessibleContextResponse` for value readout and automatic LTR wrapping for RTL language support
+- Add `RulerNode` PhET-iO instrumentation control with `instrumentUnitsLabelText` option (default: true) and enhanced type support for `majorTickLabels` accepting both `string[]` and `number[]`
+- Add default sound players for `BackButton` with `sharedSoundPlayers.get( 'goBack' )` replacing custom SoundClip creation
+- Add default sound players for `InfoButton` with `nullSoundPlayer` since info buttons typically open dialogs that make their own sounds
+- Add `VoicingToolbar` system replacing legacy toolbar with `VoicingToolbarAlertManager` and `VoicingToolbarItem` components
+- Add `VoicingToolbar` directory restructure from `joist/js/toolbar/` to `joist/js/voicingToolbar/` for better organization
+- Add `AccessibleInteractiveOptions`, `AccessibleListNode`, and `BidirectionalControlChars` accessibility components
+- Add `AccessibleListNode` with proper ARIA structure and `AccessibleListItem` type
+- Add `ScreenSummaryContent` support for `AccessibleListNode` in `SectionContent` type for structured accessible content
+- Add `ScreenSummaryContent` exported `SectionContent` and `ScreenSummaryContentOptions` types for better type support
+- Add Fluent localization system with `FluentPattern`, `FluentConstant`, `FluentContainer`, `createFluentMessageProperty`, and `FluentVisitor`
+- Add `FluentBundle` integration with enhanced `FluentBundlePattern` type and improved message/term handling
+- Add ParallelDOM response methods: `addCategorizedResponse()`, `addAccessibleObjectResponse()`, `addAccessibleContextResponse()`, `addAccessibleHelpResponse()`
+- Add BCP 47 locale integration with `bcp47LocaleProperty` automatically updating HTML `lang` attribute when locale changes (see [phetsims/chipper#1332](https://github.com/phetsims/chipper/issues/1332))
+- Add WCAG size compliance with `?wcagSize` query parameter forcing all interactive elements to meet WCAG AA touch target size requirements (24x24 CSS pixels minimum, 44x44 for optimal)
+- Add `WCAGSizeNode` component for WCAG-compliant size management
+- Add enhanced voicing types `TVoicingNode` and `TReadingBlockNode` for better voicing integration (updated from `isVoicing` and `isReadingBlock` function return types)
+- Add `RadioButtonGroupFocusListener` for improved radio button group focus handling
+- Add `DescriptionContext` restoration with `ExternalLoadError` for description loading
+- Add card interaction sounds with `CardSounds` generator and `cardMovementSoundClips` array
+- Add complete set of individual card sound exports: `cardDrop_mp3`, `cardPickup_mp3`, `cardMovement1_mp3` through `cardMovement6_mp3`, `goBack_mp3`, `shareWhooshSound_mp3`
+- Add `ChangeSoundPlayer` type to `ValueChangeSoundPlayer` options
+- Add `FaucetNode` sound options with `grabSoundPlayer` and `releaseSoundPlayer` for sophisticated sound logic in different interaction scenarios
+- Add `?fluentTable=<value>` query parameter for displaying Fluent localization tables during development
+- Add `GrabDragInteraction` enhancements with new `grabbed` string support and improved documentation structure
+- Add `FlowBox` accessibility with `accessibleHelpTextBehavior: HELP_TEXT_BEFORE_CONTENT` for proper help text positioning
+
+### Removed
+
+- Remove legacy `Toolbar` class replaced by `VoicingToolbar` system with directory restructure from `joist/js/toolbar/` to `joist/js/voicingToolbar/`
+- Remove `DescriptionContext.ts` and `DescriptionRegistry.ts` with functionality moved to other systems
+- Remove complex line dash transformation system in `HighlightPath` in favor of simpler consistent dashing
+
+### Fixed
+
+- Fix automatic LTR wrapping in `PatternStringProperty` for better RTL text support with `StringUtils.wrapLTR()` and `StringUtils.toFixedLTR()`
+- Fix improved number formatting with automatic left-to-right Unicode marks for proper display in RTL contexts
+
 ## [2.0.1] - 2025-04-15
 
 ### Fixed
