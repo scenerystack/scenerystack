@@ -1109,7 +1109,7 @@ ${exportLines.join( os.EOL )}`;
         const fluentKeyMap = ChipperStringUtils.getFluentKeyMap( stringFilesMap[ locale ] );
 
         for ( const fluentRawStringKey of fluentKeyMap.keys() ) {
-          fluentStringKeyToRawMap[ fluentKeyMap.get( fluentRawStringKey ).fluentKey ] = fluentRawStringKey;
+          fluentStringKeyToRawMap[ fluentKeyMap.get( fluentRawStringKey )!.fluentKey ] = fluentRawStringKey;
         }
 
         const ftl = ChipperStringUtils.createFluentFileFromData( Array.from( fluentKeyMap.values() ) );
@@ -1122,7 +1122,7 @@ ${exportLines.join( os.EOL )}`;
           }
 
           const dependencies = getFluentInternalReferences( ftl, fluentKey );
-          if ( dependencies.includes( null ) ) {
+          if ( ( dependencies as ( string | null )[] ).includes( null ) ) {
             throw new Error( `dependencies failure for ${fluentKey} returned ${JSON.stringify( dependencies )}: ftl:\n\n${ftl}` );
           }
 
@@ -1221,11 +1221,12 @@ ${exportLines.join( os.EOL )}`;
 
 import '${rootDirToModule}/globals.js';
 import FluentPattern, { FluentVariable } from '${rootDirToModule}/chipper/js/browser/FluentPattern.js';
+import { fluentPatternFromStringProperty } from '${rootDirToModule}/chipper/js/browser/FluentSceneryStack.js';
 import type { TReadOnlyProperty } from '${rootDirToModule}/axon/js/TReadOnlyProperty.js';
 import { ${basicName} } from '${basicImportPath}';
 ${dependencyImports}
 
-export const ${fluentName} = FluentPattern.fromStringProperty<${type}>( ${basicName}, ${stringPropertiesString}, '${fluentKey}', ${fluentKeyMapString}, ${args} );
+export const ${fluentName} = fluentPatternFromStringProperty<${type}>( ${basicName}, ${stringPropertiesString}, '${fluentKey}', ${fluentKeyMapString}, ${args} );
 `, 'utf8' );
         }
         else if ( matchingLine.includes( ': new FluentConstant' ) ) {
@@ -1240,10 +1241,11 @@ export const ${fluentName} = FluentPattern.fromStringProperty<${type}>( ${basicN
 
 import '${rootDirToModule}/globals.js';
 import FluentConstant from '${rootDirToModule}/chipper/js/browser/FluentConstant.js';
+import { fluentConstantFromStringProperty } from '${rootDirToModule}/chipper/js/browser/FluentSceneryStack.js';
 import { ${basicName} } from '${basicImportPath}';
 ${dependencyImports}
 
-export const ${fluentName} = FluentConstant.fromStringProperty( ${basicName}, ${stringPropertiesString}, '${fluentKey}', ${fluentKeyMapString} );
+export const ${fluentName} = fluentConstantFromStringProperty( ${basicName}, ${stringPropertiesString}, '${fluentKey}', ${fluentKeyMapString} );
 `, 'utf8' );
         }
         else {

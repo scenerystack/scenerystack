@@ -1,6 +1,6 @@
 {
   "name": "scenerystack",
-  "version": "3.0.0-alpha.1",
+  "version": "3.0.0-alpha.3",
   "description": "Bundle of SceneryStack libraries, a Typescript development framework for creating multimodal, accessible HTML5 web interactives.",
   "keywords": [
     "JavaScript",
