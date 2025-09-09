@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [3.0.0] - 2025-09-01
+## [3.0.0] - 2025-09-08
 
 ### Changed
 
@@ -19,6 +19,7 @@
 - **Breaking:** Query parameter `?printVoicingResponses` renamed to `?logVoicingResponses`
 - **Breaking:** `VoicingNode` and `ReadingBlockNode` renamed to `TVoicingNode` and `TReadingBlockNode`
 - **Breaking:** `eraser_png.ts` replaced with `eraser_svg.ts`
+- **Breaking:** `VoicingPanelSection.contextResponseExpanded`/`contextResponseCollapsed` renamed to `accessibleContextResponseExpanded`/`accessibleContextResponseCollapsed` for consistency with accessibility naming patterns
 
 ### Added
 
@@ -79,17 +80,27 @@
 - Add `?fluentTable=<value>` query parameter for displaying Fluent localization tables during development
 - Add `GrabDragInteraction` enhancements with new `grabbed` string support and improved documentation structure
 - Add `FlowBox` accessibility with `accessibleHelpTextBehavior: HELP_TEXT_BEFORE_CONTENT` for proper help text positioning
+- Add `fluentConstantFromStringProperty` and `fluentPatternFromStringProperty` utility functions for creating Fluent localization from string properties
+- Add `StringUtils.toFixedNumberLTR()` method for number formatting with automatic LTR wrapping that removes trailing zeros (uses toFixedNumber)
+- Add `ResetButton.adjustShapeForStroke` option for `ResetAllButton` to expand geometry and accommodate stroke styling
+- Add structured keyboard help text support with `tabToGetStarted.accessibleHelpText` and `tabToGetStarted.readingBlockNameResponse` properties
+- Add `PreferencesDialogConstants.trackFillLeft: null` option for ToggleSwitch default values in preferences
+- Add Vietnamese translations for multiple preference strings including audio features, accessibility intro, and visual highlights
 
 ### Removed
 
 - Remove legacy `Toolbar` class replaced by `VoicingToolbar` system with directory restructure from `joist/js/toolbar/` to `joist/js/voicingToolbar/`
 - Remove `DescriptionContext.ts` and `DescriptionRegistry.ts` with functionality moved to other systems
 - Remove complex line dash transformation system in `HighlightPath` in favor of simpler consistent dashing
+- Remove `PlayPauseButton.voicingNameResponse` automatic generation and associated voicing context response override behavior
 
 ### Fixed
 
 - Fix automatic LTR wrapping in `PatternStringProperty` for better RTL text support with `StringUtils.wrapLTR()` and `StringUtils.toFixedLTR()`
 - Fix improved number formatting with automatic left-to-right Unicode marks for proper display in RTL contexts
+- Fix `ResetAllButton` geometry by adjusting shape for stroke with proper margin calculations (changed from radius-based to fixed 0.75 margins)
+- Fix Fluent localization system by migrating from deprecated `FluentPattern.fromStringProperty` to new `fluentPatternFromStringProperty` utility function across all fluent string files
+- Fix ResetShape geometry calculation with stroke adjustment parameters for better visual consistency
 
 ## [2.0.1] - 2025-04-15
 
