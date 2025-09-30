@@ -268,8 +268,13 @@ const ExecuteError = class ExecuteError extends Error {
   const npmUpdate = async repo => {
     console.log( `npm update in ${repo}` );
     const npmCommand = /^win/.test( process.platform ) ? 'npm.cmd' : 'npm';
-    await execute( npmCommand, [ 'prune' ], `./${repo}` );
-    await execute( npmCommand, [ 'update' ], `./${repo}` );
+    if ( fs.existsSync( `./${repo}/package-lock.json` ) ) {
+      await execute( npmCommand, [ 'ci' ], `./${repo}` );
+    }
+    else {
+      await execute( npmCommand, [ 'prune' ], `./${repo}` );
+      await execute( npmCommand, [ 'update' ], `./${repo}` );
+    }
   };
 
   const checkout = async version => {
