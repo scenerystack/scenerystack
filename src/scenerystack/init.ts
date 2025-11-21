@@ -76,7 +76,6 @@ const init = ( options: InitOptions ): void => {
         supportsInteractiveDescription: options.supportsInteractiveDescription ?? true,
         supportsInteractiveHighlights: options.supportsInteractiveHighlights ?? true,
         supportsVoicing: options.supportsVoicing ?? false,
-        supportsCoreVoicing: false, // is a phet-internal thing
         supportsPanAndZoom: options.supportsPanAndZoom ?? true,
         supportedRegionsAndCultures: options.supportedRegionsAndCultures || [ 'usa' ],
         supportsSound: options.supportsSound ?? false
