@@ -225,7 +225,7 @@
     "paper": "~0.12.17",
     "seedrandom": "~2.4.2",
     "text-encoder-lite": "~2.0.0",
-    "three": "^0.104.0"
+    "three": "0.137.0"
   },
   "//": "DO NOT STUFF GRUNT IN HERE",
   "devDependencies": {

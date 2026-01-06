@@ -488,11 +488,6 @@ type NumberLiteral = {
             }
             if ( modifiedContent.match( /THREE[^:]/g ) ) {
               insertImport( 'import * as THREE from \'three\';' );
-
-              if ( modifiedContent.includes( '.needsUpdate = true;' ) ) {
-                modifiedContent = modifiedContent.replaceAll( 'this.attributes.position.needsUpdate = true;', '// @ts-expect-error\nthis.attributes.position.needsUpdate = true;' );
-                modifiedContent = modifiedContent.replaceAll( 'this.attributes.normal.needsUpdate = true;', '// @ts-expect-error\nthis.attributes.normal.needsUpdate = true;' );
-              }
             }
             if ( modifiedContent.includes( 'LineBreaker' ) ) {
               insertImport( 'import { LineBreaker } from \'linebreak-ts\';' );
