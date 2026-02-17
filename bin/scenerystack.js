@@ -5,7 +5,7 @@
  *
  * NOTE: if testing locally, do something like `npx --prefix ../git/scenerystack scenerystack checkout`
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 const https = require( 'https' );

@@ -3,7 +3,7 @@
 /**
  * Returns the leading comments for a TypeScript node
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 import ts from 'typescript';

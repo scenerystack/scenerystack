@@ -2,7 +2,7 @@
 
 /**
  * Experimental build of scenery stack
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  *
  * Run as the following at the root of scenerystack:
  *
@@ -1012,7 +1012,7 @@ type NumberLiteral = {
  *
  * Auto-generated from scenerystack build
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 ${exportLines.join( os.EOL )}`;

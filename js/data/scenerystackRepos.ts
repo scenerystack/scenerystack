@@ -3,7 +3,7 @@
 /**
  * List of repositories that are part of the scenerystack
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 export const scenerystackRepos = [

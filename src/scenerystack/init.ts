@@ -3,7 +3,7 @@
 /**
  * Initialization of simulation contexts.
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 export type InitOptions = {

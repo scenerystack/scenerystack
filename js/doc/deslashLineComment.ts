@@ -3,7 +3,7 @@
 /**
  * Removes the slash prefix from a line comment string (including the first space)
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 export const deslashLineComment = ( string: string ): string => {

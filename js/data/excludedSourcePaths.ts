@@ -3,7 +3,7 @@
 /**
  * List of paths that will not be copied over from the source directories during a build.
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 export const excludedSourcePaths = [

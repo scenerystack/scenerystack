@@ -3,7 +3,7 @@
 /**
  * Declared globals for himalaya
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 declare module 'himalaya' {

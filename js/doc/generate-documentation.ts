@@ -3,7 +3,7 @@
 /**
  * Kick off doc generation
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 import { generateSceneryStackDocumentation } from './generateSceneryStackDocumentation.js';

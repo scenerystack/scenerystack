@@ -3,7 +3,7 @@
 /**
  * Returns the return type of a function as a string
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 import ts from 'typescript';

@@ -3,7 +3,7 @@
 /**
  * Declared globals for text-encoder-lite
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 declare module 'text-encoder-lite' {

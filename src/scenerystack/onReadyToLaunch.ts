@@ -2,7 +2,7 @@
 
 /**
  * Sim launch connection, included in scenerystack/sim
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 import asyncLoader from '../phet-core/js/asyncLoader.js';

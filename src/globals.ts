@@ -3,7 +3,7 @@
 /**
  * Globals for safety.
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 self.phet = self.phet || {};

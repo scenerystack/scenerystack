@@ -5,7 +5,7 @@
  *
  * NOTE: files still included, because they are used internally.
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 export const skipDeprecatedModules = [

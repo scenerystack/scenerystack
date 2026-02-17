@@ -7,7 +7,7 @@
  * Write documentation into the community docs system (assuming it is
  * checked out as a sibling to this repo).
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 import fs from 'fs';

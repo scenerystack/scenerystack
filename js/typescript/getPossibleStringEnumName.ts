@@ -3,7 +3,7 @@
 /**
  * If in the form of `typeof VALUES[number]`, return `VALUES`
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 import ts from 'typescript';

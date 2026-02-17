@@ -3,7 +3,7 @@
 /**
  * URLs that we can shortcut with .e.g [HTMLCanvasElement] that will have the links filled in automatically for documentation.
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 export const externalDocumentationURLs: Record<string, string> = {

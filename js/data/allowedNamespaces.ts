@@ -4,7 +4,7 @@
  * List of namespace accesses that are allowed (not stripped out when namespaces
  * are stripped out).
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 // We won't remove these namespaces, because they seem to be used internally

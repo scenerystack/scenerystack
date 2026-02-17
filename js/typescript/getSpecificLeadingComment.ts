@@ -3,7 +3,7 @@
 /**
  * Either take the last block comment, or all of the last line comments.
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 import { getLeadingComments } from './getLeadingComments.js';

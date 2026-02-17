@@ -3,7 +3,7 @@
 /**
  * Cleans up a comment string, removing any comment prefixes and suffixes
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 import { deslashLineComment } from './deslashLineComment.js';

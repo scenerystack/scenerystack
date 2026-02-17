@@ -2,7 +2,7 @@
 
 /**
  * Imports everything (excluding sim), and returns the global 'phet' object.
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  *
  * Not including adapted-from-phet/brand/sim/splash for "standalone"
  */

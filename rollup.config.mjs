@@ -3,7 +3,7 @@
 /**
  * Config for rollup (for standalone bundles)
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 import { nodeResolve } from '@rollup/plugin-node-resolve';

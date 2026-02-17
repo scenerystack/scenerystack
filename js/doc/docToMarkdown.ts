@@ -6,7 +6,7 @@
 /**
  * Converts documentation to markdown.
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 import path from 'path';

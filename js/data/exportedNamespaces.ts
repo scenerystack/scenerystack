@@ -3,7 +3,7 @@
 /**
  * List of namespaces that will be exported (because they are used in the API).
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 export const exportedNamespaces = [

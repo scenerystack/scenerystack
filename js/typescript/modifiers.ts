@@ -3,7 +3,7 @@
 /**
  * Whether a given TS node has certain modifiers
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 import ts, { HasModifiers } from 'typescript';

@@ -3,7 +3,7 @@
 /**
  * Removes the stars from a block comment string.
  *
- * @author Jonathan Olson <jonathan.olson@colorado.edu>
+ * @author Jonathan Olson (PhET Interactive Simulations)
  */
 
 import os from 'os';
