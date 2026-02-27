@@ -378,6 +378,12 @@ export default localeData;` );
               modifiedContent = modifiedContent.replace( fluentImportRegex, 'import $1 from \'@fluent/$2\';' );
             }
 
+            // Replace lit-core imports
+            const litCoreImportRegex = /import (.+) from '[^'\n]*sherpa\/lib\/lit-core-3\.3\.1\.min\.js';/g;
+            while ( modifiedContent.match( litCoreImportRegex ) ) {
+              modifiedContent = modifiedContent.replace( litCoreImportRegex, 'import $1 from \'lit\';' );
+            }
+
             // Replace big.js import
             const bigImportRegex = /import Big from '[^'\n]*sherpa\/lib\/big-6\.2\.1\.js';/g;
             if ( modifiedContent.match( bigImportRegex ) ) {
