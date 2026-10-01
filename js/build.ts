@@ -791,6 +791,9 @@ type NumberLiteral = {
           if ( repo === 'dot' && exportedName === 'Rectangle' ) {
             exportedName = 'DotRectangle';
           }
+          if ( repo === 'perennial-alias' && [ 'Locale', 'StringMap', 'Sim' ].includes( exportedName ) ) {
+            exportedName = `Perennial${exportedName}`;
+          }
 
           let exportFile = repo;
 

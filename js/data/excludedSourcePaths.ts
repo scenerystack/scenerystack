@@ -102,6 +102,7 @@ export const excludedSourcePaths = [
 
   // licensing
   'scenery-phet/js/buttons/RestartUndoButton.',
+  'scenery-phet/js/buttons/SnapshotButtonGroup.',
 
   // demo parts
   'bamboo/js/demo',
@@ -142,6 +143,7 @@ export const excludedSourcePaths = [
   'tandem/js/tandem-tests.',
   'twixt/js/twixt-tests.',
   'utterance-queue/js/utterance-queue-tests.',
+  'vegas/js/vegas-tests.',
 
   // kite grunt code
   'kite/js/grunt',
